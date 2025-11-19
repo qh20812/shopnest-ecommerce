@@ -13,13 +13,11 @@ return new class extends Migration
     {
         Schema::create('administrative_divisions', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->foreignId('country_id')->constrained()->onDelete('cascade');
-            $table->foreignId('parent_id')->nullable()->constrained('administrative_divisions')->onDelete('set null');
-            $table->json('name');
-            $table->integer('level')->comment('1=province, 2=district, 3=ward');
-            $table->string('code', 20)->nullable();
+            $table->foreignId('country_id')->default(1)->constrained()->onDelete('cascade');
+            $table->string('name');
+            $table->string('type')->index(); // 'province' hoặc 'ward'
+            $table->string('code', 10)->nullable()->unique(); // Mã tỉnh/xã theo quy định mới 2025
             $table->timestamps();
-            $table->index(['level', 'code']);
         });
     }
 

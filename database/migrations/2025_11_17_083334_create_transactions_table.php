@@ -12,7 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('transactions', function (Blueprint $table) {
-            $table->id();
+            $table->bigIncrements('id');
+            $table->foreignId('order_id')->constrained()->onDelete('cascade');
+            $table->enum('type', ['payment', 'refund']);
+            $table->decimal('amount', 15, 2); // ← Chỉ VND
+            $table->string('gateway', 50)->nullable(); // stripe, momo, vnpay, paypal, cod
+            $table->string('gateway_transaction_id', 255)->nullable();
+            $table->enum('status', ['pending', 'completed', 'failed'])->default('pending');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

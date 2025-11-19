@@ -13,9 +13,8 @@ return new class extends Migration
     {
         Schema::create('countries', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('name', 255);
-            $table->char('iso_code', 2)->unique();
-            $table->char('currency', 3)->default('VND');
+            $table->string('name')->default('Việt Nam');
+            $table->char('iso_code', 2)->default('VN');
             $table->timestamps();
         });
     }

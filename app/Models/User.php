@@ -33,12 +33,14 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    // Cho phép đăng nhập bằng username, email hoặc phone
-    public function findForPassport($identifier)
+    // Cho phép login bằng username, email hoặc phone_number
+    public function getAuthIdentifierName()
     {
-        return $this->orWhere('username', $identifier)
-            ->orWhere('email', $identifier)
-            ->orWhere('phone_number', $identifier)
-            ->first();
+        return 'username'; // Laravel sẽ dùng cột này để tìm user
+    }
+
+    public function getAuthIdentifier()
+    {
+        return $this->username ?? $this->email ?? $this->phone_number;
     }
 }
