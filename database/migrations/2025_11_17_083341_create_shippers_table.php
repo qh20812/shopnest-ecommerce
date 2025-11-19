@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('vehicle_type')->default('Xe máy'); // Xe máy, ô tô...
             $table->string('license_plate')->nullable();
 
-            $table->enum('status', ['active', 'inactive', 'busy'])->default('active');
+            $table->string('status')->default('active'); // active, inactive, busy
             $table->decimal('rating', 3, 2)->default(5.00);
             $table->unsignedInteger('total_deliveries')->default(0);
             $table->unsignedInteger('completed_deliveries')->default(0);

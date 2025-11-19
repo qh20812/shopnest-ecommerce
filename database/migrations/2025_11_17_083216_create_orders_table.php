@@ -19,9 +19,9 @@ return new class extends Migration
             $table->decimal('shipping_fee', 15, 2)->default(0);
             $table->decimal('discount_amount', 15, 2)->default(0);
             $table->decimal('total_amount', 15, 2); // ← Chỉ VND
-            $table->enum('payment_method', ['cod', 'stripe', 'momo', 'vnpay', 'paypal']);
-            $table->enum('payment_status', ['unpaid', 'paid', 'failed', 'refunded'])->default('unpaid');
-            $table->enum('status', ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'returned'])->default('pending');
+            $table->string('payment_method'); // cod, stripe, momo, vnpay, paypal
+            $table->string('payment_status')->default('unpaid'); // unpaid, paid, failed, refunded
+            $table->string('status')->default('pending'); // pending, confirmed, processing, shipped, delivered, cancelled, returned
             $table->foreignId('shipping_address_id')->constrained('user_addresses');
             $table->string('customer_phone', 20)->nullable();
             $table->foreignId('promotion_id')->nullable()->constrained();

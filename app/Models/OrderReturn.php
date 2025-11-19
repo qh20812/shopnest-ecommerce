@@ -3,6 +3,7 @@
 
 namespace App\Models;
 
+use App\Enums\OrderReturnStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -28,6 +29,7 @@ class OrderReturn extends Model
         'requested_at' => 'datetime',
         'processed_at' => 'datetime',
         'completed_at' => 'datetime',
+        'status' => OrderReturnStatus::class,
     ];
 
     public function order(): BelongsTo

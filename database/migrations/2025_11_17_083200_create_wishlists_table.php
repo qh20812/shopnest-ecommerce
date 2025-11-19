@@ -17,7 +17,7 @@ return new class extends Migration
             $table->text('description')->nullable();
 
             // Quyền riêng tư
-            $table->enum('privacy', ['private', 'shared', 'public'])->default('private');
+            $table->string('privacy')->default('private'); // private, shared, public
 
             // Danh sách mặc định của người dùng
             $table->boolean('is_default')->default(false);

@@ -20,24 +20,13 @@ return new class extends Migration
             $table->json('images')->nullable(); // Ảnh khách gửi
 
             // Loại khiếu nại
-            $table->enum('type', [
-                'not_received',      // Không nhận được hàng
-                'damaged_product',   // Hàng lỗi, vỡ
-                'wrong_item',        // Giao sai hàng
-                'other'
-            ]);
+            $table->string('type'); // not_received, damaged_product, wrong_item, other
 
             // Số tiền yêu cầu hoàn
             $table->decimal('requested_refund_amount', 15, 2)->nullable();
 
             // Trạng thái xử lý
-            $table->enum('status', [
-                'pending',      // Chờ xử lý
-                'in_review',    // Đang xem xét
-                'resolved',     // Đã giải quyết (có hoàn tiền hoặc không)
-                'rejected',     // Từ chối
-                'escalated'     // Chuyển lên cấp cao hơn
-            ])->default('pending');
+            $table->string('status')->default('pending'); // pending, in_review, resolved, rejected, escalated
 
             $table->timestamp('resolved_at')->nullable();
             $table->foreignId('resolved_by')->nullable()->constrained('users');

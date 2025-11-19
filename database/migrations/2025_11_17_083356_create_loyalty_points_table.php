@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
 
             $table->integer('points');                    // Số điểm +/-
-            $table->enum('type', ['earn', 'spend', 'expire', 'adjust']); // Loại giao dịch
+            $table->string('type'); // earn, spend, expire, adjust
             $table->string('reason');                     // "Đặt hàng #12345", "Hoàn tiền", "Hết hạn"
             $table->foreignId('order_id')->nullable()->constrained('orders')->onDelete('set null');
             $table->integer('balance_after')->default(0); // Số dư điểm sau khi thay đổi

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('name'); // Tên chương trình: "Giảm 20% toàn sàn"
 
             // Loại giảm giá
-            $table->enum('type', ['percentage', 'fixed_amount']); // % hoặc số tiền cố định
+            $table->string('type'); // percentage, fixed_amount
             $table->decimal('value', 15, 2); // 20.00 (%) hoặc 100000 (VND)
 
             // Giới hạn giảm tối đa (chỉ áp dụng cho type = percentage)

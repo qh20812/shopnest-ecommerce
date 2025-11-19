@@ -3,6 +3,7 @@
 
 namespace App\Models;
 
+use App\Enums\PromotionType;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 
@@ -32,6 +33,7 @@ class Promotion extends Model
         'ends_at' => 'datetime',
         'is_active' => 'boolean',
         'applies_to' => 'array',
+        'type' => PromotionType::class,
     ];
 
     // Kiểm tra mã có hợp lệ không

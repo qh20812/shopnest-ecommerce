@@ -3,6 +3,7 @@
 
 namespace App\Models;
 
+use App\Enums\RecommendationSource;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -23,6 +24,7 @@ class ProductRecommendation extends Model
         'metadata' => 'array',
         'calculated_at' => 'datetime',
         'expires_at' => 'datetime',
+        'source' => RecommendationSource::class,
     ];
 
     public function user(): BelongsTo

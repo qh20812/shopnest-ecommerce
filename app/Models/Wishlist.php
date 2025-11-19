@@ -3,6 +3,7 @@
 
 namespace App\Models;
 
+use App\Enums\WishlistPrivacy;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -15,6 +16,7 @@ class Wishlist extends Model
 
     protected $casts = [
         'is_default' => 'boolean',
+        'privacy' => WishlistPrivacy::class,
     ];
 
     public function user(): BelongsTo

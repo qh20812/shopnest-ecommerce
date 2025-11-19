@@ -3,6 +3,8 @@
 
 namespace App\Models;
 
+use App\Enums\TransactionStatus;
+use App\Enums\TransactionType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -22,6 +24,8 @@ class Transaction extends Model
 
     protected $casts = [
         'amount' => 'decimal:2',
+        'type' => TransactionType::class,
+        'status' => TransactionStatus::class,
     ];
 
     public function order(): BelongsTo

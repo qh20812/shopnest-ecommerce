@@ -22,13 +22,7 @@ return new class extends Migration
             $table->text('reason'); // Lý do trả hàng
             $table->json('images')->nullable(); // Ảnh khách gửi kèm (chụp lỗi, vỡ...)
 
-            $table->enum('status', [
-                'pending',      // Chờ xử lý
-                'approved',     // Đã duyệt → sẽ hoàn tiền
-                'rejected',     // Từ chối
-                'processing',   // Đang xử lý (đã nhận hàng)
-                'completed'     // Đã hoàn tiền + kết thúc
-            ])->default('pending');
+            $table->string('status')->default('pending'); // pending, approved, rejected, processing, completed
 
             $table->timestamp('requested_at')->useCurrent();
             $table->timestamp('processed_at')->nullable();

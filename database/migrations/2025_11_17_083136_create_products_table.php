@@ -24,7 +24,7 @@ return new class extends Migration
             $table->integer('sold_count')->default(0);
             $table->decimal('rating_average', 3, 2)->default(0);
             $table->integer('review_count')->default(0);
-            $table->enum('status', ['draft', 'published', 'archived'])->default('draft');
+            $table->string('status')->default('draft'); // draft, published, archived
             $table->boolean('is_featured')->default(false);
             $table->timestamp('published_at')->nullable();
             $table->timestamps();

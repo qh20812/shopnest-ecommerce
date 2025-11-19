@@ -3,6 +3,7 @@
 
 namespace App\Models;
 
+use App\Enums\DeliveryStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -27,6 +28,7 @@ class DeliveryAssignment extends Model
         'delivered_at' => 'datetime',
         'failed_at' => 'datetime',
         'returned_at' => 'datetime',
+        'status' => DeliveryStatus::class,
     ];
 
     public function order(): BelongsTo

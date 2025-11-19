@@ -3,6 +3,8 @@
 
 namespace App\Models;
 
+use App\Enums\DisputeStatus;
+use App\Enums\DisputeType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -18,6 +20,8 @@ class Dispute extends Model
         'images' => 'array',
         'requested_refund_amount' => 'decimal:2',
         'resolved_at' => 'datetime',
+        'type' => DisputeType::class,
+        'status' => DisputeStatus::class,
     ];
 
     public function order(): BelongsTo

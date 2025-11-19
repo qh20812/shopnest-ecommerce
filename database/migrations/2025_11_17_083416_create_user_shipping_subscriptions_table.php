@@ -21,7 +21,7 @@ return new class extends Migration
             $table->foreignId('transaction_id')->nullable()->constrained('transactions')->onDelete('set null'); // Thanh toán gói
 
             $table->timestamp('starts_at')->useCurrent();
-            $table->timestamp('expires_at'); // Hết hạn = starts_at + duration_days
+            $table->timestamp('expires_at')->nullable(); // Hết hạn = starts_at + duration_days
 
             $table->boolean('is_active')->default(true);
             $table->boolean('auto_renew')->default(false); // Tự động gia hạn (nếu có thẻ)

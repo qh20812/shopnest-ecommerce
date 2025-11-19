@@ -18,14 +18,7 @@ return new class extends Migration
 
             $table->string('tracking_code', 50)->unique(); // Mã theo dõi
 
-            $table->enum('status', [
-                'assigned',      // Đã phân công
-                'picked_up',     // Đã lấy hàng
-                'in_transit',    // Đang giao
-                'delivered',     // Đã giao thành công
-                'failed',        // Giao thất bại
-                'returned'       // Đã trả hàng về kho
-            ])->default('assigned');
+            $table->string('status')->default('assigned'); // assigned, picked_up, in_transit, delivered, failed, returned
 
             $table->timestamp('assigned_at')->useCurrent();
             $table->timestamp('picked_up_at')->nullable();

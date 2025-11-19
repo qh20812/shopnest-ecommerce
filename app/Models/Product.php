@@ -3,6 +3,7 @@
 
 namespace App\Models;
 
+use App\Enums\ProductStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -36,6 +37,7 @@ class Product extends Model
         'published_at' => 'datetime',
         'is_featured' => 'boolean',
         'has_variants' => 'boolean',
+        'status' => ProductStatus::class,
     ];
 
     // Variant của sản phẩm

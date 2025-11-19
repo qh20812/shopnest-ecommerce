@@ -3,6 +3,7 @@
 
 namespace App\Models;
 
+use App\Enums\ShipperCredibilityLevel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -28,6 +29,7 @@ class ShipperCredibility extends Model
         'success_rate' => 'decimal:2',
         'average_rating' => 'decimal:2',
         'credibility_score' => 'integer',
+        'level' => ShipperCredibilityLevel::class,
     ];
 
     public function shipper(): BelongsTo

@@ -3,6 +3,9 @@
 
 namespace App\Models;
 
+use App\Enums\OrderStatus;
+use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -34,6 +37,9 @@ class Order extends Model
         'shipping_fee' => 'decimal:2',
         'discount_amount' => 'decimal:2',
         'total_amount' => 'decimal:2',
+        'payment_method' => PaymentMethod::class,
+        'payment_status' => PaymentStatus::class,
+        'status' => OrderStatus::class,
     ];
 
     // Quan hệ

@@ -33,7 +33,7 @@ return new class extends Migration
             $table->unsignedTinyInteger('credibility_score')->default(100);
 
             // Cấp độ uy tín
-            $table->enum('level', ['excellent', 'good', 'average', 'warning', 'poor'])->default('excellent');
+            $table->string('level')->default('excellent'); // excellent, good, average, warning, poor
 
             // Ghi chú nội bộ (admin)
             $table->text('admin_note')->nullable();

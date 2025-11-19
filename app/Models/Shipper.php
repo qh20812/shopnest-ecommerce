@@ -3,6 +3,7 @@
 
 namespace App\Models;
 
+use App\Enums\ShipperStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -19,6 +20,11 @@ class Shipper extends Model
         'rating',
         'total_deliveries',
         'completed_deliveries'
+    ];
+
+    protected $casts = [
+        'status' => ShipperStatus::class,
+        'rating' => 'decimal:2',
     ];
 
     public function assignments(): HasMany

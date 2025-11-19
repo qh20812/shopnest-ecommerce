@@ -30,16 +30,7 @@ return new class extends Migration
             $table->decimal('score', 8, 4)->default(0);
 
             // Nguồn gợi ý
-            $table->enum('source', [
-                'bestseller',       // Bán chạy nhất
-                'viewed_together',  // Khách xem cùng
-                'bought_together',  // Mua cùng
-                'similar_category', // Cùng danh mục
-                'personalized',     // Dựa trên lịch sử cá nhân
-                'new_arrival',      // Hàng mới
-                'price_drop',       // Giảm giá mạnh
-                'back_in_stock'     // Có hàng lại
-            ]);
+            $table->string('source'); // bestseller, viewed_together, bought_together, similar_category, personalized, new_arrival, price_drop, back_in_stock
 
             $table->json('metadata')->nullable(); // Lưu thêm dữ liệu: số lượt xem, % chuyển đổi...
 
