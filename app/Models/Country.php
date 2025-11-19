@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Country extends Model
 {
-    protected $fillable = ['name', 'iso_code', 'currency'];
+    protected $fillable = ['name', 'iso_code'];
     public $timestamps = true;
 
     public function divisions(): HasMany

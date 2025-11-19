@@ -26,6 +26,16 @@ class Shipper extends Model
         return $this->hasMany(DeliveryAssignment::class);
     }
 
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(ShipperReview::class);
+    }
+
+    public function credibility()
+    {
+        return $this->hasOne(ShipperCredibility::class);
+    }
+
     public function province()
     {
         return $this->belongsTo(AdministrativeDivision::class, 'province_id');

@@ -43,4 +43,68 @@ class User extends Authenticatable
     {
         return $this->username ?? $this->email ?? $this->phone_number;
     }
+
+    // Relationships
+    public function addresses()
+    {
+        return $this->hasMany(UserAddress::class);
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class, 'customer_id');
+    }
+
+    public function cartItems()
+    {
+        return $this->hasMany(CartItem::class);
+    }
+
+    public function wishlists()
+    {
+        return $this->hasMany(Wishlist::class);
+    }
+
+    public function loyaltyPoints()
+    {
+        return $this->hasMany(LoyaltyPoint::class);
+    }
+
+    public function shippingSubscriptions()
+    {
+        return $this->hasMany(UserShippingSubscription::class);
+    }
+
+    public function disputes()
+    {
+        return $this->hasMany(Dispute::class, 'customer_id');
+    }
+
+    public function promotions()
+    {
+        return $this->belongsToMany(Promotion::class, 'promotion_user')
+            ->withPivot('used_count', 'last_used_at')
+            ->withTimestamps();
+    }
+
+    // Helper: Lấy địa chỉ mặc định
+    public function defaultAddress()
+    {
+        return $this->hasOne(UserAddress::class)->where('is_default', true);
+    }
+
+    // Helper: Tính tổng điểm loyalty hiện tại
+    public function getCurrentLoyaltyPoints(): int
+    {
+        return $this->loyaltyPoints()->sum('points');
+    }
+
+    // Helper: Kiểm tra có gói freeship active không
+    public function hasActiveFreeship(): bool
+    {
+        return $this->shippingSubscriptions()
+            ->where('is_active', true)
+            ->where('expires_at', '>', now())
+            ->exists();
+    }
 }

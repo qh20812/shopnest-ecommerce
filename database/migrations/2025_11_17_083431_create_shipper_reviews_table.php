@@ -21,7 +21,7 @@ return new class extends Migration
             $table->json('images')->nullable(); // Khách chụp ảnh giao hàng
 
             $table->boolean('is_anonymous')->default(false);
-            $table->boolean('is_hidden')->default蒸(false); // Admin ẩn nếu vi phạm
+            $table->boolean('is_hidden')->default(false); // Admin ẩn nếu vi phạm
 
             $table->timestamp('reviewed_at')->useCurrent();
 

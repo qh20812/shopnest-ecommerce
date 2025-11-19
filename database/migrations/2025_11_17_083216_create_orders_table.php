@@ -27,6 +27,13 @@ return new class extends Migration
             $table->foreignId('promotion_id')->nullable()->constrained();
             $table->text('notes')->nullable();
             $table->timestamps();
+
+            // Indexes quan trọng cho tìm kiếm và lọc
+            $table->index('customer_id');
+            $table->index('status');
+            $table->index('payment_status');
+            $table->index(['customer_id', 'status']);
+            $table->index('created_at');
         });
     }
 

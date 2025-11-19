@@ -31,6 +31,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(['order_id', 'variant_id']);
+            $table->index('variant_id'); // Để query ngược: sản phẩm nào bán chạy
         });
     }
 

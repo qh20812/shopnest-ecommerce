@@ -13,7 +13,20 @@ class DeliveryAssignment extends Model
         'shipper_id',
         'tracking_code',
         'status',
+        'assigned_at',
+        'picked_up_at',
+        'delivered_at',
+        'failed_at',
+        'returned_at',
         'note'
+    ];
+
+    protected $casts = [
+        'assigned_at' => 'datetime',
+        'picked_up_at' => 'datetime',
+        'delivered_at' => 'datetime',
+        'failed_at' => 'datetime',
+        'returned_at' => 'datetime',
     ];
 
     public function order(): BelongsTo

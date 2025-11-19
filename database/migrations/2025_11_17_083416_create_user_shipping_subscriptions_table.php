@@ -33,7 +33,8 @@ return new class extends Migration
 
             $table->index(['user_id', 'is_active']);
             $table->index('expires_at');
-            $table->unique(['user_id', 'package_id', 'is_active']); // 1 user chỉ có 1 gói đang active
+            $table->index(['user_id', 'package_id']);
+            // Lưu ý: Không dùng unique constraint vì user có thể mua lại gói sau khi hết hạn
         });
     }
 

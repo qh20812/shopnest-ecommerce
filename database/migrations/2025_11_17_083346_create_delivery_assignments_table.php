@@ -31,6 +31,7 @@ return new class extends Migration
             $table->timestamp('picked_up_at')->nullable();
             $table->timestamp('delivered_at')->nullable();
             $table->timestamp('failed_at')->nullable();
+            $table->timestamp('returned_at')->nullable(); // Thời điểm trả hàng về kho
 
             $table->text('note')->nullable(); // Ghi chú từ shipper
 

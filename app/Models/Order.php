@@ -10,7 +10,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Order extends Model
 {
-    use SoftDeletes;
+    // Lưu ý: Không dùng SoftDeletes cho Orders vì có thể gây nhầm lẫn với status
+    // Nếu cần "xóa" đơn hàng, dùng status = 'cancelled'
 
     protected $fillable = [
         'order_number',
@@ -56,9 +57,19 @@ class Order extends Model
         return $this->hasMany(Transaction::class);
     }
 
-    public function deliveryAssignment(): HasMany
+    public function deliveryAssignment()
+    {
+        return $this->hasOne(DeliveryAssignment::class);
+    }
+
+    public function deliveryAssignments(): HasMany
     {
         return $this->hasMany(DeliveryAssignment::class);
+    }
+
+    public function shippingCalculation()
+    {
+        return $this->hasOne(OrderShippingCalculation::class);
     }
 
     public function returns(): HasMany
