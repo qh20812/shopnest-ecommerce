@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Role;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -15,6 +16,7 @@ class User extends Authenticatable
         'name',
         'username',
         'email',
+        'role',
         'phone_number',
         'password'
     ];
@@ -30,6 +32,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'phone_verified_at' => 'datetime',
         'two_factor_confirmed_at' => 'datetime',
+        'role' => Role::class,
         'password' => 'hashed',
     ];
 
@@ -106,5 +109,36 @@ class User extends Authenticatable
             ->where('is_active', true)
             ->where('expires_at', '>', now())
             ->exists();
+    }
+
+    // Role helpers
+    public function isAdmin(): bool
+    {
+        return $this->role === Role::ADMIN;
+    }
+
+    public function isCustomer(): bool
+    {
+        return $this->role === Role::CUSTOMER;
+    }
+
+    public function isSeller(): bool
+    {
+        return $this->role === Role::SELLER;
+    }
+
+    public function isShipper(): bool
+    {
+        return $this->role === Role::SHIPPER;
+    }
+
+    public function hasRole(Role $role): bool
+    {
+        return $this->role === $role;
+    }
+
+    public function hasAnyRole(array $roles): bool
+    {
+        return in_array($this->role, $roles);
     }
 }

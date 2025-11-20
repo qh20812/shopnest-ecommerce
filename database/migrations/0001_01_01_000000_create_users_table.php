@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('username', 50)->unique()->nullable();
             $table->string('email')->unique()->nullable();
+            $table->string('role')->default('customer'); // admin, customer, seller, shipper
             $table->string('phone_number', 20)->unique()->nullable()->index();
             $table->timestamp('email_verified_at')->nullable();
             $table->timestamp('phone_verified_at')->nullable(); // Xác thực số điện thoại

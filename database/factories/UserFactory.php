@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\Role;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -24,9 +25,12 @@ class UserFactory extends Factory
     {
         return [
             'name' => fake()->name(),
+            'username' => fake()->unique()->userName(),
             'email' => fake()->unique()->safeEmail(),
+            'role' => Role::CUSTOMER->value,
             'email_verified_at' => now(),
             'password' => static::$password ??= 'password',
+            'phone_number' => fake()->unique()->phoneNumber(),
             'remember_token' => Str::random(10),
             'two_factor_secret' => Str::random(10),
             'two_factor_recovery_codes' => Str::random(10),
@@ -53,6 +57,39 @@ class UserFactory extends Factory
             'two_factor_secret' => null,
             'two_factor_recovery_codes' => null,
             'two_factor_confirmed_at' => null,
+        ]);
+    }
+
+    /**
+     * Create an admin user.
+     */
+    public function admin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => Role::ADMIN->value,
+            'name' => fake()->name() . ' (Admin)',
+        ]);
+    }
+
+    /**
+     * Create a seller user.
+     */
+    public function seller(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => Role::SELLER->value,
+            'name' => fake()->name() . ' (Seller)',
+        ]);
+    }
+
+    /**
+     * Create a shipper user.
+     */
+    public function shipper(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => Role::SHIPPER->value,
+            'name' => fake()->name() . ' (Shipper)',
         ]);
     }
 }
