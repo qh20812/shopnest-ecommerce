@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\DisputeStatus;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -38,6 +40,7 @@ class Dispute extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'status' => DisputeStatus::class,
         'resolved_at' => 'datetime',
     ];
 

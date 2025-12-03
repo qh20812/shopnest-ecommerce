@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\AttributeInputType;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -34,6 +36,7 @@ class Attribute extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'input_type' => AttributeInputType::class,
         'is_required' => 'boolean',
     ];
 

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\Gender;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
@@ -53,6 +55,7 @@ class User extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'gender' => Gender::class,
         'email_verified_at' => 'datetime',
         'phone_verified_at' => 'datetime',
         'two_factor_confirmed_at' => 'datetime',

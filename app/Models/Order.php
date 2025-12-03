@@ -2,6 +2,12 @@
 
 namespace App\Models;
 
+use App\Enums\PaymentMethod;
+
+use App\Enums\PaymentStatus;
+
+use App\Enums\OrderStatus;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -49,6 +55,9 @@ class Order extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'payment_method' => PaymentMethod::class,
+        'payment_status' => PaymentStatus::class,
+        'status' => OrderStatus::class,
         'subtotal' => 'decimal:2',
         'discount_amount' => 'decimal:2',
         'shipping_fee' => 'decimal:2',

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\ShippingStatus;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -38,6 +40,7 @@ class ShippingDetail extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'status' => ShippingStatus::class,
         'estimated_delivery' => 'datetime',
         'actual_delivery' => 'datetime',
     ];

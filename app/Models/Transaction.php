@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\TransactionStatus;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -39,6 +41,7 @@ class Transaction extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'status' => TransactionStatus::class,
         'amount' => 'decimal:2',
         'gateway_response' => 'json',
         'paid_at' => 'datetime',

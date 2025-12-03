@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\ChatRoomType;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -32,6 +34,7 @@ class ChatRoom extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'room_type' => ChatRoomType::class,
         'last_message_at' => 'datetime',
     ];
 

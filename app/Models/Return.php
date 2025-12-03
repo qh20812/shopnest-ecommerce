@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\ReturnStatus;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -38,6 +40,7 @@ class Return extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'status' => ReturnStatus::class,
         'refund_amount' => 'decimal:2',
         'approved_at' => 'datetime',
         'completed_at' => 'datetime',

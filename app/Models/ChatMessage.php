@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\MessageType;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -35,6 +37,7 @@ class ChatMessage extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'message_type' => MessageType::class,
         'is_read' => 'boolean',
     ];
 

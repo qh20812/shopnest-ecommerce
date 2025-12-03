@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\TwoFactorMethod;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -36,6 +38,7 @@ class TwoFactorAuthentication extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'method' => TwoFactorMethod::class,
         'backup_codes' => 'json',
         'is_active' => 'boolean',
     ];

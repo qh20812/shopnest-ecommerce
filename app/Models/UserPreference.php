@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\Theme;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -33,6 +35,7 @@ class UserPreference extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'theme' => Theme::class,
         'preference_value' => 'json',
     ];
 

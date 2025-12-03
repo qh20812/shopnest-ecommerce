@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\DivisionType;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -31,6 +33,16 @@ class AdministrativeDivision extends Model
         'short_codename',
         'phone_code',
     ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'division_type' => DivisionType::class,
+    ];
+
 
     /**
      * Get the country relationship.

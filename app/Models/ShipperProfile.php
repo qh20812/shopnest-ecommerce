@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\VehicleType;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -38,6 +40,7 @@ class ShipperProfile extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'vehicle_type' => VehicleType::class,
         'rating' => 'decimal:2',
         'total_deliveries' => 'integer',
         'is_active' => 'boolean',

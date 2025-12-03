@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\ProductStatus;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -51,6 +53,7 @@ class Product extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'status' => ProductStatus::class,
         'specifications' => 'json',
         'base_price' => 'decimal:2',
         'weight_grams' => 'integer',

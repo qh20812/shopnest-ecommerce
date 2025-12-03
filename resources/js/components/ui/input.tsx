@@ -1,21 +1,28 @@
-import * as React from "react"
+import React, { forwardRef } from 'react';
 
-import { cn } from "@/lib/utils"
+type InputElement = HTMLInputElement | HTMLTextAreaElement;
 
-function Input({ className, type, ...props }: React.ComponentProps<"input">) {
-  return (
-    <input
-      type={type}
-      data-slot="input"
-      className={cn(
-        "border-input file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
-        "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
-        "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
-        className
-      )}
-      {...props}
-    />
-  )
-}
+export type InputProps = (
+  | (React.InputHTMLAttributes<HTMLInputElement> & { as?: 'input' })
+  | (React.TextareaHTMLAttributes<HTMLTextAreaElement> & { as: 'textarea' })
+) & { className?: string };
 
-export { Input }
+// Reusable Input component that can render input or textarea and merges default styles
+const Input = forwardRef<InputElement, InputProps>((props, ref) => {
+  const { as = 'input', className = '', ...rest } = props;
+
+  const baseClasses =
+    'form-input w-full rounded-lg border-border bg-background px-4 py-2 focus:border-primary focus:ring-primary/50';
+
+  const combined = `${baseClasses} ${className}`.trim();
+
+  if (as === 'textarea') {
+    return <textarea ref={ref as React.Ref<HTMLTextAreaElement>} className={combined} {...(rest as React.TextareaHTMLAttributes<HTMLTextAreaElement>)} />;
+  }
+
+  return <input ref={ref as React.Ref<HTMLInputElement>} className={combined} {...(rest as React.InputHTMLAttributes<HTMLInputElement>)} />;
+});
+
+Input.displayName = 'Input';
+
+export default Input;

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\PromotionType;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -43,6 +45,7 @@ class Promotion extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'promotion_type' => PromotionType::class,
         'discount_value' => 'decimal:2',
         'min_order_value' => 'decimal:2',
         'max_discount_amount' => 'decimal:2',

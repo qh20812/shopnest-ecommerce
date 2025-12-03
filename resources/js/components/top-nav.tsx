@@ -1,4 +1,5 @@
 import { ShoppingBag, Heart, Search } from 'lucide-react';
+import Input from './ui/input';
 import { Link } from '@inertiajs/react';
 import { useToast } from '../lib/toastContext';
 
@@ -45,8 +46,8 @@ export default function TopNav() {
                                 <div className="flex items-center justify-center rounded-l-lg bg-card pl-3 text-muted-foreground h-full">
                                     <Search className="h-5 w-5" />
                                 </div>
-                                <input
-                                    className="form-input flex w-full min-w-0 flex-1 h-full rounded-lg rounded-l-none border-none bg-card px-4 text-sm font-normal leading-normal text-foreground placeholder:text-muted-foreground focus:outline-0 focus:ring-2 focus:ring-primary/50"
+                                <Input
+                                    className="h-full rounded-l-none border-none bg-card px-4 text-sm font-normal leading-normal text-foreground placeholder:text-muted-foreground focus:outline-0 focus:ring-2 focus:ring-primary/50"
                                     placeholder="Tìm kiếm sản phẩm..."
                                 />
                             </div>

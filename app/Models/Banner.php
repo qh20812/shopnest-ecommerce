@@ -2,21 +2,20 @@
 
 namespace App\Models;
 
-use App\Enums\ReviewMediaType;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
-class ReviewMedia extends Model
+class Banner extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'review_media';
+    protected $table = 'banners';
 
     /**
      * The attributes that are mass assignable.
@@ -24,10 +23,15 @@ class ReviewMedia extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'review_id',
-        'media_type',
-        'media_url',
-        'thumbnail_url',
+        'title',
+        'subtitle',
+        'link',
+        'image_url',
+        'alt_text',
+        'placement',
+        'start_time',
+        'end_time',
+        'is_active',
         'display_order',
     ];
 
@@ -37,15 +41,15 @@ class ReviewMedia extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'media_type' => ReviewMediaType::class,
+        'is_active' => 'boolean',
+        'start_time' => 'datetime',
+        'end_time' => 'datetime',
         'display_order' => 'integer',
     ];
 
-    /**
-     * Get the review relationship.
-     */
-    public function review()
+    // Optional accessors
+    public function getImageUrlAttribute($value)
     {
-        return $this->belongsTo(\App\Models\Review::class);
+        return $value ?: '/images/banner-placeholder.png';
     }
 }

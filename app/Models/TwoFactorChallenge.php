@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\TwoFactorChallengeMethod;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -36,6 +38,7 @@ class TwoFactorChallenge extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'method' => TwoFactorChallengeMethod::class,
         'expires_at' => 'datetime',
         'verified_at' => 'datetime',
     ];

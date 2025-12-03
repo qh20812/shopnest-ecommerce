@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Trang Kết quả tìm kiếm ShopNest (Loading khi chuyển trang)</title>
+    <title>Trang Chi tiết đơn hàng ShopNest (Thêm Voucher)</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap"
         rel="stylesheet" />
@@ -17,8 +17,8 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: "#FF6B6B",
-                        secondary: "#4ECDC4",
+                        "primary": "#FF6B6B",
+                        "secondary": "#4ECDC4",
                         "background-light": "#FFFFFF",
                         "background-dark": "#181818",
                         "surface-light": "#F7F7F7",
@@ -29,21 +29,21 @@
                         "text-secondary-dark": "#B0B0B0",
                     },
                     fontFamily: {
-                        display: ["Inter", "sans-serif"],
+                        "display": ["Inter", "sans-serif"]
                     },
                     borderRadius: {
-                        DEFAULT: "0.5rem",
-                        lg: "0.75rem",
-                        xl: "1rem",
-                        full: "9999px",
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "full": "9999px"
                     },
                 },
             },
-        };
+        }
     </script>
     <style>
         .material-symbols-outlined {
-            font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
     </style>
 </head>
@@ -94,8 +94,11 @@
                                     <span class="material-symbols-outlined">favorite_border</span>
                                 </button>
                                 <button
-                                    class="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 w-10 bg-surface-light dark:bg-surface-dark text-text-primary-light dark:text-text-primary-dark hover:bg-primary/10 hover:text-primary transition-colors">
+                                    class="relative flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 w-10 bg-primary/10 text-primary transition-colors">
                                     <span class="material-symbols-outlined">shopping_bag</span>
+                                    <div
+                                        class="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">
+                                        2</div>
                                 </button>
                             </div>
                             <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10"
@@ -107,301 +110,250 @@
                 </div>
             </header>
             <main class="flex-1">
-                <div class="container mx-auto px-4 py-8 md:py-12">
-                    <div class="flex flex-col items-center justify-center text-center mb-8">
-                        <label class="flex flex-col w-full max-w-xl">
-                            <div class="flex w-full flex-1 items-stretch rounded-lg h-14">
-                                <div
-                                    class="text-text-secondary-light dark:text-text-secondary-dark flex bg-surface-light dark:bg-surface-dark items-center justify-center pl-4 rounded-l-lg border-r-0">
-                                    <span class="material-symbols-outlined !text-2xl">search</span>
-                                </div>
-                                <input
-                                    class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-text-primary-light dark:text-text-primary-dark focus:outline-0 focus:ring-2 focus:ring-primary/50 border-none bg-surface-light dark:bg-surface-dark h-full placeholder:text-text-secondary-light dark:placeholder:text-text-secondary-dark px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal"
-                                    placeholder="Tìm kiếm tai nghe, đồng hồ, giày dép..." value="Đồng hồ thông minh" />
-                            </div>
-                        </label>
-                        <p class="text-text-secondary-light dark:text-text-secondary-dark text-sm mt-4">Hiển thị 12 kết
-                            quả cho "Đồng hồ thông minh"</p>
-                    </div>
-                    <div class="flex flex-col lg:flex-row gap-8">
-                        <aside class="w-full lg:w-64 xl:w-72 flex-shrink-0">
-                            <div class="sticky top-24 space-y-6">
-                                <div class="bg-surface-light dark:bg-surface-dark rounded-xl p-5">
-                                    <h3 class="text-lg font-bold mb-4">Danh mục</h3>
-                                    <ul class="space-y-2">
-                                        <li><a class="text-text-secondary-light dark:text-text-secondary-dark hover:text-primary transition-colors text-sm font-medium"
-                                                href="#">Tất cả</a></li>
-                                        <li><a class="text-text-secondary-light dark:text-text-secondary-dark hover:text-primary transition-colors text-sm font-medium"
-                                                href="#">Điện tử</a></li>
-                                        <li><a class="text-primary transition-colors text-sm font-bold" href="#">Đồng hồ
-                                                &amp; Phụ kiện</a></li>
-                                        <li><a class="text-text-secondary-light dark:text-text-secondary-dark hover:text-primary transition-colors text-sm font-medium"
-                                                href="#">Thời trang</a></li>
-                                        <li><a class="text-text-secondary-light dark:text-text-secondary-dark hover:text-primary transition-colors text-sm font-medium"
-                                                href="#">Thể thao</a></li>
-                                    </ul>
-                                </div>
-                                <div class="bg-surface-light dark:bg-surface-dark rounded-xl p-5">
-                                    <h3 class="text-lg font-bold mb-4">Khoảng giá</h3>
-                                    <div class="flex items-center gap-3">
-                                        <input
-                                            class="form-input w-full rounded-lg border-gray-300 dark:border-gray-600 bg-background-light dark:bg-surface-dark/50 text-sm focus:border-primary focus:ring-primary"
-                                            placeholder="Từ" type="text" />
-                                        <span>-</span>
-                                        <input
-                                            class="form-input w-full rounded-lg border-gray-300 dark:border-gray-600 bg-background-light dark:bg-surface-dark/50 text-sm focus:border-primary focus:ring-primary"
-                                            placeholder="Đến" type="text" />
-                                    </div>
-                                </div>
-                                <div class="bg-surface-light dark:bg-surface-dark rounded-xl p-5">
-                                    <h3 class="text-lg font-bold mb-4">Thương hiệu</h3>
-                                    <ul class="space-y-3 max-h-48 overflow-y-auto pr-2">
-                                        <li class="flex items-center"><input checked=""
-                                                class="form-checkbox h-4 w-4 rounded text-primary focus:ring-primary/50"
-                                                id="brand-all" type="checkbox" /><label class="ml-2 text-sm"
-                                                for="brand-all">Tất cả</label></li>
-                                        <li class="flex items-center"><input
-                                                class="form-checkbox h-4 w-4 rounded text-primary focus:ring-primary/50"
-                                                id="brand-apple" type="checkbox" /><label class="ml-2 text-sm"
-                                                for="brand-apple">Apple</label></li>
-                                        <li class="flex items-center"><input checked=""
-                                                class="form-checkbox h-4 w-4 rounded text-primary focus:ring-primary/50"
-                                                id="brand-samsung" type="checkbox" /><label class="ml-2 text-sm"
-                                                for="brand-samsung">Samsung</label></li>
-                                        <li class="flex items-center"><input
-                                                class="form-checkbox h-4 w-4 rounded text-primary focus:ring-primary/50"
-                                                id="brand-xiaomi" type="checkbox" /><label class="ml-2 text-sm"
-                                                for="brand-xiaomi">Xiaomi</label></li>
-                                        <li class="flex items-center"><input checked=""
-                                                class="form-checkbox h-4 w-4 rounded text-primary focus:ring-primary/50"
-                                                id="brand-garmin" type="checkbox" /><label class="ml-2 text-sm"
-                                                for="brand-garmin">Garmin</label></li>
-                                        <li class="flex items-center"><input
-                                                class="form-checkbox h-4 w-4 rounded text-primary focus:ring-primary/50"
-                                                id="brand-fitbit" type="checkbox" /><label class="ml-2 text-sm"
-                                                for="brand-fitbit">Fitbit</label></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </aside>
-                        <div class="flex-1 relative">
-                            <div class="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-sm font-medium">Sắp xếp theo:</span>
-                                    <div class="flex gap-2">
-                                        <button
-                                            class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-9 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em]">Phổ
-                                            biến</button>
-                                        <button
-                                            class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-9 px-4 bg-surface-light dark:bg-surface-dark text-text-primary-light dark:text-text-primary-dark hover:bg-primary/10 text-sm font-bold leading-normal tracking-[0.015em]">Mới
-                                            nhất</button>
-                                        <button
-                                            class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-9 px-4 bg-surface-light dark:bg-surface-dark text-text-primary-light dark:text-text-primary-dark hover:bg-primary/10 text-sm font-bold leading-normal tracking-[0.015em]">Giá
-                                            thấp đến cao</button>
-                                    </div>
-                                </div>
-                                <div class="flex gap-2">
-                                    <button
-                                        class="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 w-10 bg-primary/20 text-primary transition-colors"><span
-                                            class="material-symbols-outlined">grid_view</span></button>
-                                    <button
-                                        class="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 w-10 bg-surface-light dark:bg-surface-dark text-text-secondary-light dark:text-text-secondary-dark hover:bg-primary/10 hover:text-primary transition-colors"><span
-                                            class="material-symbols-outlined">view_list</span></button>
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <div
-                                    class="flex flex-col rounded-lg bg-background-light dark:bg-surface-dark/60 border border-surface-light dark:border-surface-dark overflow-hidden group transition-shadow hover:shadow-xl">
-                                    <div class="w-full bg-center bg-no-repeat aspect-square bg-cover relative overflow-hidden"
-                                        data-alt="Stylish smartwatch with black band"
-                                        style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDhVzAsMXFeYJb0HP5k8OnmdwT2iGOTIN4CFswYpf6qb2wbzLbIo1quOJRd5j0RbiDls3gBRx2MapPg4c3M4iNkeU02ZNhxSshm4qJBK3WX3FVt1pbkc2CFr2GjigvzaXYQhxtCRptoOSnPgKmr4qiNKvgt3VdQkRth7LcpFeID2wd53twtEgslNxRpZeai5Or15GLacvyGv-vuAaWagDaMUDXoIpLom4Pz0xHUhvHWrwS3p5pYsZjkn-6cTC_AI5hfd3enk7SK21M");'>
-                                        <button
-                                            class="absolute top-3 right-3 flex cursor-pointer items-center justify-center rounded-full h-8 w-8 bg-white/80 dark:bg-surface-dark/80 backdrop-blur-sm text-text-primary-light dark:text-text-primary-dark hover:text-primary transition-colors"><span
-                                                class="material-symbols-outlined !text-xl">favorite_border</span></button>
-                                    </div>
-                                    <div class="flex flex-col p-4 gap-4">
-                                        <div>
-                                            <p
-                                                class="text-text-primary-light dark:text-text-primary-dark text-base font-semibold leading-normal mb-1">
-                                                Đồng hồ thông minh Pro X</p>
-                                            <div class="flex items-center gap-1">
-                                                <span class="material-symbols-outlined !text-base text-yellow-500"
-                                                    style="font-variation-settings: 'FILL' 1;">star</span><span
-                                                    class="material-symbols-outlined !text-base text-yellow-500"
-                                                    style="font-variation-settings: 'FILL' 1;">star</span><span
-                                                    class="material-symbols-outlined !text-base text-yellow-500"
-                                                    style="font-variation-settings: 'FILL' 1;">star</span><span
-                                                    class="material-symbols-outlined !text-base text-yellow-500"
-                                                    style="font-variation-settings: 'FILL' 1;">star</span><span
-                                                    class="material-symbols-outlined !text-base text-yellow-500">star_half</span><span
-                                                    class="text-xs text-text-secondary-light dark:text-text-secondary-dark ml-1">(211)</span>
-                                            </div>
-                                        </div>
-                                        <div class="flex justify-between items-center">
-                                            <p
-                                                class="text-text-primary-light dark:text-text-primary-dark text-lg font-bold">
-                                                2.490.000đ</p>
-                                            <button
-                                                class="flex cursor-pointer items-center justify-center rounded-lg h-10 w-10 bg-secondary/20 text-secondary hover:bg-secondary hover:text-white transition-colors"><span
-                                                    class="material-symbols-outlined">add_shopping_cart</span></button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div
-                                    class="flex flex-col rounded-lg bg-background-light dark:bg-surface-dark/60 border border-surface-light dark:border-surface-dark overflow-hidden group transition-shadow hover:shadow-xl">
-                                    <div class="w-full bg-center bg-no-repeat aspect-square bg-cover relative overflow-hidden"
-                                        data-alt="Elegant silver smartwatch for women"
-                                        style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBJ0ZsNesyfT5nmYuPC3ztdQ4zDPLgBnB-CM1zSquvqP1ziPWMYQafFbhAdocMyCnqoC4KAL5duxU8n0kn4NU7ZlIadsVjfrMCzqApOamhXKMp1lPpKOiP0KFJ4_TxhL7zRKbMe1HNZDjmYjaIKCca8L7kkzj-LeYQT2Ezja2KSA9rtKT-PldtKigvyi-gF-uL1U9rq4aERyvj9Gr44Mv9ahtRB8qHUxolzWTZv97gHXJqpVpV3dGMbspSen5_vW6N1Y4eCbY8QW2I");'>
-                                        <button
-                                            class="absolute top-3 right-3 flex cursor-pointer items-center justify-center rounded-full h-8 w-8 bg-white/80 dark:bg-surface-dark/80 backdrop-blur-sm text-text-primary-light dark:text-text-primary-dark hover:text-primary transition-colors"><span
-                                                class="material-symbols-outlined !text-xl"
-                                                style="font-variation-settings: 'FILL' 1;">favorite</span></button>
-                                    </div>
-                                    <div class="flex flex-col p-4 gap-4">
-                                        <div>
-                                            <p
-                                                class="text-text-primary-light dark:text-text-primary-dark text-base font-semibold leading-normal mb-1">
-                                                Galaxy Watch Active 2</p>
-                                            <div class="flex items-center gap-1">
-                                                <span class="material-symbols-outlined !text-base text-yellow-500"
-                                                    style="font-variation-settings: 'FILL' 1;">star</span><span
-                                                    class="material-symbols-outlined !text-base text-yellow-500"
-                                                    style="font-variation-settings: 'FILL' 1;">star</span><span
-                                                    class="material-symbols-outlined !text-base text-yellow-500"
-                                                    style="font-variation-settings: 'FILL' 1;">star</span><span
-                                                    class="material-symbols-outlined !text-base text-yellow-500"
-                                                    style="font-variation-settings: 'FILL' 1;">star</span><span
-                                                    class="material-symbols-outlined !text-base text-yellow-500"
-                                                    style="font-variation-settings: 'FILL' 1;">star</span><span
-                                                    class="text-xs text-text-secondary-light dark:text-text-secondary-dark ml-1">(305)</span>
-                                            </div>
-                                        </div>
-                                        <div class="flex justify-between items-center">
-                                            <p
-                                                class="text-text-primary-light dark:text-text-primary-dark text-lg font-bold">
-                                                4.200.000đ</p>
-                                            <button
-                                                class="flex cursor-pointer items-center justify-center rounded-lg h-10 w-10 bg-secondary/20 text-secondary hover:bg-secondary hover:text-white transition-colors"><span
-                                                    class="material-symbols-outlined">add_shopping_cart</span></button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div
-                                    class="flex flex-col rounded-lg bg-background-light dark:bg-surface-dark/60 border border-surface-light dark:border-surface-dark overflow-hidden group transition-shadow hover:shadow-xl">
-                                    <div class="w-full bg-center bg-no-repeat aspect-square bg-cover relative overflow-hidden"
-                                        data-alt="Black fitness tracker watch"
-                                        style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD8V3LaVizrYimWZo57Ve6Ez2SSiUlqbQxKnX8pJifOpRyIczWgEdNDQFQTEqel3G9KO9WLldilKhToabVs3d7H9hnwjkGuwo75SpxnboUkAK0OA0SxFesYrDiuLDXUYP2V2-vfLiyDjVnHydoNNiavvf18VdtqUw_hoPArm6GUknfjS_2m3KWN8creVSfgPWQJPgGFR2iqTxZSOPzs4qIYoYOry_oiD4QwbiI-uDcQjiJLipKo6jkmR7iN7Z40vtHsirypFrZ12YA");'>
-                                        <button
-                                            class="absolute top-3 right-3 flex cursor-pointer items-center justify-center rounded-full h-8 w-8 bg-white/80 dark:bg-surface-dark/80 backdrop-blur-sm text-text-primary-light dark:text-text-primary-dark hover:text-primary transition-colors"><span
-                                                class="material-symbols-outlined !text-xl">favorite_border</span></button>
-                                    </div>
-                                    <div class="flex flex-col p-4 gap-4">
-                                        <div>
-                                            <p
-                                                class="text-text-primary-light dark:text-text-primary-dark text-base font-semibold leading-normal mb-1">
-                                                Vòng đeo tay thông minh Fit</p>
-                                            <div class="flex items-center gap-1">
-                                                <span class="material-symbols-outlined !text-base text-yellow-500"
-                                                    style="font-variation-settings: 'FILL' 1;">star</span><span
-                                                    class="material-symbols-outlined !text-base text-yellow-500"
-                                                    style="font-variation-settings: 'FILL' 1;">star</span><span
-                                                    class="material-symbols-outlined !text-base text-yellow-500"
-                                                    style="font-variation-settings: 'FILL' 1;">star</span><span
-                                                    class="material-symbols-outlined !text-base text-yellow-500"
-                                                    style="font-variation-settings: 'FILL' 1;">star</span><span
-                                                    class="material-symbols-outlined !text-base text-gray-300">star</span><span
-                                                    class="text-xs text-text-secondary-light dark:text-text-secondary-dark ml-1">(98)</span>
-                                            </div>
-                                        </div>
-                                        <div class="flex justify-between items-center">
-                                            <p
-                                                class="text-text-primary-light dark:text-text-primary-dark text-lg font-bold">
-                                                990.000đ</p>
-                                            <button
-                                                class="flex cursor-pointer items-center justify-center rounded-lg h-10 w-10 bg-secondary/20 text-secondary hover:bg-secondary hover:text-white transition-colors"><span
-                                                    class="material-symbols-outlined">add_shopping_cart</span></button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div
-                                    class="flex flex-col rounded-lg bg-background-light dark:bg-surface-dark/60 border border-surface-light dark:border-surface-dark overflow-hidden group transition-shadow hover:shadow-xl">
-                                    <div class="w-full bg-center bg-no-repeat aspect-square bg-cover relative overflow-hidden"
-                                        data-alt="Rugged outdoor smartwatch"
-                                        style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCHuPCEvMRUH4xZzq6ZYON9DZ3LbpYndmnz5IXEOc1mXwEt3PIUnq8IHH8UDUFzMiEfOhpasbtJRAwNPqXjiMqGLkCIlEGxoczHb4mbG8Iy3qHeEHPQ49mVfh8yTmeUV_WsH-MTbc9LGKbJHytFqw6-0qltB8OsqC5IluSBvyQxn5oB7dTJBHltVGuMY4iPMiEUqQeCe5epw-WqQ5t5X9oKlfVAKmlwdwi5hN-YThKPB7Q_pWJwpkGpSoiEaTMVly14hygSzJHk_D4");'>
-                                        <button
-                                            class="absolute top-3 right-3 flex cursor-pointer items-center justify-center rounded-full h-8 w-8 bg-white/80 dark:bg-surface-dark/80 backdrop-blur-sm text-text-primary-light dark:text-text-primary-dark hover:text-primary transition-colors"><span
-                                                class="material-symbols-outlined !text-xl">favorite_border</span></button>
-                                    </div>
-                                    <div class="flex flex-col p-4 gap-4">
-                                        <div>
-                                            <p
-                                                class="text-text-primary-light dark:text-text-primary-dark text-base font-semibold leading-normal mb-1">
-                                                Đồng hồ thể thao mạo hiểm</p>
-                                            <div class="flex items-center gap-1">
-                                                <span class="material-symbols-outlined !text-base text-yellow-500"
-                                                    style="font-variation-settings: 'FILL' 1;">star</span><span
-                                                    class="material-symbols-outlined !text-base text-yellow-500"
-                                                    style="font-variation-settings: 'FILL' 1;">star</span><span
-                                                    class="material-symbols-outlined !text-base text-yellow-500"
-                                                    style="font-variation-settings: 'FILL' 1;">star</span><span
-                                                    class="material-symbols-outlined !text-base text-yellow-500"
-                                                    style="font-variation-settings: 'FILL' 1;">star</span><span
-                                                    class="material-symbols-outlined !text-base text-yellow-500">star_half</span><span
-                                                    class="text-xs text-text-secondary-light dark:text-text-secondary-dark ml-1">(124)</span>
-                                            </div>
-                                        </div>
-                                        <div class="flex justify-between items-center">
-                                            <p
-                                                class="text-text-primary-light dark:text-text-primary-dark text-lg font-bold">
-                                                6.500.000đ</p>
-                                            <button
-                                                class="flex cursor-pointer items-center justify-center rounded-lg h-10 w-10 bg-secondary/20 text-secondary hover:bg-secondary hover:text-white transition-colors"><span
-                                                    class="material-symbols-outlined">add_shopping_cart</span></button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <nav class="flex justify-center items-center gap-2 mt-12">
-                                <a class="inline-flex items-center justify-center rounded-lg h-10 px-4 text-sm font-medium transition-colors bg-surface-light dark:bg-surface-dark text-text-secondary-light dark:text-text-secondary-dark hover:bg-primary/10 hover:text-primary"
-                                    href="#">
-                                    <span class="material-symbols-outlined mr-2 !text-xl">chevron_left</span>
-                                    Trang trước
-                                </a>
-                                <a class="inline-flex items-center justify-center rounded-lg h-10 w-10 text-sm font-medium transition-colors bg-primary text-white"
-                                    href="#">1</a>
-                                <a class="inline-flex items-center justify-center rounded-lg h-10 w-10 text-sm font-medium transition-colors bg-surface-light dark:bg-surface-dark text-text-primary-light dark:text-text-primary-dark hover:bg-primary/10 hover:text-primary"
-                                    href="#">2</a>
-                                <a class="inline-flex items-center justify-center rounded-lg h-10 w-10 text-sm font-medium transition-colors bg-surface-light dark:bg-surface-dark text-text-primary-light dark:text-text-primary-dark hover:bg-primary/10 hover:text-primary"
-                                    href="#">3</a>
-                                <span class="text-text-secondary-light dark:text-text-secondary-dark">...</span>
-                                <a class="inline-flex items-center justify-center rounded-lg h-10 w-10 text-sm font-medium transition-colors bg-surface-light dark:bg-surface-dark text-text-primary-light dark:text-text-primary-dark hover:bg-primary/10 hover:text-primary"
-                                    href="#">8</a>
-                                <a class="inline-flex items-center justify-center rounded-lg h-10 px-4 text-sm font-medium transition-colors bg-surface-light dark:bg-surface-dark text-text-primary-light dark:text-text-primary-dark hover:bg-primary/10 hover:text-primary"
-                                    href="#">
-                                    Trang kế tiếp
-                                    <span class="material-symbols-outlined ml-2 !text-xl">chevron_right</span></a>
-                            </nav>
+                <div class="container mx-auto px-4 py-8 md:py-16">
+                    <div class="flex flex-col items-start gap-8">
+                        <div class="flex w-full flex-col items-center gap-4">
+                            <h1 class="text-3xl font-bold text-text-primary-light dark:text-text-primary-dark">Thanh
+                                toán</h1>
                             <div
-                                class="absolute inset-0 z-10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm flex flex-col items-center justify-center transition-opacity opacity-0 pointer-events-none">
-                                <div class="flex items-center justify-center gap-2 text-primary">
-                                    <span class="animate-spin text-4xl">
-                                        <svg class="h-10 w-10" fill="none" viewBox="0 0 24 24"
-                                            xmlns="http://www.w3.org/2000/svg">
-                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                                stroke-width="4"></circle>
-                                            <path class="opacity-75"
-                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                                fill="currentColor"></path>
-                                        </svg>
-                                    </span>
-                                    <span class="text-lg font-semibold">Đang tải...</span>
+                                class="flex items-center gap-2 text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                                <a class="flex items-center gap-2 hover:text-primary" href="#">
+                                    <span>Giỏ hàng</span>
+                                    <span class="material-symbols-outlined text-base">chevron_right</span>
+                                </a>
+                                <span class="font-medium text-text-primary-light dark:text-text-primary-dark">Thông tin
+                                    giao hàng</span>
+                                <span class="material-symbols-outlined text-base">chevron_right</span>
+                                <span>Thanh toán</span>
+                            </div>
+                        </div>
+                        <div class="grid w-full grid-cols-1 gap-12 lg:grid-cols-3">
+                            <div class="flex flex-col gap-8 lg:col-span-2">
+                                <div
+                                    class="flex flex-col gap-6 rounded-xl border border-surface-light dark:border-surface-dark bg-surface-light dark:bg-surface-dark p-6">
+                                    <h2 class="text-xl font-bold">Thông tin giao hàng</h2>
+                                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                        <div class="sm:col-span-2">
+                                            <label class="mb-2 block text-sm font-medium" for="name">Họ và tên</label>
+                                            <input
+                                                class="form-input w-full rounded-lg border-surface-light bg-background-light dark:border-surface-dark dark:bg-background-dark focus:border-primary focus:ring-primary/50"
+                                                id="name" type="text" />
+                                        </div>
+                                        <div class="sm:col-span-2">
+                                            <label class="mb-2 block text-sm font-medium" for="address">Địa chỉ</label>
+                                            <input
+                                                class="form-input w-full rounded-lg border-surface-light bg-background-light dark:border-surface-dark dark:bg-background-dark focus:border-primary focus:ring-primary/50"
+                                                id="address" type="text" />
+                                        </div>
+                                        <div>
+                                            <label class="mb-2 block text-sm font-medium" for="city">Tỉnh / Thành
+                                                phố</label>
+                                            <input
+                                                class="form-input w-full rounded-lg border-surface-light bg-background-light dark:border-surface-dark dark:bg-background-dark focus:border-primary focus:ring-primary/50"
+                                                id="city" type="text" />
+                                        </div>
+                                        <div>
+                                            <label class="mb-2 block text-sm font-medium" for="district">Quận /
+                                                Huyện</label>
+                                            <input
+                                                class="form-input w-full rounded-lg border-surface-light bg-background-light dark:border-surface-dark dark:bg-background-dark focus:border-primary focus:ring-primary/50"
+                                                id="district" type="text" />
+                                        </div>
+                                        <div>
+                                            <label class="mb-2 block text-sm font-medium" for="phone">Số điện
+                                                thoại</label>
+                                            <input
+                                                class="form-input w-full rounded-lg border-surface-light bg-background-light dark:border-surface-dark dark:bg-background-dark focus:border-primary focus:ring-primary/50"
+                                                id="phone" type="tel" />
+                                        </div>
+                                        <div class="sm:col-span-2">
+                                            <label class="mb-2 block text-sm font-medium" for="notes">Ghi chú (tùy
+                                                chọn)</label>
+                                            <textarea
+                                                class="form-textarea w-full rounded-lg border-surface-light bg-background-light dark:border-surface-dark dark:bg-background-dark focus:border-primary focus:ring-primary/50"
+                                                id="notes" rows="3"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div
+                                    class="flex flex-col gap-6 rounded-xl border border-surface-light dark:border-surface-dark bg-surface-light dark:bg-surface-dark p-6">
+                                    <h2 class="text-xl font-bold">Phương thức vận chuyển</h2>
+                                    <div class="flex flex-col gap-4">
+                                        <label
+                                            class="flex cursor-pointer items-center gap-4 rounded-lg border border-primary bg-primary/5 p-4 transition-colors dark:bg-primary/10">
+                                            <input checked=""
+                                                class="form-radio h-5 w-5 text-primary focus:ring-primary/50"
+                                                name="shipping-method" type="radio" />
+                                            <div
+                                                class="flex flex-1 flex-col sm:flex-row sm:items-center sm:justify-between">
+                                                <div>
+                                                    <p class="font-medium">Giao hàng tiêu chuẩn</p>
+                                                    <p
+                                                        class="text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                                                        Ước tính: 3-5 ngày làm việc</p>
+                                                </div>
+                                                <span
+                                                    class="mt-2 sm:mt-0 font-medium text-text-primary-light dark:text-text-primary-dark">30.000₫</span>
+                                            </div>
+                                        </label>
+                                        <label
+                                            class="flex cursor-pointer items-center gap-4 rounded-lg border border-surface-light bg-background-light p-4 transition-colors hover:border-gray-300 dark:border-surface-dark dark:bg-background-dark dark:hover:border-gray-600">
+                                            <input class="form-radio h-5 w-5 text-primary focus:ring-primary/50"
+                                                name="shipping-method" type="radio" />
+                                            <div
+                                                class="flex flex-1 flex-col sm:flex-row sm:items-center sm:justify-between">
+                                                <div>
+                                                    <p class="font-medium">Giao hàng nhanh</p>
+                                                    <p
+                                                        class="text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                                                        Ước tính: 1-2 ngày làm việc</p>
+                                                </div>
+                                                <span
+                                                    class="mt-2 sm:mt-0 font-medium text-text-primary-light dark:text-text-primary-dark">50.000₫</span>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div
+                                    class="flex flex-col gap-6 rounded-xl border border-surface-light dark:border-surface-dark bg-surface-light dark:bg-surface-dark p-6">
+                                    <h2 class="text-xl font-bold">Phương thức thanh toán</h2>
+                                    <div class="flex flex-col gap-4">
+                                        <label
+                                            class="flex cursor-pointer items-center gap-4 rounded-lg border border-primary bg-primary/5 p-4 transition-colors dark:bg-primary/10">
+                                            <input checked=""
+                                                class="form-radio h-5 w-5 text-primary focus:ring-primary/50"
+                                                name="payment-method" type="radio" />
+                                            <div
+                                                class="flex flex-1 flex-col sm:flex-row sm:items-center sm:justify-between">
+                                                <span class="font-medium">Thanh toán khi nhận hàng (COD)</span>
+                                                <span
+                                                    class="material-symbols-outlined text-secondary">local_shipping</span>
+                                            </div>
+                                        </label>
+                                        <label
+                                            class="flex cursor-pointer items-center gap-4 rounded-lg border border-surface-light bg-background-light p-4 transition-colors hover:border-gray-300 dark:border-surface-dark dark:bg-background-dark dark:hover:border-gray-600">
+                                            <input class="form-radio h-5 w-5 text-primary focus:ring-primary/50"
+                                                name="payment-method" type="radio" />
+                                            <div
+                                                class="flex flex-1 flex-col sm:flex-row sm:items-center sm:justify-between">
+                                                <span class="font-medium">Thẻ tín dụng / Ghi nợ</span>
+                                                <span
+                                                    class="material-symbols-outlined text-secondary">credit_card</span>
+                                            </div>
+                                        </label>
+                                        <label
+                                            class="flex cursor-pointer items-center gap-4 rounded-lg border border-surface-light bg-background-light p-4 transition-colors hover:border-gray-300 dark:border-surface-dark dark:bg-background-dark dark:hover:border-gray-600">
+                                            <input class="form-radio h-5 w-5 text-primary focus:ring-primary/50"
+                                                name="payment-method" type="radio" />
+                                            <div
+                                                class="flex flex-1 flex-col sm:flex-row sm:items-center sm:justify-between">
+                                                <span class="font-medium">Ví điện tử</span>
+                                                <span
+                                                    class="material-symbols-outlined text-secondary">account_balance_wallet</span>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="lg:col-span-1">
+                                <div
+                                    class="rounded-xl border border-surface-light dark:border-surface-dark bg-surface-light dark:bg-surface-dark p-6 sticky top-24">
+                                    <h2 class="mb-6 text-xl font-bold">Tóm tắt đơn hàng</h2>
+                                    <div class="mb-6 flex flex-col gap-4">
+                                        <div class="flex items-center gap-4">
+                                            <div
+                                                class="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-background-light dark:bg-background-dark">
+                                                <img alt="Tai nghe không dây" class="h-full w-full object-cover"
+                                                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPHcVWSj_HTG2XqzClkE5SpZxqSTMbCcEnCYKEMa_xbDd4rJqjsJyrUJevOPfgYkEvjv6iNNHxjtRSiS7qcQPueRPlzF9Aue5LW_lr0FVXn9UIkKI5Bq21ItYV_Wn45xycvWOmMOz7RykU5KOzelN0VBsmfJQIcjJBIZSUuHr6KKCNQLeb6v8srFZ8c5EpdNRxF4Oh40SBSPsqewAUR19-X9PS4Xgc5v6l9-_LtFkR9wzP0ppQIVNI7QDXT0OBZxzUfHav61frpxs" />
+                                                <div
+                                                    class="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">
+                                                    1</div>
+                                            </div>
+                                            <div class="flex-1">
+                                                <h3
+                                                    class="font-medium text-text-primary-light dark:text-text-primary-dark">
+                                                    Tai nghe không dây</h3>
+                                                <p
+                                                    class="text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                                                    Màu: Đen</p>
+                                            </div>
+                                            <p class="font-medium">1.250.000₫</p>
+                                        </div>
+                                        <div class="flex items-center gap-4">
+                                            <div
+                                                class="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-background-light dark:bg-background-dark">
+                                                <img alt="Đồng hồ thông minh" class="h-full w-full object-cover"
+                                                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCD9ncBBhzi2Db0DFaD7c6VNw9AijOwGBC5xZWwfTY8aPwW9Ntp16-9U3AdtDt8yOVptdyU_6B6vh5SeZJVzoMBayYjoltDSrnyFslFa7Cz0cu81NfJZ9H8cPII_bW4XmSswdeLw83LbAISWagZZEdCo3DCzkb009c3DKQm_507v0f4m04q7ohbP6VX3f7ApRIjCCKsQ3p3AVbGaOfqHwocFgiI-QCPchNYdA1g6a_mXAHKWE_e2ZGCv0Didsl9Ubni3guYhG-0GEI" />
+                                                <div
+                                                    class="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">
+                                                    1</div>
+                                            </div>
+                                            <div class="flex-1">
+                                                <h3
+                                                    class="font-medium text-text-primary-light dark:text-text-primary-dark">
+                                                    Đồng hồ thông minh</h3>
+                                                <p
+                                                    class="text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                                                    Màu: Bạc</p>
+                                            </div>
+                                            <p class="font-medium">3.490.000₫</p>
+                                        </div>
+                                    </div>
+                                    <div class="mb-4 flex flex-col gap-4">
+                                        <div class="flex items-end gap-2">
+                                            <div class="flex-1">
+                                                <label class="mb-2 block text-sm font-medium" for="voucher">Mã khuyến
+                                                    mãi</label>
+                                                <input
+                                                    class="form-input h-10 w-full rounded-lg border-surface-light bg-background-light dark:border-surface-dark dark:bg-background-dark focus:border-primary focus:ring-primary/50"
+                                                    id="voucher" placeholder="Nhập mã voucher" type="text" />
+                                            </div>
+                                            <button
+                                                class="flex h-10 cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-secondary px-4 text-white text-sm font-bold transition-colors hover:bg-secondary/90">Áp
+                                                dụng</button>
+                                        </div>
+                                        <button
+                                            class="flex items-center gap-2 text-sm font-medium text-primary hover:underline">
+                                            <span class="material-symbols-outlined !text-xl">confirmation_number</span>
+                                            <span>Chọn hoặc nhập mã khác</span>
+                                        </button>
+                                    </div>
+                                    <hr class="mb-4 border-surface-light dark:border-surface-dark/50" />
+                                    <div class="mb-6 flex flex-col gap-3">
+                                        <div
+                                            class="flex justify-between text-text-secondary-light dark:text-text-secondary-dark">
+                                            <span>Tạm tính</span>
+                                            <span
+                                                class="font-medium text-text-primary-light dark:text-text-primary-dark">4.740.000₫</span>
+                                        </div>
+                                        <div
+                                            class="flex justify-between text-text-secondary-light dark:text-text-secondary-dark">
+                                            <span>Phí vận chuyển</span>
+                                            <span
+                                                class="font-medium text-text-primary-light dark:text-text-primary-dark">30.000₫</span>
+                                        </div>
+                                        <div
+                                            class="flex justify-between text-text-secondary-light dark:text-text-secondary-dark">
+                                            <span>Giảm giá</span>
+                                            <span class="font-medium text-secondary">-50.000₫</span>
+                                        </div>
+                                    </div>
+                                    <hr class="mb-6 border-surface-light dark:border-surface-dark/50" />
+                                    <div class="mb-6 flex justify-between">
+                                        <span class="text-lg font-bold">Tổng cộng</span>
+                                        <span class="text-xl font-bold text-primary">4.720.000₫</span>
+                                    </div>
+                                    <button
+                                        class="flex w-full min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors">
+                                        <span class="truncate">Xác nhận thanh toán</span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </main>
-            <footer class="bg-surface-light dark:bg-surface-dark mt-16">
+            <footer class="bg-surface-light dark:bg-surface-dark mt-auto">
                 <div class="container mx-auto px-4 py-12">
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                         <div class="col-span-1 md:col-span-2 lg:col-span-1">
@@ -455,8 +407,9 @@
                         class="mt-12 border-t border-gray-200 dark:border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-text-secondary-light dark:text-text-secondary-dark">
                         <p>© 2024 ShopNest. Đã đăng ký bản quyền.</p>
                         <div class="flex space-x-4 mt-4 md:mt-0">
-                            <a class="hover:text-primary" href="#">FB</a><a class="hover:text-primary" href="#">IG</a><a
-                                class="hover:text-primary" href="#">TW</a>
+                            <a class="hover:text-primary" href="#">FB</a>
+                            <a class="hover:text-primary" href="#">IG</a>
+                            <a class="hover:text-primary" href="#">TW</a>
                         </div>
                     </div>
                 </div>
