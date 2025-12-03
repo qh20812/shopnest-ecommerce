@@ -25,6 +25,7 @@ function WelcomeContent() {
         { icon: '✨', name: 'Sắc đẹp', key: 'beauty' },
         { icon: '⚽', name: 'Thể thao', key: 'sports' },
         { icon: '🧸', name: 'Đồ chơi', key: 'toys' },
+        { icon: '📚', name: 'Sách', key: 'books' },
     ];
 
     const flashSaleProducts = [
@@ -278,7 +279,7 @@ function WelcomeContent() {
                                     href="#"
                                     className="text-sm font-medium leading-normal text-muted-foreground transition-colors hover:text-primary"
                                 >
-                                    Cửa hàng
+                                    Sản phẩm
                                 </Link>
                                 <Link
                                     href="#"
@@ -286,12 +287,7 @@ function WelcomeContent() {
                                 >
                                     Ưu đãi
                                 </Link>
-                                <Link
-                                    href="#"
-                                    className="text-sm font-medium leading-normal text-muted-foreground transition-colors hover:text-primary"
-                                >
-                                    Liên hệ
-                                </Link>
+                                
                             </nav>
                         </div>
                         <div className="flex flex-1 items-center justify-end gap-4">

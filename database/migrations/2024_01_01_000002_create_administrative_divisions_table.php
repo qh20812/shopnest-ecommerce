@@ -8,7 +8,7 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     * Hierarchical administrative divisions (provinces/districts/wards)
+     * Hierarchical administrative divisions (provinces/wards - Vietnam structure)
      */
     public function up(): void
     {
@@ -20,14 +20,19 @@ return new class extends Migration
                 ->nullable()
                 ->constrained('administrative_divisions');
             $table->string('division_name', 100);
-            $table->enum('division_type', ['province', 'district', 'ward']);
+            $table->enum('division_type', ['province', 'ward']);
             $table->string('code', 20)->nullable();
+            $table->string('codename', 100)->nullable();
+            $table->string('short_codename', 100)->nullable();
+            $table->string('phone_code', 10)->nullable();
             $table->timestamps();
 
             // Indexes
             $table->index(['country_id']);
             $table->index(['parent_id']);
             $table->index(['division_type']);
+            $table->index(['code']);
+            $table->index(['codename']);
         });
     }
 
