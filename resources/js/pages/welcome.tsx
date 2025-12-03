@@ -1,13 +1,14 @@
-import { ShoppingBag, Heart, Search, ChevronLeft, ChevronRight, MessageCircle, X, Minus } from 'lucide-react';
-import { Link } from '@inertiajs/react';
+import { ShoppingBag, ChevronLeft, ChevronRight, MessageCircle, X, Minus, Heart } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { ToastProvider, useToast } from '../lib/toastContext';
 import { SkeletonPage } from '../components/skeletons';
 import { usePageLoading } from '../hooks/usePageLoading';
+import TopNav from '../components/top-nav';
+import Footer from '../components/footer';
 
 function WelcomeContent() {
     const isLoading = usePageLoading({ delay: 300, minLoadingTime: 1500 });
-    const { showSuccess, showError, showInfo } = useToast();
+    const { showInfo, showSuccess } = useToast();
     
     const heroImages = [
         "https://lh3.googleusercontent.com/aida-public/AB6AXuCJnd0a7KUIVBOrCCbTD_XI8zjrdFzSTEoaq6b4K3q-WNNZ7Q2Bkcw0YRwFrtyBeGOTDM5kMZeV_Dsx87yglrclO67vmbXOLiWdKSRNsRDazp8Z9RBcwMv21ccDiy7Ejn2xRN_TGm8jLkPPVhgUwBUR7T-IYai9T9Zyr0elbxlqZXV_Nd24e1s71UbqVJ4c0tevgmsrAc6DsnRS8Fxgk8XcjjO2uEtvshEWzXm5XhzWDHs0QAirR_c2Q2e-Q-QD-evUeWdCr7mUVtc",
@@ -256,71 +257,7 @@ function WelcomeContent() {
     return (
         <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-background text-foreground">
             {/* Header */}
-            <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-sm">
-                <div className="container mx-auto px-4">
-                    <div className="flex h-20 items-center justify-between whitespace-nowrap">
-                        <div className="flex items-center gap-8">
-                            <div className="flex items-center gap-2">
-                                <div className="text-primary">
-                                    <ShoppingBag className="h-10 w-10" />
-                                </div>
-                                <h1 className="text-2xl font-bold leading-tight tracking-[-0.015em]">
-                                    ShopNest
-                                </h1>
-                            </div>
-                            <nav className="hidden items-center gap-9 md:flex">
-                                <Link
-                                    href="#"
-                                    className="text-sm font-medium leading-normal text-foreground transition-colors hover:text-primary"
-                                >
-                                    Trang chủ
-                                </Link>
-                                <Link
-                                    href="#"
-                                    className="text-sm font-medium leading-normal text-muted-foreground transition-colors hover:text-primary"
-                                >
-                                    Sản phẩm
-                                </Link>
-                                <Link
-                                    href="#"
-                                    className="text-sm font-medium leading-normal text-muted-foreground transition-colors hover:text-primary"
-                                >
-                                    Ưu đãi
-                                </Link>
-                                
-                            </nav>
-                        </div>
-                        <div className="flex flex-1 items-center justify-end gap-4">
-                            <label className="hidden lg:flex flex-col min-w-40 !h-10 max-w-64">
-                                <div className="flex h-full w-full items-stretch rounded-lg">
-                                    <div className="flex items-center justify-center rounded-l-lg bg-card pl-3 text-muted-foreground h-full">
-                                        <Search className="h-5 w-5" />
-                                    </div>
-                                    <input
-                                        className="form-input flex w-full min-w-0 flex-1 h-full rounded-lg rounded-l-none border-none bg-card px-4 text-sm font-normal leading-normal text-foreground placeholder:text-muted-foreground focus:outline-0 focus:ring-2 focus:ring-primary/50"
-                                        placeholder="Tìm kiếm sản phẩm..."
-                                    />
-                                </div>
-                            </label>
-                            <div className="flex gap-2">
-                                <button className="flex h-10 w-10 cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-card text-foreground transition-colors hover:bg-primary/10 hover:text-primary" onClick={() => showError('Vui lòng đăng nhập để thêm sản phẩm yêu thích') }>
-                                    <Heart className="h-5 w-5" />
-                                </button>
-                                <button className="flex h-10 w-10 cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-card text-foreground transition-colors hover:bg-primary/10 hover:text-primary">
-                                    <ShoppingBag className="h-5 w-5" />
-                                </button>
-                            </div>
-                            <Link
-                                href="#"
-                                className="flex h-10 items-center justify-center rounded-lg bg-card px-4 text-sm font-medium text-foreground transition-colors hover:bg-primary/10 hover:text-primary"
-                                onClick={(e) => { e.preventDefault(); showInfo('Vui lòng đăng nhập để truy cập tài khoản'); }}
-                            >
-                                Tài khoản của tôi
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-            </header>
+            <TopNav />
 
             {/* Main Content */}
             <main className="flex-1">
@@ -628,131 +565,7 @@ function WelcomeContent() {
             </main>
 
             {/* Footer */}
-            <footer className="bg-card">
-                <div className="container mx-auto px-4 py-12">
-                    <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
-                        <div className="col-span-1 md:col-span-2 lg:col-span-1">
-                            <div className="mb-4 flex items-center gap-2 text-foreground">
-                                <div className="text-primary">
-                                    <ShoppingBag className="h-8 w-8" />
-                                </div>
-                                <h1 className="text-xl font-bold">ShopNest</h1>
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                                Điểm đến mua sắm trực tuyến của bạn cho mọi thứ bạn
-                                cần.
-                            </p>
-                        </div>
-                        <div>
-                            <h4 className="mb-4 font-bold text-foreground">
-                                Về chúng tôi
-                            </h4>
-                            <ul className="space-y-2">
-                                <li>
-                                    <Link
-                                        href="#"
-                                        className="text-sm text-muted-foreground hover:text-primary"
-                                    >
-                                        Câu chuyện
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link
-                                        href="#"
-                                        className="text-sm text-muted-foreground hover:text-primary"
-                                    >
-                                        Tuyển dụng
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link
-                                        href="#"
-                                        className="text-sm text-muted-foreground hover:text-primary"
-                                    >
-                                        Báo chí
-                                    </Link>
-                                </li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h4 className="mb-4 font-bold text-foreground">
-                                Chăm sóc khách hàng
-                            </h4>
-                            <ul className="space-y-2">
-                                <li>
-                                    <Link
-                                        href="#"
-                                        className="text-sm text-muted-foreground hover:text-primary"
-                                    >
-                                        Liên hệ
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link
-                                        href="#"
-                                        className="text-sm text-muted-foreground hover:text-primary"
-                                    >
-                                        Câu hỏi thường gặp
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link
-                                        href="#"
-                                        className="text-sm text-muted-foreground hover:text-primary"
-                                    >
-                                        Chính sách đổi trả
-                                    </Link>
-                                </li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h4 className="mb-4 font-bold text-foreground">
-                                Chính sách
-                            </h4>
-                            <ul className="space-y-2">
-                                <li>
-                                    <Link
-                                        href="#"
-                                        className="text-sm text-muted-foreground hover:text-primary"
-                                    >
-                                        Điều khoản dịch vụ
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link
-                                        href="#"
-                                        className="text-sm text-muted-foreground hover:text-primary"
-                                    >
-                                        Chính sách bảo mật
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link
-                                        href="#"
-                                        className="text-sm text-muted-foreground hover:text-primary"
-                                    >
-                                        Chính sách Cookie
-                                    </Link>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div className="mt-12 flex flex-col items-center justify-between border-t border-border pt-8 text-sm text-muted-foreground md:flex-row">
-                        <p>© 2024 ShopNest. Đã đăng ký bản quyền.</p>
-                        <div className="mt-4 flex space-x-4 md:mt-0">
-                            <Link href="#" className="hover:text-primary">
-                                FB
-                            </Link>
-                            <Link href="#" className="hover:text-primary">
-                                IG
-                            </Link>
-                            <Link href="#" className="hover:text-primary">
-                                TW
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-            </footer>
+            <Footer />
             {/* Floating Chat Bubble */}
             <button
                 aria-label="Open chat"
