@@ -4,6 +4,7 @@ import { Link } from '@inertiajs/react';
 import TopNav from '../components/top-nav';
 import Footer from '../components/footer';
 import { ToastProvider, useToast } from '../lib/toastContext';
+import { PageHeader } from '../components/ui/page-header';
 
 interface WishListItem {
     id: number;
@@ -14,7 +15,7 @@ interface WishListItem {
 
 function WishListContent() {
     const { showSuccess, showInfo } = useToast();
-    
+
     // Sample wishlist items - replace with real data later
     const [wishListItems, setWishListItems] = useState<WishListItem[]>([
         {
@@ -78,31 +79,26 @@ function WishListContent() {
     return (
         <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-background text-foreground">
             <TopNav />
-            
+
             <main className="flex-1">
                 <div className="container mx-auto px-4 py-8 md:py-16">
-                    {/* Header */}
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-                        <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
-                            Danh sách yêu thích
-                        </h2>
-                        <div className="flex items-center gap-2">
-                            <button
-                                onClick={removeAll}
-                                className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-card text-muted-foreground text-sm font-bold leading-normal tracking-[0.015em] hover:bg-card/80 transition-colors"
-                            >
-                                <Trash2 className="mr-2 h-5 w-5" />
-                                <span className="truncate">Xóa tất cả</span>
-                            </button>
-                            <button
-                                onClick={addAllToCart}
-                                className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors"
-                            >
-                                <ShoppingCart className="mr-2 h-5 w-5" />
-                                <span className="truncate">Thêm tất cả vào giỏ</span>
-                            </button>
-                        </div>
-                    </div>
+                    <PageHeader
+                        title="Danh sách yêu thích"
+                        actions={[
+                            {
+                                label: 'Xóa tất cả',
+                                icon: Trash2,
+                                onClick: removeAll,
+                                variant: 'secondary'
+                            },
+                            {
+                                label: 'Thêm tất cả vào giỏ',
+                                icon: ShoppingCart,
+                                onClick: addAllToCart,
+                                variant: 'default'
+                            }
+                        ]}
+                    />
 
                     {/* Product Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
