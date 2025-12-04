@@ -24,6 +24,9 @@ Route::get('/detail', function(){
 Route::get('/checkout', function(){
     return Inertia::render('checkout');
 })->name('checkout');
+Route::get('/shopping', function(){
+    return Inertia::render('shopping');
+})->name('shopping');
 
 
 Route::middleware(['auth', 'verified'])->group(function () {

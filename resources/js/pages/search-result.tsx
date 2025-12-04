@@ -33,41 +33,8 @@ function SearchResultContent() {
         { query: 'Đồng hồ thông minh chống nước', highlight: 'chống nước' },
     ];
 
-    const products: Product[] = [
-        {
-            id: 1,
-            name: 'Apple Watch Series 9 GPS 45mm',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA9uGUJM3fOiuvfyaQBWOm22jgY1q5pysCTNfHVYTUJZK5PRh0WMJkzxTBq0DFnSIujRMboVW7Cw1CWVEjVOIxGkElzFfag9xgMyfPPBgjoDST2mxglOz70oqHPwzmBXwnAzbr2hV98rDNZ4HEOoj2yfMYlc3tEFTYer-UUmVXykCYu5wxwFe47rsq-rSClwvzrlux2IKatu94GMsfXXcD7uVvzfbbjjiqSa5Bmx0SNqnq8pECwHe_L6mnDjed0CHoGb1EqaW2puh8',
-            price: 9490000,
-            originalPrice: 11490000,
-            rating: 4.8,
-            reviews: 234,
-        },
-        {
-            id: 2,
-            name: 'Samsung Galaxy Watch 6 Classic',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA9uGUJM3fOiuvfyaQBWOm22jgY1q5pysCTNfHVYTUJZK5PRh0WMJkzxTBq0DFnSIujRMboVW7Cw1CWVEjVOIxGkElzFfag9xgMyfPPBgjoDST2mxglOz70oqHPwzmBXwnAzbr2hV98rDNZ4HEOoj2yfMYlc3tEFTYer-UUmVXykCYu5wxwFe47rsq-rSClwvzrlux2IKatu94GMsfXXcD7uVvzfbbjjiqSa5Bmx0SNqnq8pECwHe_L6mnDjed0CHoGb1EqaW2puh8',
-            price: 6990000,
-            rating: 4.6,
-            reviews: 189,
-        },
-        {
-            id: 3,
-            name: 'Xiaomi Watch S1 Active',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA9uGUJM3fOiuvfyaQBWOm22jgY1q5pysCTNfHVYTUJZK5PRh0WMJkzxTBq0DFnSIujRMboVW7Cw1CWVEjVOIxGkElzFfag9xgMyfPPBgjoDST2mxglOz70oqHPwzmBXwnAzbr2hV98rDNZ4HEOoj2yfMYlc3tEFTYer-UUmVXykCYu5wxwFe47rsq-rSClwvzrlux2IKatu94GMsfXXcD7uVvzfbbjjiqSa5Bmx0SNqnq8pECwHe_L6mnDjed0CHoGb1EqaW2puh8',
-            price: 3490000,
-            rating: 4.5,
-            reviews: 156,
-        },
-        {
-            id: 4,
-            name: 'Huawei Watch GT 3 Pro',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA9uGUJM3fOiuvfyaQBWOm22jgY1q5pysCTNfHVYTUJZK5PRh0WMJkzxTBq0DFnSIujRMboVW7Cw1CWVEjVOIxGkElzFfag9xgMyfPPBgjoDST2mxglOz70oqHPwzmBXwnAzbr2hV98rDNZ4HEOoj2yfMYlc3tEFTYer-UUmVXykCYu5wxwFe47rsq-rSClwvzrlux2IKatu94GMsfXXcD7uVvzfbbjjiqSa5Bmx0SNqnq8pECwHe_L6mnDjed0CHoGb1EqaW2puh8',
-            price: 5990000,
-            rating: 4.7,
-            reviews: 201,
-        },
-    ];
+    // Set to empty array to show empty state - replace with actual data from backend
+    const products: Product[] = [];
 
     const formatPrice = (price: number) =>
         new Intl.NumberFormat('vi-VN', {
@@ -125,7 +92,9 @@ function SearchResultContent() {
                             )}
                         </div>
                         <p className="mt-4 text-sm text-muted-foreground">
-                            Hiển thị 12 kết quả cho "{searchQuery}"
+                            {products.length > 0
+                                ? `Hiển thị 12 kết quả cho "${searchQuery}"`
+                                : `Không tìm thấy kết quả nào cho "${searchQuery}"`}
                         </p>
                     </div>
 
@@ -220,10 +189,45 @@ function SearchResultContent() {
                             </div>
                         </aside>
 
-                        {/* Products Grid */}
+                        {/* Products Grid or Empty State */}
                         <div className="relative flex-1">
-                            {/* Toolbar */}
-                            <div className="mb-6 flex flex-col items-center justify-between gap-4 sm:flex-row">
+                            {products.length === 0 ? (
+                                /* Empty State */
+                                <div className="flex min-h-[500px] flex-col items-center justify-center rounded-xl bg-card p-8 text-center md:p-16">
+                                    <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-primary/10">
+                                        <Search className="h-12 w-12 text-primary" />
+                                    </div>
+                                    <h2 className="mb-2 text-2xl font-bold text-foreground">
+                                        Không tìm thấy sản phẩm nào
+                                    </h2>
+                                    <p className="mx-auto mb-8 max-w-md text-muted-foreground">
+                                        Rất tiếc, chúng tôi không tìm thấy sản phẩm nào phù hợp với tìm kiếm của bạn.
+                                        Vui lòng thử lại với từ khóa khác.
+                                    </p>
+                                    <div className="flex flex-wrap items-center justify-center gap-4">
+                                        <button
+                                            onClick={() => setSearchQuery('')}
+                                            className="flex h-11 cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg bg-primary px-6 text-sm font-bold leading-normal tracking-[0.015em] text-white transition-colors hover:bg-primary/90"
+                                        >
+                                            <Search className="h-5 w-5" />
+                                            <span>Thử tìm kiếm với từ khóa khác</span>
+                                        </button>
+                                        <Link
+                                            href="#"
+                                            className="flex h-11 cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg bg-card px-6 text-sm font-medium text-foreground transition-colors hover:bg-card/80"
+                                        >
+                                            <Grid className="h-5 w-5" />
+                                            <span>Khám phá danh mục sản phẩm</span>
+                                        </Link>
+                                    </div>
+                                    <Link href="#" className="mt-6 text-sm font-medium text-primary hover:underline">
+                                        Quay lại trang chủ
+                                    </Link>
+                                </div>
+                            ) : (
+                                <>
+                                    {/* Toolbar */}
+                                    <div className="mb-6 flex flex-col items-center justify-between gap-4 sm:flex-row">
                                 <div className="flex items-center gap-2">
                                     <label className="text-sm font-medium text-muted-foreground">
                                         Sắp xếp theo:
@@ -391,6 +395,8 @@ function SearchResultContent() {
                                     <ChevronRight className="ml-1 h-4 w-4" />
                                 </button>
                             </nav>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
