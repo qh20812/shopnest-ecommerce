@@ -1,4 +1,3 @@
-import { ShoppingBag } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 
 export default function Footer() {
@@ -8,9 +7,7 @@ export default function Footer() {
                 <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
                     <div className="col-span-1 md:col-span-2 lg:col-span-1">
                         <div className="mb-4 flex items-center gap-2 text-foreground">
-                            <div className="text-primary">
-                                <ShoppingBag className="h-8 w-8" />
-                            </div>
+                            <img src="/ShopNest2.png" alt="ShopNest Logo" className='h-10 w-10' />
                             <h1 className="text-xl font-bold">ShopNest</h1>
                         </div>
                         <p className="text-sm text-muted-foreground">

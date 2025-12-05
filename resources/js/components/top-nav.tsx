@@ -48,7 +48,7 @@ export default function TopNav() {
                 <div className="flex h-20 items-center justify-between whitespace-nowrap">
                     <div className="flex items-center gap-8">
                         <div className="flex items-center gap-2">
-                            <img src="/ShopNest3.png" alt="ShopNest Logo" className='h-10 w-10' />
+                            <img src="/ShopNest2.png" alt="ShopNest Logo" className='h-10 w-10' />
                             <h1 className="text-2xl font-bold leading-tight tracking-[-0.015em]">
                                 ShopNest
                             </h1>
