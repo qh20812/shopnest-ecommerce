@@ -6,7 +6,7 @@ import { ToastProvider } from '../lib/toastContext';
 
 interface CustomerLayoutProps {
     children: ReactNode;
-    activePage?: 'profile' | 'orders' | 'notifications';
+    activePage?: 'profile' | 'orders' | 'notifications' | 'addresses';
 }
 
 function CustomerLayoutContent({ children, activePage = 'profile' }: CustomerLayoutProps) {

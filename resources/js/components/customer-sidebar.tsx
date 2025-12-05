@@ -1,8 +1,8 @@
-import { User, Package, Bell } from 'lucide-react';
+import { User, Package, Bell, MapPin } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 
 interface CustomerSidebarProps {
-    activePage?: 'profile' | 'orders' | 'notifications';
+    activePage?: 'profile' | 'orders' | 'notifications' | 'addresses';
 }
 
 export default function CustomerSidebar({ activePage = 'profile' }: CustomerSidebarProps) {
@@ -24,6 +24,12 @@ export default function CustomerSidebar({ activePage = 'profile' }: CustomerSide
             label: 'Thông báo',
             href: '#',
             active: activePage === 'notifications',
+        },
+        {
+            icon: MapPin,
+            label: 'Địa chỉ',
+            href: '#',
+            active: activePage === 'addresses',
         },
     ];
 

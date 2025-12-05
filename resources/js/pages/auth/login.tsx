@@ -1,120 +1,131 @@
-import InputError from '@/components/input-error';
-import TextLink from '@/components/text-link';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Spinner } from '@/components/ui/spinner';
-import AuthLayout from '@/layouts/auth-layout';
-import { register } from '@/routes';
-import { store } from '@/routes/login';
-import { request } from '@/routes/password';
-import { Form, Head } from '@inertiajs/react';
+import { useState, FormEvent } from 'react';
+import { Link } from '@inertiajs/react';
+import { ShoppingBag } from 'lucide-react';
 
-interface LoginProps {
-    status?: string;
-    canResetPassword: boolean;
-    canRegister: boolean;
-}
+export default function LoginPage() {
+    const [formData, setFormData] = useState({
+        email: '',
+        password: '',
+        remember: false,
+    });
 
-export default function Login({
-    status,
-    canResetPassword,
-    canRegister,
-}: LoginProps) {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, type, checked, value } = e.target;
+        setFormData({
+            ...formData,
+            [name]: type === 'checkbox' ? checked : value,
+        });
+    };
+
+    const handleSubmit = (e: FormEvent) => {
+        e.preventDefault();
+        // Handle login logic here
+        console.log('Login:', formData);
+    };
+
     return (
-        <AuthLayout
-            title="Log in to your account"
-            description="Enter your email and password below to log in"
-        >
-            <Head title="Log in" />
+        <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-card dark:bg-background">
+            <div className="flex flex-1 items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+                <div className="w-full max-w-md space-y-8">
+                    {/* Logo & Header */}
+                    <div>
+                        <div className="flex items-center justify-center gap-2 text-foreground">
+                            <div className="text-primary">
+                                <ShoppingBag className="h-12 w-12" />
+                            </div>
+                            <h1 className="text-4xl font-bold tracking-tight">ShopNest</h1>
+                        </div>
+                        <h2 className="mt-6 text-center text-2xl font-bold tracking-tight text-foreground">
+                            Đăng nhập vào tài khoản
+                        </h2>
+                        <p className="mt-2 text-center text-sm text-muted-foreground">
+                            Chào mừng trở lại! Vui lòng đăng nhập để tiếp tục.
+                        </p>
+                    </div>
 
-            <Form
-                {...store.form()}
-                resetOnSuccess={['password']}
-                className="flex flex-col gap-6"
-            >
-                {({ processing, errors }) => (
-                    <>
-                        <div className="grid gap-6">
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
-                                <Input
-                                    id="email"
-                                    type="email"
+                    {/* Login Form */}
+                    <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+                        <div className="space-y-4 rounded-md shadow-sm">
+                            {/* Email */}
+                            <div>
+                                <label htmlFor="email-address" className="sr-only">
+                                    Địa chỉ email
+                                </label>
+                                <input
+                                    id="email-address"
                                     name="email"
-                                    required
-                                    autoFocus
-                                    tabIndex={1}
+                                    type="email"
                                     autoComplete="email"
-                                    placeholder="email@example.com"
-                                />
-                                <InputError message={errors.email} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <div className="flex items-center">
-                                    <Label htmlFor="password">Password</Label>
-                                    {canResetPassword && (
-                                        <TextLink
-                                            href={request()}
-                                            className="ml-auto text-sm"
-                                            tabIndex={5}
-                                        >
-                                            Forgot password?
-                                        </TextLink>
-                                    )}
-                                </div>
-                                <Input
-                                    id="password"
-                                    type="password"
-                                    name="password"
                                     required
-                                    tabIndex={2}
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    className="relative block w-full appearance-none rounded-lg border border-border bg-background px-3 py-3 text-foreground placeholder-muted-foreground focus:z-10 focus:border-primary focus:outline-none focus:ring-primary sm:text-sm"
+                                    placeholder="Địa chỉ email"
+                                />
+                            </div>
+
+                            {/* Password */}
+                            <div>
+                                <label htmlFor="password" className="sr-only">
+                                    Mật khẩu
+                                </label>
+                                <input
+                                    id="password"
+                                    name="password"
+                                    type="password"
                                     autoComplete="current-password"
-                                    placeholder="Password"
+                                    required
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    className="relative block w-full appearance-none rounded-lg border border-border bg-background px-3 py-3 text-foreground placeholder-muted-foreground focus:z-10 focus:border-primary focus:outline-none focus:ring-primary sm:text-sm"
+                                    placeholder="Mật khẩu"
                                 />
-                                <InputError message={errors.password} />
                             </div>
-
-                            <div className="flex items-center space-x-3">
-                                <Checkbox
-                                    id="remember"
-                                    name="remember"
-                                    tabIndex={3}
-                                />
-                                <Label htmlFor="remember">Remember me</Label>
-                            </div>
-
-                            <Button
-                                type="submit"
-                                className="mt-4 w-full"
-                                tabIndex={4}
-                                disabled={processing}
-                                data-test="login-button"
-                            >
-                                {processing && <Spinner />}
-                                Log in
-                            </Button>
                         </div>
 
-                        {canRegister && (
-                            <div className="text-center text-sm text-muted-foreground">
-                                Don't have an account?{' '}
-                                <TextLink href={register()} tabIndex={5}>
-                                    Sign up
-                                </TextLink>
+                        {/* Remember Me & Forgot Password */}
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                                <input
+                                    id="remember"
+                                    name="remember"
+                                    type="checkbox"
+                                    checked={formData.remember}
+                                    onChange={handleChange}
+                                    className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+                                />
+                                <label htmlFor="remember" className="ml-2 block text-sm text-foreground">
+                                    Ghi nhớ đăng nhập
+                                </label>
                             </div>
-                        )}
-                    </>
-                )}
-            </Form>
 
-            {status && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
-                    {status}
+                            <div className="text-sm">
+                                <Link href="#" className="font-medium text-primary hover:text-primary/90">
+                                    Quên mật khẩu?
+                                </Link>
+                            </div>
+                        </div>
+
+                        {/* Submit Button */}
+                        <div>
+                            <button
+                                type="submit"
+                                className="group relative flex w-full justify-center rounded-lg border border-transparent bg-primary px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                            >
+                                Đăng nhập
+                            </button>
+                        </div>
+                    </form>
+
+                    {/* Register Link */}
+                    <div className="text-center text-sm">
+                        <span className="text-muted-foreground">Chưa có tài khoản? </span>
+                        <Link href="#" className="font-medium text-primary hover:text-primary/90">
+                            Đăng ký ngay
+                        </Link>
+                    </div>
                 </div>
-            )}
-        </AuthLayout>
+            </div>
+        </div>
     );
 }

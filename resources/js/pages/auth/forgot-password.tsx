@@ -1,69 +1,77 @@
-// Components
-import { login } from '@/routes';
-import { email } from '@/routes/password';
-import { Form, Head } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
+import { useState, FormEvent } from 'react';
+import { Link } from '@inertiajs/react';
+import { ShoppingBag } from 'lucide-react';
 
-import InputError from '@/components/input-error';
-import TextLink from '@/components/text-link';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import AuthLayout from '@/layouts/auth-layout';
+export default function ForgotPassword() {
+    const [email, setEmail] = useState('');
 
-export default function ForgotPassword({ status }: { status?: string }) {
+    const handleSubmit = (e: FormEvent) => {
+        e.preventDefault();
+        // Handle password reset logic here
+        console.log('Reset password for:', email);
+    };
+
     return (
-        <AuthLayout
-            title="Forgot password"
-            description="Enter your email to receive a password reset link"
-        >
-            <Head title="Forgot password" />
+        <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-card dark:bg-background">
+            <div className="flex flex-1 items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+                <div className="w-full max-w-md space-y-8">
+                    {/* Logo & Header */}
+                    <div>
+                        <div className="flex items-center justify-center gap-2 text-foreground">
+                            <div className="text-primary">
+                                <ShoppingBag className="h-12 w-12" />
+                            </div>
+                            <h1 className="text-4xl font-bold tracking-tight">ShopNest</h1>
+                        </div>
+                        <h2 className="mt-6 text-center text-2xl font-bold tracking-tight text-foreground">
+                            Quên mật khẩu?
+                        </h2>
+                        <p className="mt-2 text-center text-sm text-muted-foreground">
+                            Đừng lo lắng! Nhập email của bạn và chúng tôi sẽ gửi cho bạn một liên kết để đặt lại mật khẩu.
+                        </p>
+                    </div>
 
-            {status && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
-                    {status}
-                </div>
-            )}
-
-            <div className="space-y-6">
-                <Form {...email.form()}>
-                    {({ processing, errors }) => (
-                        <>
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
-                                <Input
-                                    id="email"
-                                    type="email"
+                    {/* Forgot Password Form */}
+                    <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+                        <div className="space-y-4 rounded-md shadow-sm">
+                            {/* Email */}
+                            <div>
+                                <label htmlFor="email-address" className="sr-only">
+                                    Địa chỉ email
+                                </label>
+                                <input
+                                    id="email-address"
                                     name="email"
-                                    autoComplete="off"
-                                    autoFocus
-                                    placeholder="email@example.com"
+                                    type="email"
+                                    autoComplete="email"
+                                    required
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="relative block w-full appearance-none rounded-lg border border-border bg-background px-3 py-3 text-foreground placeholder-muted-foreground focus:z-10 focus:border-primary focus:outline-none focus:ring-primary sm:text-sm"
+                                    placeholder="Địa chỉ email"
                                 />
-
-                                <InputError message={errors.email} />
                             </div>
+                        </div>
 
-                            <div className="my-6 flex items-center justify-start">
-                                <Button
-                                    className="w-full"
-                                    disabled={processing}
-                                    data-test="email-password-reset-link-button"
-                                >
-                                    {processing && (
-                                        <LoaderCircle className="h-4 w-4 animate-spin" />
-                                    )}
-                                    Email password reset link
-                                </Button>
-                            </div>
-                        </>
-                    )}
-                </Form>
+                        {/* Submit Button */}
+                        <div>
+                            <button
+                                type="submit"
+                                className="group relative flex w-full justify-center rounded-lg border border-transparent bg-primary px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                            >
+                                Gửi liên kết đặt lại
+                            </button>
+                        </div>
+                    </form>
 
-                <div className="space-x-1 text-center text-sm text-muted-foreground">
-                    <span>Or, return to</span>
-                    <TextLink href={login()}>log in</TextLink>
+                    {/* Back to Login Link */}
+                    <div className="text-center text-sm">
+                        <Link href="#" className="font-medium text-primary hover:text-primary/90">
+                            Quay lại trang Đăng nhập
+                        </Link>
+                    </div>
                 </div>
             </div>
-        </AuthLayout>
+        </div>
     );
 }
