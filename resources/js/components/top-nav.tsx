@@ -1,10 +1,46 @@
-import { ShoppingBag, Heart, Search } from 'lucide-react';
+import { ShoppingBag, Heart, Search, User, Package, Home, CreditCard, LogOut } from 'lucide-react';
 import Input from './ui/input';
 import { Link } from '@inertiajs/react';
 import { useToast } from '../lib/toastContext';
+import { useState, useRef, useEffect } from 'react';
 
 export default function TopNav() {
-    const { showError, showInfo } = useToast();
+    const { showError } = useToast();
+    const [isAvatarHover, setIsAvatarHover] = useState(false);
+    const [isDropdownHover, setIsDropdownHover] = useState(false);
+    const [isDropdownClick, setIsDropdownClick] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement | null>(null);
+
+    const isDropdownOpen = isAvatarHover || isDropdownHover || isDropdownClick;
+
+    // Close dropdown when clicking outside or pressing Escape
+    useEffect(() => {
+        function onDocumentClick(e: MouseEvent) {
+            if (!dropdownRef.current) return;
+            if (!isDropdownOpen) return;
+            // If click is outside dropdownRef, close it
+            if (e.target instanceof Node && !dropdownRef.current.contains(e.target)) {
+                setIsDropdownClick(false);
+                setIsAvatarHover(false);
+                setIsDropdownHover(false);
+            }
+        }
+
+        function onKeyDown(e: KeyboardEvent) {
+            if (e.key === 'Escape') {
+                setIsDropdownClick(false);
+                setIsAvatarHover(false);
+                setIsDropdownHover(false);
+            }
+        }
+
+        document.addEventListener('mousedown', onDocumentClick);
+        document.addEventListener('keydown', onKeyDown);
+        return () => {
+            document.removeEventListener('mousedown', onDocumentClick);
+            document.removeEventListener('keydown', onKeyDown);
+        };
+    }, [isDropdownOpen]);
 
     return (
         <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-sm">
@@ -12,9 +48,7 @@ export default function TopNav() {
                 <div className="flex h-20 items-center justify-between whitespace-nowrap">
                     <div className="flex items-center gap-8">
                         <div className="flex items-center gap-2">
-                            <div className="text-primary">
-                                <ShoppingBag className="h-10 w-10" />
-                            </div>
+                            <img src="/ShopNest3.png" alt="ShopNest Logo" className='h-10 w-10' />
                             <h1 className="text-2xl font-bold leading-tight tracking-[-0.015em]">
                                 ShopNest
                             </h1>
@@ -63,13 +97,94 @@ export default function TopNav() {
                                 <ShoppingBag className="h-5 w-5" />
                             </button>
                         </div>
-                        <Link
-                            href="#"
-                            className="flex h-10 items-center justify-center rounded-lg bg-card px-4 text-sm font-medium text-foreground transition-colors hover:bg-primary/10 hover:text-primary"
-                            onClick={(e) => { e.preventDefault(); showInfo('Vui lòng đăng nhập để truy cập tài khoản'); }}
+
+                        {/* User Avatar Dropdown */}
+                        <div 
+                            className="relative group"
+                            onMouseEnter={() => setIsAvatarHover(true)}
+                            onMouseLeave={() => setIsAvatarHover(false)}
+                            ref={dropdownRef}
                         >
-                            Tài khoản của tôi
-                        </Link>
+                            <button
+                                className="h-10 w-10 cursor-pointer rounded-full bg-cover bg-center"
+                                style={{
+                                    backgroundImage:
+                                        'url("https://lh3.googleusercontent.com/aida-public/AB6AXuBtD5o_3TsXWSdeCTCkNbMMXnrlIK7-fPHBZwbxSxq3k3hlzpnUs0OWbJLSZM5yL61gQpf7NAAyJFInpJRenu1LDculgknnbATzIXGlmd8lW90k5VU_IWHt-irI9Y91JoIGiRbx5NMHwC8CkvrpOcWYa_o2c1E5rh2bL8e2CYzAYUkcg9oaIkVQrmlewjsKjq4xWsz9GXEfpkOKwnfDBqjeDm0aJ54bbfSiU82ob7z1EYgzuyfEZwfq4rC6saIF6pdj1Sp8RqE4ptM")',
+                                }}
+                                onClick={() => setIsDropdownClick((v) => !v)}
+                            />
+                            <div
+                                className={`absolute right-0 top-full z-10 mt-2 w-64 rounded-xl border border-border bg-background p-2 shadow-lg transition-opacity duration-200 ease-in-out ${
+                                    isDropdownOpen
+                                        ? 'pointer-events-auto opacity-100'
+                                        : 'pointer-events-none opacity-0'
+                                }`}
+                                onMouseEnter={() => setIsDropdownHover(true)}
+                                onMouseLeave={() => setIsDropdownHover(false)}
+                            >
+                                {/* User Info */}
+                                <div className="mb-2 flex items-center gap-3 p-2">
+                                    <div
+                                        className="h-12 w-12 rounded-full bg-cover bg-center"
+                                        style={{
+                                            backgroundImage:
+                                                'url("https://lh3.googleusercontent.com/aida-public/AB6AXuBtD5o_3TsXWSdeCTCkNbMMXnrlIK7-fPHBZwbxSxq3k3hlzpnUs0OWbJLSZM5yL61gQpf7NAAyJFInpJRenu1LDculgknnbATzIXGlmd8lW90k5VU_IWHt-irI9Y91JoIGiRbx5NMHwC8CkvrpOcWYa_o2c1E5rh2bL8e2CYzAYUkcg9oaIkVQrmlewjsKjq4xWsz9GXEfpkOKwnfDBqjeDm0aJ54bbfSiU82ob7z1EYgzuyfEZwfq4rC6saIF6pdj1Sp8RqE4ptM")',
+                                        }}
+                                    />
+                                    <div>
+                                        <p className="font-bold text-foreground">Người dùng</p>
+                                        <p className="text-sm text-muted-foreground">user@shopnest.com</p>
+                                    </div>
+                                </div>
+
+                                {/* Menu Items */}
+                                <Link
+                                    href="#"
+                                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-card"
+                                >
+                                    <User className="h-5 w-5 text-muted-foreground" />
+                                    <span>Thông tin cá nhân</span>
+                                </Link>
+                                <Link
+                                    href="#"
+                                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-card"
+                                >
+                                    <Package className="h-5 w-5 text-muted-foreground" />
+                                    <span>Đơn hàng của tôi</span>
+                                </Link>
+                                <Link
+                                    href="#"
+                                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-card"
+                                >
+                                    <Heart className="h-5 w-5 text-muted-foreground" />
+                                    <span>Danh sách yêu thích</span>
+                                </Link>
+                                <Link
+                                    href="#"
+                                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-card"
+                                >
+                                    <Home className="h-5 w-5 text-muted-foreground" />
+                                    <span>Địa chỉ giao hàng</span>
+                                </Link>
+                                <Link
+                                    href="#"
+                                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-card"
+                                >
+                                    <CreditCard className="h-5 w-5 text-muted-foreground" />
+                                    <span>Phương thức thanh toán</span>
+                                </Link>
+
+                                <hr className="my-2 border-border" />
+
+                                <Link
+                                    href="#"
+                                    className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-primary transition-colors hover:bg-primary/10"
+                                >
+                                    <LogOut className="h-5 w-5" />
+                                    <span>Đăng xuất</span>
+                                </Link>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

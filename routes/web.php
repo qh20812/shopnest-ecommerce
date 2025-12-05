@@ -28,6 +28,13 @@ Route::get('/shopping', function(){
     return Inertia::render('shopping');
 })->name('shopping');
 
+Route::get('/profile', function(){
+    return Inertia::render('customer-profile');
+})->name('profile');
+Route::get('/orders', function(){
+    return Inertia::render('customer-order-history');
+})->name('orders');
+
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
