@@ -1,6 +1,9 @@
 import { useState, FormEvent } from 'react';
-import { Link } from '@inertiajs/react';
-import { ShoppingBag } from 'lucide-react';
+import SimpleAuthLayout from '../../components/auth/simple-auth-layout';
+import AuthForm from '../../components/auth/auth-form';
+import AuthInput from '../../components/auth/auth-input';
+import AuthButton from '../../components/auth/auth-button';
+import AuthLink from '../../components/auth/auth-link';
 
 export default function LoginPage() {
     const [formData, setFormData] = useState({
@@ -24,63 +27,37 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-card dark:bg-background">
-            <div className="flex flex-1 items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
-                <div className="w-full max-w-md space-y-8">
-                    {/* Logo & Header */}
-                    <div>
-                        <div className="flex items-center justify-center gap-2 text-foreground">
-                            <div className="text-primary">
-                                <ShoppingBag className="h-12 w-12" />
-                            </div>
-                            <h1 className="text-4xl font-bold tracking-tight">ShopNest</h1>
-                        </div>
-                        <h2 className="mt-6 text-center text-2xl font-bold tracking-tight text-foreground">
-                            Đăng nhập vào tài khoản
-                        </h2>
-                        <p className="mt-2 text-center text-sm text-muted-foreground">
-                            Chào mừng trở lại! Vui lòng đăng nhập để tiếp tục.
-                        </p>
-                    </div>
-
-                    {/* Login Form */}
-                    <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+        <SimpleAuthLayout
+            title="Đăng nhập vào tài khoản"
+            description="Chào mừng trở lại! Vui lòng đăng nhập để tiếp tục."
+        >
+            <AuthForm onSubmit={handleSubmit}>
                         <div className="space-y-4 rounded-md shadow-sm">
                             {/* Email */}
-                            <div>
-                                <label htmlFor="email-address" className="sr-only">
-                                    Địa chỉ email
-                                </label>
-                                <input
-                                    id="email-address"
-                                    name="email"
-                                    type="email"
-                                    autoComplete="email"
-                                    required
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    className="relative block w-full appearance-none rounded-lg border border-border bg-background px-3 py-3 text-foreground placeholder-muted-foreground focus:z-10 focus:border-primary focus:outline-none focus:ring-primary sm:text-sm"
-                                    placeholder="Địa chỉ email"
-                                />
-                            </div>
+                            <AuthInput
+                                id="email-address"
+                                label="Địa chỉ email"
+                                name="email"
+                                type="email"
+                                autoComplete="email"
+                                required
+                                value={formData.email}
+                                onChange={handleChange}
+                                placeholder="Địa chỉ email"
+                            />
 
                             {/* Password */}
-                            <div>
-                                <label htmlFor="password" className="sr-only">
-                                    Mật khẩu
-                                </label>
-                                <input
-                                    id="password"
-                                    name="password"
-                                    type="password"
-                                    autoComplete="current-password"
-                                    required
-                                    value={formData.password}
-                                    onChange={handleChange}
-                                    className="relative block w-full appearance-none rounded-lg border border-border bg-background px-3 py-3 text-foreground placeholder-muted-foreground focus:z-10 focus:border-primary focus:outline-none focus:ring-primary sm:text-sm"
-                                    placeholder="Mật khẩu"
-                                />
-                            </div>
+                            <AuthInput
+                                id="password"
+                                label="Mật khẩu"
+                                name="password"
+                                type="password"
+                                autoComplete="current-password"
+                                required
+                                value={formData.password}
+                                onChange={handleChange}
+                                placeholder="Mật khẩu"
+                            />
                         </div>
 
                         {/* Remember Me & Forgot Password */}
@@ -100,32 +77,27 @@ export default function LoginPage() {
                             </div>
 
                             <div className="text-sm">
-                                <Link href="#" className="font-medium text-primary hover:text-primary/90">
+                                <AuthLink href="#">
                                     Quên mật khẩu?
-                                </Link>
+                                </AuthLink>
                             </div>
                         </div>
 
                         {/* Submit Button */}
                         <div>
-                            <button
-                                type="submit"
-                                className="group relative flex w-full justify-center rounded-lg border border-transparent bg-primary px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                            >
+                            <AuthButton type="submit">
                                 Đăng nhập
-                            </button>
+                            </AuthButton>
                         </div>
-                    </form>
+                    </AuthForm>
 
                     {/* Register Link */}
                     <div className="text-center text-sm">
                         <span className="text-muted-foreground">Chưa có tài khoản? </span>
-                        <Link href="#" className="font-medium text-primary hover:text-primary/90">
+                        <AuthLink href="#">
                             Đăng ký ngay
-                        </Link>
+                        </AuthLink>
                     </div>
-                </div>
-            </div>
-        </div>
+                </SimpleAuthLayout>
     );
 }

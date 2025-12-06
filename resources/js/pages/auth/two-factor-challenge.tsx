@@ -1,5 +1,7 @@
 import { useState, useRef, FormEvent, KeyboardEvent } from 'react';
-import { ShoppingBag } from 'lucide-react';
+import SimpleAuthLayout from '../../components/auth/simple-auth-layout';
+import AuthForm from '../../components/auth/auth-form';
+import AuthButton from '../../components/auth/auth-button';
 
 export default function TwoFactorChallenge() {
     const [code, setCode] = useState(['', '', '', '', '', '']);
@@ -37,27 +39,13 @@ export default function TwoFactorChallenge() {
     };
 
     return (
-        <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-card dark:bg-background">
-            <div className="flex flex-1 items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
-                <div className="w-full max-w-sm space-y-8 text-center">
-                    {/* Logo & Header */}
-                    <div>
-                        <div className="flex items-center justify-center gap-2 text-foreground">
-                            <div className="text-primary">
-                                <ShoppingBag className="h-12 w-12" />
-                            </div>
-                            <h1 className="text-4xl font-bold tracking-tight">ShopNest</h1>
-                        </div>
-                        <h2 className="mt-6 text-2xl font-bold tracking-tight text-foreground">
-                            Nhập Mã Xác Minh
-                        </h2>
-                        <p className="mt-2 text-sm text-muted-foreground">
-                            Chúng tôi đã gửi mã xác minh đến email của bạn.
-                        </p>
-                    </div>
-
-                    {/* Verification Form */}
-                    <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+        <SimpleAuthLayout
+            title="Nhập Mã Xác Minh"
+            description="Chúng tôi đã gửi mã xác minh đến email của bạn."
+            maxWidth="sm"
+            centerContent
+        >
+            <AuthForm onSubmit={handleSubmit}>
                         <div className="space-y-4">
                             <label htmlFor="verification-code-1" className="sr-only">
                                 Mã xác minh
@@ -84,14 +72,11 @@ export default function TwoFactorChallenge() {
 
                         {/* Submit Button */}
                         <div>
-                            <button
-                                type="submit"
-                                className="group relative flex w-full justify-center rounded-lg border border-transparent bg-primary px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                            >
+                            <AuthButton type="submit">
                                 Xác minh
-                            </button>
+                            </AuthButton>
                         </div>
-                    </form>
+                    </AuthForm>
 
                     {/* Resend Link */}
                     <div className="text-center text-sm">
@@ -105,8 +90,6 @@ export default function TwoFactorChallenge() {
                             </button>
                         </p>
                     </div>
-                </div>
-            </div>
-        </div>
+                </SimpleAuthLayout>
     );
 }
