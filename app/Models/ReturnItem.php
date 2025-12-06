@@ -42,7 +42,7 @@ class ReturnItem extends Model
      */
     public function return()
     {
-        return $this->belongsTo(\App\Models\Return::class);
+        return $this->belongsTo(OrderReturn::class);
     }
 
     /**
@@ -50,6 +50,6 @@ class ReturnItem extends Model
      */
     public function orderItem()
     {
-        return $this->belongsTo(\App\Models\OrderItem::class);
+        return $this->belongsTo(OrderItem::class);
     }
 }

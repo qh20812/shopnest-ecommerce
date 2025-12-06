@@ -41,7 +41,7 @@ class Wishlist extends Model
      */
     public function user()
     {
-        return $this->belongsTo(\App\Models\User::class);
+        return $this->belongsTo(User::class);
     }
 
     /**
@@ -49,6 +49,6 @@ class Wishlist extends Model
      */
     public function items()
     {
-        return $this->hasMany(\App\Models\WishlistItem::class);
+        return $this->hasMany(WishlistItem::class);
     }
 }

@@ -31,7 +31,7 @@ class WishlistItem extends Model
      */
     public function wishlist()
     {
-        return $this->belongsTo(\App\Models\Wishlist::class);
+        return $this->belongsTo(Wishlist::class);
     }
 
     /**
@@ -39,6 +39,6 @@ class WishlistItem extends Model
      */
     public function product()
     {
-        return $this->belongsTo(\App\Models\Product::class);
+        return $this->belongsTo(Product::class);
     }
 }

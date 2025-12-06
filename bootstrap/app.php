@@ -21,6 +21,14 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
+
+        // Register middleware aliases
+        $middleware->alias([
+            'is.customer' => \App\Http\Middleware\Auth\IsCustomer::class,
+            'is.admin' => \App\Http\Middleware\Auth\IsAdmin::class,
+            'is.seller' => \App\Http\Middleware\Auth\IsSeller::class,
+            'is.shipper' => \App\Http\Middleware\Auth\IsShipper::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

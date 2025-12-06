@@ -5,10 +5,10 @@ namespace App\Models;
 use App\Enums\Gender;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Model
+class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
@@ -69,7 +69,9 @@ class User extends Model
      */
     public function roles()
     {
-        return $this->belongsToMany(\App\Models\Role::class, 'role_user');
+        return $this->belongsToMany(Role::class, 'role_user')
+            ->using(RoleUser::class)
+            ->withTimestamps();
     }
 
     /**
@@ -77,7 +79,7 @@ class User extends Model
      */
     public function addresses()
     {
-        return $this->hasMany(\App\Models\UserAddress::class);
+        return $this->hasMany(UserAddress::class);
     }
 
     /**
@@ -85,7 +87,7 @@ class User extends Model
      */
     public function defaultAddress()
     {
-        return $this->belongsTo(\App\Models\UserAddress::class, 'default_address_id');
+        return $this->belongsTo(UserAddress::class, 'default_address_id');
     }
 
     /**
@@ -93,7 +95,7 @@ class User extends Model
      */
     public function shops()
     {
-        return $this->hasMany(\App\Models\Shop::class, 'owner_id');
+        return $this->hasMany(Shop::class, 'owner_id');
     }
 
     /**
@@ -101,7 +103,7 @@ class User extends Model
      */
     public function orders()
     {
-        return $this->hasMany(\App\Models\Order::class, 'customer_id');
+        return $this->hasMany(Order::class, 'customer_id');
     }
 
     /**
@@ -109,7 +111,7 @@ class User extends Model
      */
     public function cartItems()
     {
-        return $this->hasMany(\App\Models\CartItem::class);
+        return $this->hasMany(CartItem::class);
     }
 
     /**
@@ -117,7 +119,7 @@ class User extends Model
      */
     public function wishlists()
     {
-        return $this->hasMany(\App\Models\Wishlist::class);
+        return $this->hasMany(Wishlist::class);
     }
 
     /**
@@ -125,7 +127,7 @@ class User extends Model
      */
     public function reviews()
     {
-        return $this->hasMany(\App\Models\Review::class);
+        return $this->hasMany(Review::class);
     }
 
     /**
@@ -133,7 +135,7 @@ class User extends Model
      */
     public function notifications()
     {
-        return $this->hasMany(\App\Models\Notification::class);
+        return $this->hasMany(Notification::class);
     }
 
     /**
@@ -141,6 +143,79 @@ class User extends Model
      */
     public function twoFactorMethods()
     {
-        return $this->hasMany(\App\Models\TwoFactorAuthentication::class);
+        return $this->hasMany(TwoFactorAuthentication::class);
+    }
+
+    /**
+     * Check if user has a specific role.
+     *
+     * @param string $roleName
+     * @return bool
+     */
+    public function hasRole(string $roleName): bool
+    {
+        return $this->roles()->where('role_name', $roleName)->exists();
+    }
+
+    /**
+     * Check if user has any of the given roles.
+     *
+     * @param array $roles
+     * @return bool
+     */
+    public function hasAnyRole(array $roles): bool
+    {
+        return $this->roles()->whereIn('role_name', $roles)->exists();
+    }
+
+    /**
+     * Check if user has all of the given roles.
+     *
+     * @param array $roles
+     * @return bool
+     */
+    public function hasAllRoles(array $roles): bool
+    {
+        return $this->roles()->whereIn('role_name', $roles)->count() === count($roles);
+    }
+
+    /**
+     * Check if user is a customer.
+     *
+     * @return bool
+     */
+    public function isCustomer(): bool
+    {
+        return $this->hasRole('customer');
+    }
+
+    /**
+     * Check if user is an admin.
+     *
+     * @return bool
+     */
+    public function isAdmin(): bool
+    {
+        return $this->hasRole('admin');
+    }
+
+    /**
+     * Check if user is a seller.
+     *
+     * @return bool
+     */
+    public function isSeller(): bool
+    {
+        return $this->hasRole('seller');
+    }
+
+    /**
+     * Check if user is a shipper.
+     *
+     * @return bool
+     */
+    public function isShipper(): bool
+    {
+        return $this->hasRole('shipper');
     }
 }

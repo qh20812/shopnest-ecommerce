@@ -121,7 +121,10 @@ class Order extends Model
      */
     public function promotions()
     {
-        return $this->belongsToMany(\App\Models\Promotion::class, 'order_promotion');
+        return $this->belongsToMany(Promotion::class, 'order_promotion')
+            ->using(OrderPromotion::class)
+            ->withPivot('discount_amount')
+            ->withTimestamps();
     }
 
     /**
@@ -129,7 +132,7 @@ class Order extends Model
      */
     public function returns()
     {
-        return $this->hasMany(\App\Models\Return::class);
+        return $this->hasMany(OrderReturn::class);
     }
 
     /**

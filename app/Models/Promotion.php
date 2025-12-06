@@ -62,7 +62,7 @@ class Promotion extends Model
      */
     public function shop()
     {
-        return $this->belongsTo(\App\Models\Shop::class);
+        return $this->belongsTo(Shop::class);
     }
 
     /**
@@ -70,7 +70,7 @@ class Promotion extends Model
      */
     public function codes()
     {
-        return $this->hasMany(\App\Models\PromotionCode::class);
+        return $this->hasMany(PromotionCode::class);
     }
 
     /**
@@ -78,6 +78,9 @@ class Promotion extends Model
      */
     public function orders()
     {
-        return $this->belongsToMany(\App\Models\Order::class, 'order_promotion');
+        return $this->belongsToMany(Order::class, 'order_promotion')
+            ->using(OrderPromotion::class)
+            ->withPivot('discount_amount')
+            ->withTimestamps();
     }
 }
