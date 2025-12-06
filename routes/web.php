@@ -34,6 +34,12 @@ Route::get('/profile', function(){
 Route::get('/orders', function(){
     return Inertia::render('customer-order-history');
 })->name('orders');
+Route::get('/faq', function(){
+    return Inertia::render('f-a-q');
+})->name('faq');
+Route::get('/chinh-sach-doi-tra', function(){
+    return Inertia::render('chinh-sach-doi-tra');
+})->name('return-policy');
 
 
 Route::middleware(['auth', 'verified'])->group(function () {
