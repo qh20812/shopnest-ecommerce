@@ -36,7 +36,6 @@ export default function SimpleAuthLayout({
                             {description}
                         </p>
                     </div>
-
                     {/* Content */}
                     {children}
                 </div>
