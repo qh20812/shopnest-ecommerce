@@ -40,7 +40,45 @@ Route::get('/faq', function(){
 Route::get('/chinh-sach-doi-tra', function(){
     return Inertia::render('chinh-sach-doi-tra');
 })->name('return-policy');
-
+Route::get('sellerdashboard', function(){
+    return Inertia::render('roles/sellers/dashboard');
+})->name('seller.dashboard');
+Route::get('sellerproduct', function(){
+    return Inertia::render('roles/sellers/product-manage/index');
+})->name('seller.product');
+Route::get('sellerproductcreate', function(){
+    return Inertia::render('roles/sellers/product-manage/create');
+})->name('seller.product.create');
+Route::get('sellerproductupdate', function(){
+    return Inertia::render('roles/sellers/product-manage/update');
+})->name('seller.product.update');
+Route::get('sellerorder', function(){
+    return Inertia::render('roles/sellers/order-manage/index');
+})->name('seller.order');
+Route::get('sellerorderread', function(){
+    return Inertia::render('roles/sellers/order-manage/read');
+})->name('seller.order.read');
+Route::get('sellershopsettings', function(){
+    return Inertia::render('roles/sellers/shop-profile/index');
+})->name('seller.shop.settings');
+Route::get('sellerpromotion', function(){
+    return Inertia::render('roles/sellers/promotion-manage/index');
+})->name('seller.promotion');
+Route::get('sellerpromotion/create', function(){
+    return Inertia::render('roles/sellers/promotion-manage/create');
+})->name('seller.promotion.create');
+Route::get('sellerpromotion/update', function(){
+    return Inertia::render('roles/sellers/promotion-manage/update');
+})->name('seller.promotion.update');
+Route::get('seller/settings/profile', function(){
+    return Inertia::render('roles/sellers/settings/profile');
+})->name('seller.settings.profile');
+Route::get('seller/settings/password', function(){
+    return Inertia::render('roles/sellers/settings/password');
+})->name('seller.settings.password');
+Route::get('seller/settings/security', function(){
+    return Inertia::render('roles/sellers/settings/security');
+})->name('seller.settings.security');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {

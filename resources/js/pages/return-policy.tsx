@@ -3,7 +3,7 @@ import TopNav from '../components/top-nav';
 import Footer from '../components/footer';
 import { ToastProvider } from '../lib/toastContext';
 
-export default function ChinhSachDoiTra() {
+export default function ReturnPolicy() {
     return (
         <ToastProvider>
             <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-background">

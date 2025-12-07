@@ -14,7 +14,7 @@ interface FAQSection {
     items: FAQItem[];
 }
 
-export default function FAQ() {
+export default function FrequentlyAskedQuestions() {
     const [searchQuery, setSearchQuery] = useState('');
     const [openItems, setOpenItems] = useState<Set<string>>(new Set());
 

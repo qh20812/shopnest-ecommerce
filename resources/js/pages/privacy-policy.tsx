@@ -4,7 +4,7 @@ import Footer from '../components/footer';
 import { ToastProvider } from '../lib/toastContext';
 import { Database, Target, Share2, ShieldCheck, Cookie, FileEdit, Mail } from 'lucide-react';
 
-export default function ChinhSachBaoMat() {
+export default function PrivacyPolicy() {
   return (
     <ToastProvider>
       <TopNav />

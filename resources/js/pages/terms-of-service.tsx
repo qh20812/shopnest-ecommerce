@@ -4,7 +4,7 @@ import Footer from '../components/footer';
 import { ToastProvider } from '../lib/toastContext';
 import { FileText, Shield, Scale, AlertTriangle, Gavel, Mail } from 'lucide-react';
 
-export default function DieuKhoanDichVu() {
+export default function TermsOfService() {
   return (
     <ToastProvider>
       <TopNav />

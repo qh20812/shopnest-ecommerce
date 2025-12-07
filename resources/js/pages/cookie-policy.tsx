@@ -4,7 +4,7 @@ import Footer from '../components/footer';
 import { ToastProvider } from '../lib/toastContext';
 import { Cookie, Settings, BarChart3, Palette, FileEdit, Mail } from 'lucide-react';
 
-export default function ChinhSachCookie() {
+export default function CookiePolicy() {
   return (
     <ToastProvider>
       <TopNav />

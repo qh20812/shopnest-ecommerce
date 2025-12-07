@@ -4,9 +4,10 @@
 <head>
   <meta charset="utf-8" />
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-  <title>Trang Chính sách Cookie ShopNest</title>
+  <title>Bảo mật Admin ShopNest</title>
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap"
+    rel="stylesheet" />
   <link
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
     rel="stylesheet" />
@@ -18,14 +19,16 @@
           colors: {
             "primary": "#FF6B6B",
             "secondary": "#4ECDC4",
-            "background-light": "#FFFFFF",
+            "background-light": "#F7F7F7",
             "background-dark": "#181818",
-            "surface-light": "#F7F7F7",
+            "surface-light": "#FFFFFF",
             "surface-dark": "#292929",
             "text-primary-light": "#292929",
             "text-primary-dark": "#F7F7F7",
             "text-secondary-light": "#6B6B6B",
             "text-secondary-dark": "#B0B0B0",
+            "border-light": "#E0E0E0",
+            "border-dark": "#3A3A3A",
           },
           fontFamily: {
             "display": ["Inter", "sans-serif"]
@@ -44,106 +47,170 @@
     .material-symbols-outlined {
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
     }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 38px;
+      height: 22px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 22px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked+.slider {
+      background-color: #FF6B6B;
+    }
+
+    html.dark input:checked+.slider {
+      background-color: #FF6B6B;
+    }
+
+    html.dark .slider {
+      background-color: #3A3A3A;
+    }
+
+    html.dark .slider:before {
+      background-color: #B0B0B0;
+    }
+
+    input:checked+.slider:before {
+      transform: translateX(16px);
+    }
   </style>
 </head>
 
 <body
   class="bg-background-light dark:bg-background-dark font-display text-text-primary-light dark:text-text-primary-dark">
-  <div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
-    <div class="layout-container flex h-full grow flex-col">
+  <div class="flex h-screen w-full group/design-root">
+    <aside
+      class="w-64 flex-shrink-0 bg-surface-light dark:bg-surface-dark border-r border-border-light dark:border-border-dark flex flex-col">
+      <div class="flex items-center gap-2 h-20 border-b border-border-light dark:border-border-dark px-6">
+        <div class="text-primary">
+          <span class="material-symbols-outlined !text-4xl">
+            local_mall
+          </span>
+        </div>
+        <h1
+          class="text-2xl font-bold leading-tight tracking-[-0.015em] text-text-primary-light dark:text-text-primary-dark">
+          ShopNest</h1>
+      </div>
+      <nav class="flex-1 px-4 py-6 space-y-2">
+        <a class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-text-secondary-light dark:text-text-secondary-dark hover:bg-black/5 dark:hover:bg-white/5 hover:text-text-primary-light dark:hover:text-text-primary-dark transition-colors font-medium"
+          href="#">
+          <span class="material-symbols-outlined">dashboard</span>
+          <span>Tổng quan</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-text-secondary-light dark:text-text-secondary-dark hover:bg-black/5 dark:hover:bg-white/5 hover:text-text-primary-light dark:hover:text-text-primary-dark transition-colors font-medium"
+          href="#">
+          <span class="material-symbols-outlined">inventory_2</span>
+          <span>Quản lý sản phẩm</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-text-secondary-light dark:text-text-secondary-dark hover:bg-black/5 dark:hover:bg-white/5 hover:text-text-primary-light dark:hover:text-text-primary-dark transition-colors font-medium"
+          href="#">
+          <span class="material-symbols-outlined">receipt_long</span>
+          <span>Quản lý đơn hàng</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-text-secondary-light dark:text-text-secondary-dark hover:bg-black/5 dark:hover:bg-white/5 hover:text-text-primary-light dark:hover:text-text-primary-dark transition-colors font-medium"
+          href="#">
+          <span class="material-symbols-outlined">bar_chart</span>
+          <span>Thống kê doanh số</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-primary/10 text-primary font-semibold" href="#">
+          <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">manage_accounts</span>
+          <span>Cài đặt tài khoản</span>
+        </a>
+      </nav>
+      <div class="px-4 py-6 border-t border-border-light dark:border-border-dark">
+        <a class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-text-secondary-light dark:text-text-secondary-dark hover:bg-black/5 dark:hover:bg-white/5 hover:text-text-primary-light dark:hover:text-text-primary-dark transition-colors font-medium"
+          href="#">
+          <span class="material-symbols-outlined">logout</span>
+          <span>Đăng xuất</span>
+        </a>
+      </div>
+    </aside>
+    <div class="flex-1 flex flex-col overflow-hidden">
       <header
-        class="w-full bg-background-light dark:bg-background-dark/80 backdrop-blur-sm sticky top-0 z-50 border-b border-surface-light dark:border-surface-dark/50">
-        <div class="container mx-auto px-4">
-          <div class="flex items-center justify-between whitespace-nowrap h-20">
-            <div class="flex items-center gap-8">
-              <div class="flex items-center gap-2 text-text-primary-light dark:text-text-primary-dark">
-                <div class="text-primary">
-                  <span class="material-symbols-outlined !text-4xl">
-                    local_mall
-                  </span>
-                </div>
-                <h1 class="text-2xl font-bold leading-tight tracking-[-0.015em]">ShopNest</h1>
-              </div>
-              <nav class="hidden md:flex items-center gap-9">
-                <a class="text-text-secondary-light dark:text-text-secondary-dark text-sm font-medium leading-normal hover:text-primary transition-colors"
-                  href="#">Trang chủ</a>
-                <a class="text-text-secondary-light dark:text-text-secondary-dark text-sm font-medium leading-normal hover:text-primary transition-colors"
-                  href="#">Cửa hàng</a>
-                <a class="text-text-secondary-light dark:text-text-secondary-dark text-sm font-medium leading-normal hover:text-primary transition-colors"
-                  href="#">Ưu đãi</a>
-                <a class="text-text-secondary-light dark:text-text-secondary-dark text-sm font-medium leading-normal hover:text-primary transition-colors"
-                  href="#">Câu hỏi thường gặp</a>
-              </nav>
+        class="w-full bg-surface-light dark:bg-surface-dark/80 backdrop-blur-sm sticky top-0 z-40 border-b border-border-light dark:border-border-dark">
+        <div class="px-6">
+          <div class="flex items-center justify-between h-20">
+            <div class="flex items-center gap-4 flex-1">
+              <h2 class="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark">Cài đặt tài khoản</h2>
             </div>
-            <div class="flex flex-1 justify-end items-center gap-4">
-              <label class="hidden lg:flex flex-col min-w-40 !h-10 max-w-64">
-                <div class="flex w-full flex-1 items-stretch rounded-lg h-full">
-                  <div
-                    class="text-text-secondary-light dark:text-text-secondary-dark flex bg-surface-light dark:bg-surface-dark items-center justify-center pl-3 rounded-l-lg border-r-0">
-                    <span class="material-symbols-outlined">search</span>
-                  </div>
-                  <input
-                    class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-text-primary-light dark:text-text-primary-dark focus:outline-0 focus:ring-2 focus:ring-primary/50 border-none bg-surface-light dark:bg-surface-dark h-full placeholder:text-text-secondary-light dark:placeholder:text-text-secondary-dark px-4 rounded-l-none border-l-0 pl-2 text-sm font-normal leading-normal"
-                    placeholder="Tìm kiếm sản phẩm..." value="" />
-                </div>
-              </label>
-              <div class="flex gap-2">
-                <button
-                  class="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 w-10 bg-surface-light dark:bg-surface-dark text-text-primary-light dark:text-text-primary-dark hover:bg-primary/10 hover:text-primary transition-colors">
-                  <span class="material-symbols-outlined">favorite_border</span>
-                </button>
-                <button
-                  class="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 w-10 bg-surface-light dark:bg-surface-dark text-text-primary-light dark:text-text-primary-dark hover:bg-primary/10 hover:text-primary transition-colors">
-                  <span class="material-symbols-outlined">shopping_bag</span>
-                </button>
-              </div>
+            <div class="flex items-center gap-4 ml-6">
+              <button
+                class="flex cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 bg-transparent text-text-secondary-light dark:text-text-secondary-dark hover:bg-black/5 dark:hover:bg-white/5 hover:text-text-primary-light dark:hover:text-text-primary-dark transition-colors relative">
+                <span class="material-symbols-outlined">notifications</span>
+                <span class="absolute top-2 right-2.5 w-2 h-2 bg-primary rounded-full"></span>
+              </button>
+              <button
+                class="flex cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 bg-transparent text-text-secondary-light dark:text-text-secondary-dark hover:bg-black/5 dark:hover:bg-white/5 hover:text-text-primary-light dark:hover:text-text-primary-dark transition-colors"
+                onclick="document.documentElement.classList.toggle('dark')">
+                <span class="dark:hidden material-symbols-outlined">light_mode</span>
+                <span class="hidden dark:inline material-symbols-outlined">dark_mode</span>
+              </button>
               <div class="relative group">
                 <button class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 cursor-pointer"
-                  data-alt="user avatar placeholder"
                   style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBtD5o_3TsXWSdeCTCkNbMMXnrlIK7-fPHBZwbxSxq3k3hlzpnUs0OWbJLSZM5yL61gQpf7NAAyJFInpJRenu1LDculgknnbATzIXGlmd8lW90k5VU_IWHt-irI9Y91JoIGiRbx5NMHwC8CkvrpOcWYa_o2c1E5rh2bL8e2CYzAYUkcg9oaIkVQrmlewjsKjq4xWsz9GXEfpkOKwnfDBqjeDm0aJ54bbfSiU82ob7z1EYgzuyfEZwfq4rC6saIF6pdj1Sp8RqE4ptM");'></button>
                 <div
-                  class="absolute right-0 top-full mt-2 w-64 bg-background-light dark:bg-surface-dark rounded-xl shadow-lg border border-surface-light dark:border-black/10 p-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200 ease-in-out pointer-events-none group-hover:pointer-events-auto group-focus-within:pointer-events-auto z-10">
-                  <div class="flex items-center gap-3 p-2 mb-2">
-                    <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12"
+                  class="absolute right-0 top-full mt-2 w-64 bg-surface-light dark:bg-surface-dark rounded-xl shadow-lg border border-border-light dark:border-border-dark/50 p-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200 ease-in-out pointer-events-none group-hover:pointer-events-auto group-focus-within:pointer-events-auto z-10">
+                  <div class="flex items-center gap-3 p-2 mb-1">
+                    <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10"
                       style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBtD5o_3TsXWSdeCTCkNbMMXnrlIK7-fPHBZwbxSxq3k3hlzpnUs0OWbJLSZM5yL61gQpf7NAAyJFInpJRenu1LDculgknnbATzIXGlmd8lW90k5VU_IWHt-irI9Y91JoIGiRbx5NMHwC8CkvrpOcWYa_o2c1E5rh2bL8e2CYzAYUkcg9oaIkVQrmlewjsKjq4xWsz9GXEfpkOKwnfDBqjeDm0aJ54bbfSiU82ob7z1EYgzuyfEZwfq4rC6saIF6pdj1Sp8RqE4ptM");'>
                     </div>
                     <div>
-                      <p class="font-bold text-text-primary-light dark:text-text-primary-dark">Người dùng</p>
-                      <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">user@shopnest.com</p>
+                      <p class="font-semibold text-text-primary-light dark:text-text-primary-dark">Admin User</p>
+                      <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">admin@shopnest.com</p>
                     </div>
                   </div>
-                  <a class="flex items-center gap-3 px-3 py-2.5 text-sm text-text-primary-light dark:text-text-primary-dark hover:bg-surface-light dark:hover:bg-background-dark rounded-lg transition-colors"
+                  <hr class="my-1 border-border-light dark:border-border-dark" />
+                  <a class="flex items-center gap-3 px-3 py-2 text-sm text-text-primary-light dark:text-text-primary-dark hover:bg-background-light dark:hover:bg-background-dark rounded-lg transition-colors"
                     href="#">
                     <span
-                      class="material-symbols-outlined !text-xl text-text-secondary-light dark:text-text-secondary-dark">person</span>
-                    <span>Thông tin cá nhân</span>
+                      class="material-symbols-outlined !text-xl text-text-secondary-light dark:text-text-secondary-dark">account_circle</span>
+                    <span>Hồ sơ của tôi</span>
                   </a>
-                  <a class="flex items-center gap-3 px-3 py-2.5 text-sm text-text-primary-light dark:text-text-primary-dark hover:bg-surface-light dark:hover:bg-background-dark rounded-lg transition-colors"
+                  <a class="flex items-center gap-3 px-3 py-2 text-sm text-text-primary-light dark:text-text-primary-dark hover:bg-background-light dark:hover:bg-background-dark rounded-lg transition-colors"
                     href="#">
                     <span
-                      class="material-symbols-outlined !text-xl text-text-secondary-light dark:text-text-secondary-dark">receipt_long</span>
-                    <span>Đơn hàng của tôi</span>
+                      class="material-symbols-outlined !text-xl text-text-secondary-light dark:text-text-secondary-dark">settings</span>
+                    <span>Cài đặt tài khoản</span>
                   </a>
-                  <a class="flex items-center gap-3 px-3 py-2.5 text-sm text-text-primary-light dark:text-text-primary-dark hover:bg-surface-light dark:hover:bg-background-dark rounded-lg transition-colors"
+                  <a class="flex items-center gap-3 px-3 py-2 text-sm text-text-primary-light dark:text-text-primary-dark hover:bg-background-light dark:hover:bg-background-dark rounded-lg transition-colors"
                     href="#">
                     <span
-                      class="material-symbols-outlined !text-xl text-text-secondary-light dark:text-text-secondary-dark">favorite_border</span>
-                    <span>Danh sách yêu thích</span>
+                      class="material-symbols-outlined !text-xl text-text-secondary-light dark:text-text-secondary-dark">support_agent</span>
+                    <span>Hỗ trợ</span>
                   </a>
-                  <a class="flex items-center gap-3 px-3 py-2.5 text-sm text-text-primary-light dark:text-text-primary-dark hover:bg-surface-light dark:hover:bg-background-dark rounded-lg transition-colors"
-                    href="#">
-                    <span
-                      class="material-symbols-outlined !text-xl text-text-secondary-light dark:text-text-secondary-dark">home</span>
-                    <span>Địa chỉ giao hàng</span>
-                  </a>
-                  <a class="flex items-center gap-3 px-3 py-2.5 text-sm text-text-primary-light dark:text-text-primary-dark hover:bg-surface-light dark:hover:bg-background-dark rounded-lg transition-colors"
-                    href="#">
-                    <span
-                      class="material-symbols-outlined !text-xl text-text-secondary-light dark:text-text-secondary-dark">payment</span>
-                    <span>Phương thức thanh toán</span>
-                  </a>
-                  <hr class="my-2 border-surface-light dark:border-surface-dark/50" />
-                  <a class="flex items-center gap-3 px-3 py-2.5 text-sm text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                  <hr class="my-1 border-border-light dark:border-border-dark" />
+                  <a class="flex items-center gap-3 px-3 py-2 text-sm text-primary hover:bg-primary/10 rounded-lg transition-colors"
                     href="#">
                     <span class="material-symbols-outlined !text-xl">logout</span>
                     <span>Đăng xuất</span>
@@ -154,152 +221,88 @@
           </div>
         </div>
       </header>
-      <main class="flex-1">
-        <div class="bg-surface-light dark:bg-surface-dark py-16 md:py-24">
-          <div class="container mx-auto px-4">
-            <div class="max-w-4xl mx-auto text-center">
-              <h1
-                class="text-4xl md:text-5xl font-extrabold text-text-primary-light dark:text-text-primary-dark tracking-tighter">
-                Chính sách Cookie</h1>
-              <p class="mt-4 text-lg text-text-secondary-light dark:text-text-secondary-dark">Cập nhật lần cuối:
-                24/07/2024</p>
-            </div>
-          </div>
-        </div>
-        <div class="container mx-auto px-4 py-12 md:py-16">
+      <main class="flex-1 overflow-y-auto">
+        <div class="container mx-auto px-6 py-8">
           <div class="max-w-4xl mx-auto">
-            <div
-              class="prose prose-lg dark:prose-invert max-w-none text-text-secondary-light dark:text-text-secondary-dark leading-relaxed space-y-8">
-              <section>
-                <h2 class="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark mb-4">1. Cookie là gì?
-                </h2>
-                <p>Cookie là các tệp văn bản nhỏ được đặt trên thiết bị của bạn bởi các trang web mà bạn truy cập. Chúng
-                  được sử dụng rộng rãi để làm cho các trang web hoạt động, hoặc hoạt động hiệu quả hơn, cũng như để
-                  cung cấp thông tin cho chủ sở hữu trang web. Cookie giúp chúng tôi nhận ra thiết bị của bạn và ghi nhớ
-                  thông tin về sở thích hoặc các hành động trong quá khứ của bạn.</p>
-              </section>
-              <section>
-                <h2 class="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark mb-4">2. Cách chúng
-                  tôi sử dụng cookie</h2>
-                <p>Chúng tôi sử dụng cookie để nâng cao trải nghiệm duyệt web của bạn bằng cách: ghi nhớ các tùy chọn
-                  của bạn, cung cấp nội dung được cá nhân hóa, phân tích lưu lượng truy cập trang web để chúng tôi có
-                  thể cải thiện dịch vụ của mình, và cho mục đích quảng cáo. Chúng tôi không sử dụng cookie để thu thập
-                  thông tin nhận dạng cá nhân mà không có sự đồng ý của bạn.</p>
-              </section>
-              <section>
-                <h2 class="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark mb-4">3. Các loại
-                  cookie chúng tôi sử dụng</h2>
-                <p>Chúng tôi sử dụng các loại cookie sau trên trang web của mình:</p>
-                <ul class="list-disc pl-6 space-y-2">
-                  <li><strong>Cookie thiết yếu:</strong> Những cookie này là cần thiết để trang web hoạt động và không
-                    thể tắt trong hệ thống của chúng tôi. Chúng thường chỉ được đặt để đáp ứng các hành động do bạn thực
-                    hiện, chẳng hạn như đặt tùy chọn bảo mật, đăng nhập hoặc điền vào biểu mẫu.</li>
-                  <li><strong>Cookie hiệu suất:</strong> Những cookie này cho phép chúng tôi đếm số lần truy cập và
-                    nguồn lưu lượng truy cập để chúng tôi có thể đo lường và cải thiện hiệu suất của trang web. Chúng
-                    giúp chúng tôi biết trang nào là phổ biến nhất và ít phổ biến nhất và xem khách truy cập di chuyển
-                    xung quanh trang web như thế nào.</li>
-                  <li><strong>Cookie chức năng:</strong> Những cookie này cho phép trang web cung cấp chức năng và cá
-                    nhân hóa nâng cao. Chúng có thể được đặt bởi chúng tôi hoặc bởi các nhà cung cấp bên thứ ba có dịch
-                    vụ mà chúng tôi đã thêm vào các trang của mình.</li>
-                  <li><strong>Cookie quảng cáo:</strong> Những cookie này có thể được đặt thông qua trang web của chúng
-                    tôi bởi các đối tác quảng cáo của chúng tôi. Chúng có thể được các công ty đó sử dụng để xây dựng hồ
-                    sơ về sở thích của bạn và hiển thị cho bạn các quảng cáo có liên quan trên các trang web khác.</li>
-                </ul>
-              </section>
-              <section>
-                <h2 class="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark mb-4">4. Cách quản lý
-                  tùy chọn cookie của bạn</h2>
-                <p>Bạn có thể kiểm soát và/hoặc xóa cookie theo ý muốn. Hầu hết các trình duyệt web cho phép một số
-                  quyền kiểm soát hầu hết các cookie thông qua cài đặt trình duyệt. Để tìm hiểu thêm về cookie, bao gồm
-                  cách xem cookie nào đã được đặt, hãy truy cập www.aboutcookies.org hoặc www.allaboutcookies.org. Xin
-                  lưu ý rằng nếu bạn tắt cookie, một số tính năng của trang web này có thể không hoạt động như dự định.
-                </p>
-              </section>
-              <section>
-                <h2 class="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark mb-4">5. Thay đổi
-                  Chính sách</h2>
-                <p>Chính sách Cookie của chúng tôi có thể thay đổi theo thời gian. Chúng tôi sẽ đăng bất kỳ thay đổi
-                  chính sách cookie nào trên trang này và, nếu những thay đổi đó quan trọng, chúng tôi sẽ cung cấp thông
-                  báo nổi bật hơn. Chúng tôi khuyến khích bạn xem lại chính sách này định kỳ để được thông báo về cách
-                  chúng tôi sử dụng cookie.</p>
-              </section>
-              <section>
-                <h2 class="text-2xl font-bold text-text-primary-light dark:text-text-primary-dark mb-4">6. Thông tin
-                  Liên hệ</h2>
-                <p>Nếu bạn có bất kỳ câu hỏi nào về Chính sách Cookie này, vui lòng liên hệ với chúng tôi:</p>
-                <ul class="list-none p-0 space-y-2">
-                  <li><strong>Email:</strong> privacy@shopnest.com</li>
-                  <li><strong>Điện thoại:</strong> 1900 123 456</li>
-                  <li><strong>Địa chỉ:</strong> 123 Đường ABC, Quận 1, Thành phố Hồ Chí Minh, Việt Nam</li>
-                </ul>
+            <div class="flex border-b border-border-light dark:border-border-dark mb-8">
+              <button
+                class="px-4 py-3 text-sm font-semibold text-text-secondary-light dark:text-text-secondary-dark hover:text-text-primary-light dark:hover:text-text-primary-dark hover:border-b-2 hover:border-text-secondary-light dark:hover:border-text-secondary-dark transition-colors">Hồ
+                sơ</button>
+              <button
+                class="px-4 py-3 text-sm font-semibold text-text-secondary-light dark:text-text-secondary-dark hover:text-text-primary-light dark:hover:text-text-primary-dark hover:border-b-2 hover:border-text-secondary-light dark:hover:border-text-secondary-dark transition-colors">Mật
+                khẩu</button>
+              <button
+                class="px-4 py-3 text-sm font-semibold text-text-secondary-light dark:text-text-secondary-dark hover:text-text-primary-light dark:hover:text-text-primary-dark hover:border-b-2 hover:border-text-secondary-light dark:hover:border-text-secondary-dark transition-colors">Thông
+                báo</button>
+              <button class="px-4 py-3 text-sm font-semibold border-b-2 border-primary text-primary">Bảo mật</button>
+            </div>
+            <div class="space-y-12">
+              <section id="security">
+                <header class="mb-6">
+                  <h3 class="text-xl font-bold text-text-primary-light dark:text-text-primary-dark">Bảo mật</h3>
+                  <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-1">Quản lý cài đặt bảo
+                    mật, xác thực hai yếu tố, và các phương thức khác để giữ an toàn cho tài khoản của bạn.</p>
+                </header>
+                <div
+                  class="bg-surface-light dark:bg-surface-dark rounded-xl border border-border-light dark:border-border-dark">
+                  <div class="p-6">
+                    <div class="flex items-center justify-between">
+                      <div>
+                        <h4 class="font-semibold text-text-primary-light dark:text-text-primary-dark">Xác thực hai yếu
+                          tố (2FA)</h4>
+                        <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-1">Bảo vệ tài khoản
+                          của bạn với một lớp bảo mật bổ sung.</p>
+                      </div>
+                      <label class="switch">
+                        <input checked="" type="checkbox" />
+                        <span class="slider"></span>
+                      </label>
+                    </div>
+                  </div>
+                  <hr class="border-border-light dark:border-border-dark" />
+                  <div class="p-6">
+                    <h4 class="font-semibold text-text-primary-light dark:text-text-primary-dark mb-4">Phương thức xác
+                      thực</h4>
+                    <div class="space-y-4">
+                      <div class="flex items-center gap-4">
+                        <input checked=""
+                          class="form-radio h-4 w-4 text-primary bg-background-light dark:bg-background-dark border-border-light dark:border-border-dark focus:ring-primary/50"
+                          id="auth-app" name="auth-method" type="radio" />
+                        <label class="text-sm" for="auth-app">Sử dụng ứng dụng xác thực</label>
+                      </div>
+                      <div class="flex items-center gap-4">
+                        <input
+                          class="form-radio h-4 w-4 text-primary bg-background-light dark:bg-background-dark border-border-light dark:border-border-dark focus:ring-primary/50"
+                          id="sms" name="auth-method" type="radio" />
+                        <label class="text-sm" for="sms">Tin nhắn văn bản (SMS)</label>
+                      </div>
+                    </div>
+                  </div>
+                  <hr class="border-border-light dark:border-border-dark" />
+                  <div class="p-6">
+                    <div class="flex items-start md:items-center justify-between flex-col md:flex-row gap-4">
+                      <div>
+                        <h4 class="font-semibold text-text-primary-light dark:text-text-primary-dark">Mã dự phòng</h4>
+                        <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-1">Sử dụng trong
+                          trường hợp bạn không thể nhận mã qua điện thoại.</p>
+                      </div>
+                      <button
+                        class="inline-flex items-center justify-center h-9 px-4 rounded-lg border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark text-sm font-medium hover:bg-black/5 dark:hover:bg-white/5 transition-colors">Hiển
+                        thị mã</button>
+                    </div>
+                  </div>
+                  <footer class="bg-black/5 dark:bg-white/5 px-6 py-4 rounded-b-xl flex justify-end">
+                    <button
+                      class="inline-flex items-center justify-center gap-2 h-9 px-4 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90 transition-colors">Lưu
+                      thay đổi</button>
+                  </footer>
+                </div>
               </section>
             </div>
           </div>
         </div>
       </main>
-      <footer class="bg-surface-light dark:bg-surface-dark mt-16">
-        <div class="container mx-auto px-4 py-12">
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div class="col-span-1 md:col-span-2 lg:col-span-1">
-              <div class="flex items-center gap-2 text-text-primary-light dark:text-text-primary-dark mb-4">
-                <div class="text-primary"><span class="material-symbols-outlined !text-3xl">local_mall</span></div>
-                <h1 class="text-xl font-bold">ShopNest</h1>
-              </div>
-              <p class="text-text-secondary-light dark:text-text-secondary-dark text-sm">Điểm đến mua sắm trực tuyến của
-                bạn cho mọi thứ bạn cần.</p>
-            </div>
-            <div>
-              <h4 class="font-bold mb-4 text-text-primary-light dark:text-text-primary-dark">Về chúng tôi</h4>
-              <ul class="space-y-2">
-                <li><a class="text-sm text-text-secondary-light dark:text-text-secondary-dark hover:text-primary"
-                    href="#">Câu chuyện</a></li>
-                <li><a class="text-sm text-text-secondary-light dark:text-text-secondary-dark hover:text-primary"
-                    href="#">Tuyển dụng</a></li>
-                <li><a class="text-sm text-text-secondary-light dark:text-text-secondary-dark hover:text-primary"
-                    href="#">Báo chí</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 class="font-bold mb-4 text-text-primary-light dark:text-text-primary-dark">Chăm sóc khách hàng</h4>
-              <ul class="space-y-2">
-                <li><a class="text-sm text-text-secondary-light dark:text-text-secondary-dark hover:text-primary"
-                    href="#">Liên hệ</a></li>
-                <li><a class="text-sm text-text-secondary-light dark:text-text-secondary-dark hover:text-primary"
-                    href="#">Câu hỏi thường gặp</a></li>
-                <li><a class="text-sm text-text-secondary-light dark:text-text-secondary-dark hover:text-primary"
-                    href="#">Chính sách đổi trả</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 class="font-bold mb-4 text-text-primary-light dark:text-text-primary-dark">Chính sách</h4>
-              <ul class="space-y-2">
-                <li><a class="text-sm text-text-secondary-light dark:text-text-secondary-dark hover:text-primary"
-                    href="#">Điều khoản dịch vụ</a></li>
-                <li><a class="text-sm text-text-secondary-light dark:text-text-secondary-dark hover:text-primary"
-                    href="#">Chính sách bảo mật</a></li>
-                <li><a class="text-sm text-text-secondary-light dark:text-text-secondary-dark hover:text-primary"
-                    href="#">Chính sách Cookie</a></li>
-              </ul>
-            </div>
-          </div>
-          <div
-            class="mt-12 border-t border-gray-200 dark:border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-text-secondary-light dark:text-text-secondary-dark">
-            <p>© 2024 ShopNest. Đã đăng ký bản quyền.</p>
-            <div class="flex space-x-4 mt-4 md:mt-0">
-              <a class="hover:text-primary" href="#">FB</a>
-              <a class="hover:text-primary" href="#">IG</a>
-              <a class="hover:text-primary" href="#">TW</a>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
-    <button
-      class="fixed bottom-6 right-6 flex h-16 w-16 cursor-pointer items-center justify-center rounded-full bg-secondary text-white shadow-lg transition-transform hover:scale-110">
-      <span class="material-symbols-outlined !text-3xl" style="font-variation-settings: 'FILL' 1;">
-        chat_bubble
-      </span>
-    </button>
   </div>
 </body>
 
