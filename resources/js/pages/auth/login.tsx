@@ -1,4 +1,5 @@
-import { useState, FormEvent } from 'react';
+import { FormEvent } from 'react';
+import { useForm } from '@inertiajs/react';
 import SimpleAuthLayout from '../../components/auth/simple-auth-layout';
 import AuthForm from '../../components/auth/auth-form';
 import AuthInput from '../../components/auth/auth-input';
@@ -6,24 +7,15 @@ import AuthButton from '../../components/auth/auth-button';
 import AuthLink from '../../components/auth/auth-link';
 
 export default function LoginPage() {
-    const [formData, setFormData] = useState({
+    const { data, setData, post, processing, errors } = useForm({
         email: '',
         password: '',
         remember: false,
     });
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, type, checked, value } = e.target;
-        setFormData({
-            ...formData,
-            [name]: type === 'checkbox' ? checked : value,
-        });
-    };
-
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-        // Handle login logic here
-        console.log('Login:', formData);
+        post('/login');
     };
 
     return (
@@ -41,10 +33,13 @@ export default function LoginPage() {
                                 type="email"
                                 autoComplete="email"
                                 required
-                                value={formData.email}
-                                onChange={handleChange}
+                                value={data.email}
+                                onChange={(e) => setData('email', e.target.value)}
                                 placeholder="Địa chỉ email"
                             />
+                            {errors.email && (
+                                <p className="text-sm text-red-600">{errors.email}</p>
+                            )}
 
                             {/* Password */}
                             <AuthInput
@@ -54,10 +49,13 @@ export default function LoginPage() {
                                 type="password"
                                 autoComplete="current-password"
                                 required
-                                value={formData.password}
-                                onChange={handleChange}
+                                value={data.password}
+                                onChange={(e) => setData('password', e.target.value)}
                                 placeholder="Mật khẩu"
                             />
+                            {errors.password && (
+                                <p className="text-sm text-red-600">{errors.password}</p>
+                            )}
                         </div>
 
                         {/* Remember Me & Forgot Password */}
@@ -67,8 +65,8 @@ export default function LoginPage() {
                                     id="remember"
                                     name="remember"
                                     type="checkbox"
-                                    checked={formData.remember}
-                                    onChange={handleChange}
+                                    checked={data.remember}
+                                    onChange={(e) => setData('remember', e.target.checked)}
                                     className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
                                 />
                                 <label htmlFor="remember" className="ml-2 block text-sm text-foreground">
@@ -85,8 +83,8 @@ export default function LoginPage() {
 
                         {/* Submit Button */}
                         <div>
-                            <AuthButton type="submit">
-                                Đăng nhập
+                            <AuthButton type="submit" disabled={processing}>
+                                {processing ? 'Đang xử lý...' : 'Đăng nhập'}
                             </AuthButton>
                         </div>
                     </AuthForm>
@@ -94,7 +92,7 @@ export default function LoginPage() {
                     {/* Register Link */}
                     <div className="text-center text-sm">
                         <span className="text-muted-foreground">Chưa có tài khoản? </span>
-                        <AuthLink href="#">
+                        <AuthLink href={"/register"}>
                             Đăng ký ngay
                         </AuthLink>
                     </div>

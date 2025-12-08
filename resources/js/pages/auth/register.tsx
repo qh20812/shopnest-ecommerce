@@ -1,4 +1,5 @@
-import { useState, FormEvent } from 'react';
+import { FormEvent } from 'react';
+import { useForm } from '@inertiajs/react';
 import SimpleAuthLayout from '../../components/auth/simple-auth-layout';
 import AuthForm from '../../components/auth/auth-form';
 import AuthInput from '../../components/auth/auth-input';
@@ -6,24 +7,16 @@ import AuthButton from '../../components/auth/auth-button';
 import AuthLink from '../../components/auth/auth-link';
 
 export default function Register() {
-    const [formData, setFormData] = useState({
-        fullName: '',
+    const { data, setData, post, processing, errors } = useForm({
+        full_name: '',
         email: '',
         password: '',
-        confirmPassword: '',
+        password_confirmation: '',
     });
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value,
-        });
-    };
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-        // Handle registration logic here
-        console.log('Register:', formData);
+        post('/register');
     };
 
     return (
@@ -37,14 +30,17 @@ export default function Register() {
                             <AuthInput
                                 id="full-name"
                                 label="Họ và tên"
-                                name="fullName"
+                                name="full_name"
                                 type="text"
                                 autoComplete="name"
                                 required
-                                value={formData.fullName}
-                                onChange={handleChange}
+                                value={data.full_name}
+                                onChange={(e) => setData('full_name', e.target.value)}
                                 placeholder="Họ và tên"
                             />
+                            {errors.full_name && (
+                                <p className="text-sm text-red-600">{errors.full_name}</p>
+                            )}
 
                             {/* Email */}
                             <AuthInput
@@ -54,10 +50,13 @@ export default function Register() {
                                 type="email"
                                 autoComplete="email"
                                 required
-                                value={formData.email}
-                                onChange={handleChange}
+                                value={data.email}
+                                onChange={(e) => setData('email', e.target.value)}
                                 placeholder="Địa chỉ email"
                             />
+                            {errors.email && (
+                                <p className="text-sm text-red-600">{errors.email}</p>
+                            )}
 
                             {/* Password */}
                             <AuthInput
@@ -67,29 +66,35 @@ export default function Register() {
                                 type="password"
                                 autoComplete="new-password"
                                 required
-                                value={formData.password}
-                                onChange={handleChange}
+                                value={data.password}
+                                onChange={(e) => setData('password', e.target.value)}
                                 placeholder="Mật khẩu"
                             />
+                            {errors.password && (
+                                <p className="text-sm text-red-600">{errors.password}</p>
+                            )}
 
                             {/* Confirm Password */}
                             <AuthInput
                                 id="confirm-password"
                                 label="Xác nhận mật khẩu"
-                                name="confirmPassword"
+                                name="password_confirmation"
                                 type="password"
                                 autoComplete="new-password"
                                 required
-                                value={formData.confirmPassword}
-                                onChange={handleChange}
+                                value={data.password_confirmation}
+                                onChange={(e) => setData('password_confirmation', e.target.value)}
                                 placeholder="Xác nhận mật khẩu"
                             />
+                            {errors.password_confirmation && (
+                                <p className="text-sm text-red-600">{errors.password_confirmation}</p>
+                            )}
                         </div>
 
                         {/* Submit Button */}
                         <div>
-                            <AuthButton type="submit">
-                                Đăng ký
+                            <AuthButton type="submit" disabled={processing}>
+                                {processing ? 'Đang xử lý...' : 'Đăng ký'}
                             </AuthButton>
                         </div>
                     </AuthForm>
@@ -97,7 +102,7 @@ export default function Register() {
                     {/* Login Link */}
                     <div className="text-center text-sm">
                         <span className="text-muted-foreground">Bạn đã có tài khoản? </span>
-                        <AuthLink href="#">
+                        <AuthLink href="/login">
                             Đăng nhập ngay
                         </AuthLink>
                     </div>

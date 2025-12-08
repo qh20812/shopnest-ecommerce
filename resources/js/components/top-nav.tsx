@@ -1,11 +1,26 @@
 import { ShoppingBag, Heart, Search, User, Package, Home, CreditCard, LogOut, Sun, Moon } from 'lucide-react';
 import Input from './ui/input';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { useToast } from '../lib/toastContext';
 import { useState, useRef, useEffect } from 'react';
 
+type PageProps = {
+    auth?: {
+        user?: {
+            id?: number;
+            email?: string;
+            full_name?: string;
+            avatar_url?: string;
+            avatar?: string;
+        } | null;
+    } | null;
+    [key: string]: unknown;
+};
+
 export default function TopNav() {
     const { showError } = useToast();
+    const page = usePage<PageProps>();
+    const authUser = page.props?.auth?.user ?? null;
     const [isAvatarHover, setIsAvatarHover] = useState(false);
     const [isDropdownHover, setIsDropdownHover] = useState(false);
     const [isDropdownClick, setIsDropdownClick] = useState(false);
@@ -137,6 +152,14 @@ export default function TopNav() {
                             </div>
 
                             {/* User Avatar Dropdown */}
+                            {!authUser ? (
+                                <Link
+                                    href="/login"
+                                    className="hidden md:inline-flex items-center rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-primary/10 hover:text-primary"
+                                >
+                                    Đăng nhập
+                                </Link>
+                            ) : (
                             <div
                                 className="relative group"
                                 onMouseEnter={() => setIsAvatarHover(true)}
@@ -147,7 +170,7 @@ export default function TopNav() {
                                     className="h-10 w-10 cursor-pointer rounded-full bg-cover bg-center"
                                     style={{
                                         backgroundImage:
-                                            'url("https://lh3.googleusercontent.com/aida-public/AB6AXuBtD5o_3TsXWSdeCTCkNbMMXnrlIK7-fPHBZwbxSxq3k3hlzpnUs0OWbJLSZM5yL61gQpf7NAAyJFInpJRenu1LDculgknnbATzIXGlmd8lW90k5VU_IWHt-irI9Y91JoIGiRbx5NMHwC8CkvrpOcWYa_o2c1E5rh2bL8e2CYzAYUkcg9oaIkVQrmlewjsKjq4xWsz9GXEfpkOKwnfDBqjeDm0aJ54bbfSiU82ob7z1EYgzuyfEZwfq4rC6saIF6pdj1Sp8RqE4ptM")',
+                                            `url("${authUser.avatar_url ?? authUser.avatar ?? '/default-avatar.png'}")`,
                                     }}
                                     onClick={() => setIsDropdownClick((v) => !v)}
                                 />
@@ -165,18 +188,18 @@ export default function TopNav() {
                                             className="h-12 w-12 rounded-full bg-cover bg-center"
                                             style={{
                                                 backgroundImage:
-                                                    'url("https://lh3.googleusercontent.com/aida-public/AB6AXuBtD5o_3TsXWSdeCTCkNbMMXnrlIK7-fPHBZwbxSxq3k3hlzpnUs0OWbJLSZM5yL61gQpf7NAAyJFInpJRenu1LDculgknnbATzIXGlmd8lW90k5VU_IWHt-irI9Y91JoIGiRbx5NMHwC8CkvrpOcWYa_o2c1E5rh2bL8e2CYzAYUkcg9oaIkVQrmlewjsKjq4xWsz9GXEfpkOKwnfDBqjeDm0aJ54bbfSiU82ob7z1EYgzuyfEZwfq4rC6saIF6pdj1Sp8RqE4ptM")',
+                                                    `url("${authUser.avatar_url ?? authUser.avatar ?? '/default-avatar.png'}")`,
                                             }}
                                         />
                                         <div>
-                                            <p className="font-bold text-foreground">Người dùng</p>
-                                            <p className="text-sm text-muted-foreground">user@shopnest.com</p>
+                                            <p className="font-bold text-foreground">{authUser.full_name ?? authUser.email ?? 'Người dùng'}</p>
+                                            <p className="text-sm text-muted-foreground">{authUser.email ?? ''}</p>
                                         </div>
                                     </div>
 
                                     {/* Menu Items */}
                                     <Link
-                                        href="#"
+                                        href="/account"
                                         className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-card"
                                     >
                                         <User className="h-5 w-5 text-muted-foreground" />
@@ -214,7 +237,8 @@ export default function TopNav() {
                                     <hr className="my-2 border-border" />
 
                                     <Link
-                                        href="#"
+                                        href="/logout"
+                                        method="post"
                                         className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-primary transition-colors hover:bg-primary/10"
                                     >
                                         <LogOut className="h-5 w-5" />
@@ -222,6 +246,7 @@ export default function TopNav() {
                                     </Link>
                                 </div>
                             </div>
+                            )}
                         </div>
                     </div>
                 </div>

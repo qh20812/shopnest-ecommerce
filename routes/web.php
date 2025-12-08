@@ -18,9 +18,9 @@ Route::get('/cart', function(){
 Route::get('/wish-list', function(){
     return Inertia::render('wish-list');
 })->name('wish-list');
-Route::get('/detail', function(){
-    return Inertia::render('detail');
-})->name('detail');
+Route::get('/product/{productId}', [\App\Http\Controllers\DetailController::class, 'show'])->name('product.detail');
+Route::post('/product/{productId}/add-to-cart', [\App\Http\Controllers\DetailController::class, 'addToCart'])->name('product.addToCart');
+Route::post('/product/{productId}/buy-now', [\App\Http\Controllers\DetailController::class, 'buyNow'])->name('product.buyNow');
 Route::get('/checkout', function(){
     return Inertia::render('checkout');
 })->name('checkout');
@@ -91,4 +91,5 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::apiResource('banners', BannerController::class);
 });
 
+require __DIR__.'/auth.php';
 require __DIR__.'/settings.php';
