@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Heart, ShoppingBag, MessageCircle } from 'lucide-react';
-import { Link } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import TopNav from '../components/top-nav';
 import Footer from '../components/footer';
 import { ToastProvider, useToast } from '../lib/toastContext';
@@ -17,84 +17,48 @@ interface Product {
     brand: string;
 }
 
-function ShoppingContent() {
+interface Category {
+    id: number | string;
+    name: string;
+}
+
+interface Brand {
+    id: number;
+    name: string;
+}
+
+interface Pagination {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number;
+    to: number;
+}
+
+interface Filters {
+    category: string;
+    min_price: string | null;
+    max_price: string | null;
+    selected_brands: number[];
+    sort_by: string;
+}
+
+interface ShoppingProps {
+    products: Product[];
+    pagination: Pagination;
+    categories: Category[];
+    brands: Brand[];
+    filters: Filters;
+}
+
+function ShoppingContent({ products, pagination, categories, brands, filters }: ShoppingProps) {
     const { showSuccess } = useToast();
-    const [selectedCategory, setSelectedCategory] = useState('all');
-    const [minPrice, setMinPrice] = useState('');
-    const [maxPrice, setMaxPrice] = useState('');
-    const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-    const [sortBy, setSortBy] = useState('popular');
-
-    const categories = [
-        { id: 'all', name: 'Tất cả sản phẩm' },
-        { id: 'electronics', name: 'Điện tử' },
-        { id: 'fashion', name: 'Thời trang' },
-        { id: 'home', name: 'Nhà & Vườn' },
-        { id: 'beauty', name: 'Sắc đẹp' },
-        { id: 'sports', name: 'Thể thao' },
-        { id: 'toys', name: 'Đồ chơi' },
-    ];
-
-    const brands = ['ErgoFlex', 'ProShot', 'SkyRider', 'TechPro'];
-
-    const products: Product[] = [
-        {
-            id: 1,
-            name: 'Ghế văn phòng hiện đại',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA_3Hg8MXQwtiERSX43afboTM1H1-41w4KBQxetVoKydoputfI3u-8Vr6lMZPGmmgK3Vj2a8FocftUvTeNfDtyuDk6vulQgy2XQ6sJD-C6NSeXYh2CYNUSAGjsHDVlALoSmMzJp2YqQhCYDHCKO7d1_eS61l4Ddw8y6y5pss7Yg3BsRbqUordq7yP-W65WHG38K4MqowehadHRhDBne6loSh9agztSqMoxAn5DQ2Ydqg9M5b4sBAP2tnRwZIE3rmUdiQ7c_TkDRAB4',
-            price: 2499000,
-            originalPrice: 3499000,
-            rating: 4.5,
-            reviews: 128,
-            brand: 'ErgoFlex',
-        },
-        {
-            id: 2,
-            name: 'Ba lô thời trang',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAPisgy3KZaPmgOSMmh9sqM49-D8D7yiH8T_Kt_mJWPnXtCcQLjHDsov7tlNdKZR1GkS87Lfefou5CCJFEmBS2owo8stPVx_XXkHyQjdC0IY7mJQ9TJysBiirwxJ65XeIz_lkMcPuRKURv-EwbLHd5yvpWx2NyexTj4fHwtkP2BzKsdHfL6Nq-JhcrlYJstUiODv9638JXtmN7k7NoqwpuQcf4q0YIf56ecOwMDSZV9LcXGX12VZAfPrWPMND7nXDjBM7E-D1DQCk4',
-            price: 599000,
-            rating: 4.8,
-            reviews: 256,
-            brand: 'SkyRider',
-        },
-        {
-            id: 3,
-            name: 'Bộ cốc sứ cao cấp',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB0Dx4PFCAlmfHbtZ9gWiy5A4YWIhbVWT0zGZ_PTYfWgZ_bDm0UyQS0MKko39pu3odEXa9wb2Tkh2JEqu66uUHOKkPUkkJjG_Rce83f9jWwegBC95wzkgFJPnD3iDmEJlfrRpsLvwQR9L4pDCjE5F0ZEsp1DoT6BOe1ZSxT28oR_RA-0e5c4eU9YN8NsGdQZyrwwPhi9KbR54oJu66zfhOGeBmUhAM1kUfkeL8IK45jkLlGwYjeoi65L8y3qNl4Zy-oo2064pw3KKo',
-            price: 349000,
-            rating: 4.3,
-            reviews: 89,
-            brand: 'ErgoFlex',
-        },
-        {
-            id: 4,
-            name: 'Loa bluetooth di động',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuALOGGvwadBs8vhjIFBZyG4TjM7DyT6Wzqn7eGOl5dssX7O0GeYHMprL5MYWxiyeY843X4LnczV7YowlUoEDA7uozJO5NiMMLnQk1SX6EbqpUlUCcbOqxRh8034s3AzsdPhIur7N4JCSMaxXm1vqiUeDKSQBeeTdMWBO9n7-UVkhFKfV7Xpp7Gjbp_pRXuKJvbliG5BxKFDNRUAT5dPILqfPj7_51E33Zvnf_Vn4RYjQ1kr9EQuVHmSTfd9aERR6yqXoyt_O8lH3b0',
-            price: 1299000,
-            rating: 4.7,
-            reviews: 342,
-            brand: 'ProShot',
-        },
-        {
-            id: 5,
-            name: 'Máy ảnh chuyên nghiệp',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDkOT3NXftcHBYXJWdTJQoBIeEU5MFdARt6E2VA-vX8-RzpULjYGjqM5vkZD7728lKkHbXLaJYkjMeRC_HA1Yrpy7-E57-n3zCp0lDvZrGES07xg0ZDnfko8k96BKQIIDrhoTAYK1-HCMTEgBRB4S4PQ8yOEyVwKsL6oy55qXQpW6FOA2Y-7-6bLUBgVIJe74FNMvpiIdk0OqRTbwSsrEQd6002owa3TH0dYP3nE-SfbXorxPdHht1mAL2UDU_7Whrzyvv2L3L_tlI',
-            price: 15999000,
-            originalPrice: 18999000,
-            rating: 4.9,
-            reviews: 167,
-            brand: 'ProShot',
-        },
-        {
-            id: 6,
-            name: 'Máy pha cà phê thông minh',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD0ywpht2YQSrweNwuUan-skozVSnnD2O767vO8LEwBf_nTGJzsQEX_pSbnOrbhjrZAcJX_lUE3wF9E826v6KbxgW7GdgxmLS2oIJGuTWpUsmVkmGOlynzkZkZ5LZcxWM3Us5Usrx-hagsCKRZdzZ22mbpdXUzxzPknF8H4YKwgwtza1tKGqnBHXkJ6m6CLwjRd-L0gus_grmfHEwU8oVVPRGVWCpyyJUUUk5KkxMjBOZ-0WZ-JvdQMAgX-9TcdeqQv52T3ZCFQdw0',
-            price: 4299000,
-            rating: 4.6,
-            reviews: 203,
-            brand: 'TechPro',
-        },
-    ];
+    const [selectedCategory, setSelectedCategory] = useState(filters.category);
+    const [minPrice, setMinPrice] = useState(filters.min_price || '');
+    const [maxPrice, setMaxPrice] = useState(filters.max_price || '');
+    const [selectedBrands, setSelectedBrands] = useState<number[]>(filters.selected_brands);
+    const [sortBy, setSortBy] = useState(filters.sort_by);
 
     const formatPrice = (price: number) =>
         new Intl.NumberFormat('vi-VN', {
@@ -102,12 +66,39 @@ function ShoppingContent() {
             currency: 'VND',
         }).format(price);
 
-    const handleBrandChange = (brand: string) => {
-        if (selectedBrands.includes(brand)) {
-            setSelectedBrands(selectedBrands.filter((b) => b !== brand));
+    const handleBrandChange = (brandId: number) => {
+        if (selectedBrands.includes(brandId)) {
+            setSelectedBrands(selectedBrands.filter((b) => b !== brandId));
         } else {
-            setSelectedBrands([...selectedBrands, brand]);
+            setSelectedBrands([...selectedBrands, brandId]);
         }
+    };
+
+    const applyFilters = () => {
+        router.get('/shopping', {
+            category: selectedCategory !== 'all' ? selectedCategory : undefined,
+            min_price: minPrice || undefined,
+            max_price: maxPrice || undefined,
+            brands: selectedBrands.length > 0 ? selectedBrands : undefined,
+            sort_by: sortBy,
+        }, {
+            preserveState: true,
+            preserveScroll: true,
+        });
+    };
+
+    const goToPage = (page: number) => {
+        router.get('/shopping', {
+            category: selectedCategory !== 'all' ? selectedCategory : undefined,
+            min_price: minPrice || undefined,
+            max_price: maxPrice || undefined,
+            brands: selectedBrands.length > 0 ? selectedBrands : undefined,
+            sort_by: sortBy,
+            page: page,
+        }, {
+            preserveState: true,
+            preserveScroll: true,
+        });
     };
 
     const handleAddToCart = () => {
@@ -145,9 +136,21 @@ function ShoppingContent() {
                                         {categories.map((category) => (
                                             <li key={category.id}>
                                                 <button
-                                                    onClick={() => setSelectedCategory(category.id)}
+                                                    onClick={() => {
+                                                        setSelectedCategory(String(category.id));
+                                                        router.get('/shopping', {
+                                                            category: category.id !== 'all' ? category.id : undefined,
+                                                            min_price: minPrice || undefined,
+                                                            max_price: maxPrice || undefined,
+                                                            brands: selectedBrands.length > 0 ? selectedBrands : undefined,
+                                                            sort_by: sortBy,
+                                                        }, {
+                                                            preserveState: true,
+                                                            preserveScroll: true,
+                                                        });
+                                                    }}
                                                     className={`text-sm transition-colors ${
-                                                        selectedCategory === category.id
+                                                        selectedCategory === String(category.id)
                                                             ? 'font-medium text-primary'
                                                             : 'text-muted-foreground hover:text-primary'
                                                     }`}
@@ -162,47 +165,63 @@ function ShoppingContent() {
                                 {/* Price Filter */}
                                 <div className="border-t border-border pt-6">
                                     <h3 className="mb-4 text-lg font-bold text-foreground">Lọc theo giá</h3>
-                                    <div className="mb-2 flex items-center gap-2">
-                                        <Input
-                                            type="text"
-                                            placeholder="Tối thiểu"
-                                            value={minPrice}
-                                            onChange={(e) => setMinPrice(e.target.value)}
-                                            className="h-10"
-                                        />
-                                        <span className="text-muted-foreground">-</span>
-                                        <Input
-                                            type="text"
-                                            placeholder="Tối đa"
-                                            value={maxPrice}
-                                            onChange={(e) => setMaxPrice(e.target.value)}
-                                            className="h-10"
-                                        />
+                                    <div className="space-y-2">
+                                        <div className="flex items-center gap-2">
+                                            <Input
+                                                type="text"
+                                                placeholder="Tối thiểu"
+                                                value={minPrice}
+                                                onChange={(e) => setMinPrice(e.target.value)}
+                                                className="h-10"
+                                            />
+                                            <span className="text-muted-foreground">-</span>
+                                            <Input
+                                                type="text"
+                                                placeholder="Tối đa"
+                                                value={maxPrice}
+                                                onChange={(e) => setMaxPrice(e.target.value)}
+                                                className="h-10"
+                                            />
+                                        </div>
+                                        <button
+                                            onClick={applyFilters}
+                                            className="w-full rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary/90"
+                                        >
+                                            Áp dụng
+                                        </button>
                                     </div>
                                 </div>
 
                                 {/* Brands */}
                                 <div className="border-t border-border pt-6">
                                     <h3 className="mb-4 text-lg font-bold text-foreground">Thương hiệu</h3>
-                                    <ul className="space-y-2">
-                                        {brands.map((brand) => (
-                                            <li key={brand} className="flex items-center">
-                                                <input
-                                                    type="checkbox"
-                                                    id={`brand-${brand}`}
-                                                    checked={selectedBrands.includes(brand)}
-                                                    onChange={() => handleBrandChange(brand)}
-                                                    className="h-4 w-4 rounded border-border text-primary focus:ring-primary/50"
-                                                />
-                                                <label
-                                                    htmlFor={`brand-${brand}`}
-                                                    className="ml-2 cursor-pointer text-sm text-foreground"
-                                                >
-                                                    {brand}
-                                                </label>
-                                            </li>
-                                        ))}
-                                    </ul>
+                                    <div className="space-y-2">
+                                        <ul className="space-y-2">
+                                            {brands.map((brand) => (
+                                                <li key={brand.id} className="flex items-center">
+                                                    <input
+                                                        type="checkbox"
+                                                        id={`brand-${brand.id}`}
+                                                        checked={selectedBrands.includes(brand.id)}
+                                                        onChange={() => handleBrandChange(brand.id)}
+                                                        className="h-4 w-4 rounded border-border text-primary focus:ring-primary/50"
+                                                    />
+                                                    <label
+                                                        htmlFor={`brand-${brand.id}`}
+                                                        className="ml-2 cursor-pointer text-sm text-foreground"
+                                                    >
+                                                        {brand.name}
+                                                    </label>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                        <button
+                                            onClick={applyFilters}
+                                            className="w-full rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary/90"
+                                        >
+                                            Áp dụng
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </aside>
@@ -212,13 +231,25 @@ function ShoppingContent() {
                             {/* Toolbar */}
                             <div className="mb-6 flex flex-col items-center justify-between rounded-lg bg-card p-4 sm:flex-row">
                                 <p className="mb-2 text-sm text-muted-foreground sm:mb-0">
-                                    Hiển thị 1–12 của 48 sản phẩm
+                                    Hiển thị {pagination.from}–{pagination.to} của {pagination.total} sản phẩm
                                 </p>
                                 <div className="flex items-center gap-2">
                                     <span className="text-sm font-medium text-foreground">Sắp xếp theo:</span>
                                     <select
                                         value={sortBy}
-                                        onChange={(e) => setSortBy(e.target.value)}
+                                        onChange={(e) => {
+                                            setSortBy(e.target.value);
+                                            router.get('/shopping', {
+                                                category: selectedCategory !== 'all' ? selectedCategory : undefined,
+                                                min_price: minPrice || undefined,
+                                                max_price: maxPrice || undefined,
+                                                brands: selectedBrands.length > 0 ? selectedBrands : undefined,
+                                                sort_by: e.target.value,
+                                            }, {
+                                                preserveState: true,
+                                                preserveScroll: true,
+                                            });
+                                        }}
                                         className="rounded-lg border-border bg-background text-sm text-foreground focus:border-primary focus:ring-primary/50"
                                     >
                                         <option value="popular">Phổ biến nhất</option>
@@ -292,43 +323,55 @@ function ShoppingContent() {
                             </div>
 
                             {/* Pagination */}
-                            <nav className="mt-10 flex justify-center">
-                                <ul className="-space-x-px flex h-10 items-center text-base">
-                                    <li>
-                                        <button className="ms-0 flex h-10 items-center justify-center rounded-s-lg border border-border bg-background px-4 leading-tight text-muted-foreground transition-colors hover:bg-card">
-                                            Trang trước
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <button
-                                            aria-current="page"
-                                            className="flex h-10 items-center justify-center border border-primary bg-primary px-4 leading-tight text-white"
-                                        >
-                                            1
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <button className="flex h-10 items-center justify-center border border-border bg-background px-4 leading-tight text-muted-foreground transition-colors hover:bg-card">
-                                            2
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <button className="flex h-10 items-center justify-center border border-border bg-background px-4 leading-tight text-muted-foreground transition-colors hover:bg-card">
-                                            3
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <button className="flex h-10 items-center justify-center border border-border bg-background px-4 leading-tight text-muted-foreground transition-colors hover:bg-card">
-                                            4
-                                        </button>
-                                    </li>
-                                    <li>
-                                        <button className="flex h-10 items-center justify-center rounded-e-lg border border-border bg-background px-4 leading-tight text-muted-foreground transition-colors hover:bg-card">
-                                            Trang kế tiếp
-                                        </button>
-                                    </li>
-                                </ul>
-                            </nav>
+                            {pagination.last_page > 1 && (
+                                <nav className="mt-10 flex justify-center">
+                                    <ul className="-space-x-px flex h-10 items-center text-base">
+                                        <li>
+                                            <button
+                                                onClick={() => goToPage(pagination.current_page - 1)}
+                                                disabled={pagination.current_page === 1}
+                                                className="ms-0 flex h-10 items-center justify-center rounded-s-lg border border-border bg-background px-4 leading-tight text-muted-foreground transition-colors hover:bg-card disabled:cursor-not-allowed disabled:opacity-50"
+                                            >
+                                                Trang trước
+                                            </button>
+                                        </li>
+                                        {Array.from({ length: pagination.last_page }, (_, i) => i + 1)
+                                            .filter(page => {
+                                                const current = pagination.current_page;
+                                                return page === 1 || page === pagination.last_page || Math.abs(page - current) <= 2;
+                                            })
+                                            .map((page, index, array) => (
+                                                <li key={page}>
+                                                    {index > 0 && array[index - 1] !== page - 1 && (
+                                                        <span className="flex h-10 items-center justify-center border border-border bg-background px-4 leading-tight text-muted-foreground">
+                                                            ...
+                                                        </span>
+                                                    )}
+                                                    <button
+                                                        onClick={() => goToPage(page)}
+                                                        aria-current={pagination.current_page === page ? 'page' : undefined}
+                                                        className={`flex h-10 items-center justify-center border px-4 leading-tight transition-colors ${
+                                                            pagination.current_page === page
+                                                                ? 'border-primary bg-primary text-white'
+                                                                : 'border-border bg-background text-muted-foreground hover:bg-card'
+                                                        }`}
+                                                    >
+                                                        {page}
+                                                    </button>
+                                                </li>
+                                            ))}
+                                        <li>
+                                            <button
+                                                onClick={() => goToPage(pagination.current_page + 1)}
+                                                disabled={pagination.current_page === pagination.last_page}
+                                                className="flex h-10 items-center justify-center rounded-e-lg border border-border bg-background px-4 leading-tight text-muted-foreground transition-colors hover:bg-card disabled:cursor-not-allowed disabled:opacity-50"
+                                            >
+                                                Trang kế tiếp
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </nav>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -344,10 +387,10 @@ function ShoppingContent() {
     );
 }
 
-export default function Shopping() {
+export default function Shopping(props: ShoppingProps) {
     return (
         <ToastProvider>
-            <ShoppingContent />
+            <ShoppingContent {...props} />
         </ToastProvider>
     );
 }

@@ -27,12 +27,13 @@ return new class extends Migration
             $table->string('title')->nullable();
             $table->text('comment')->nullable();
             $table->boolean('is_verified_purchase')->default(false);
+            $table->boolean('is_approved')->default(true);
             $table->integer('helpful_count')->default(0);
             $table->timestamps();
             $table->softDeletes();
 
             // Indexes
-            $table->index(['product_id']);
+            $table->index(['product_id', 'is_approved']);
             $table->index(['user_id']);
             $table->index(['rating']);
         });

@@ -129,7 +129,7 @@ class DetailTest extends TestCase
 
         $this->assertDatabaseHas('cart_items', [
             'user_id' => $user->id,
-            'variant_id' => $variant->id,
+            'product_variant_id' => $variant->id,
             'quantity' => 2,
         ]);
     }
@@ -200,7 +200,7 @@ class DetailTest extends TestCase
 
         $this->assertDatabaseHas('cart_items', [
             'user_id' => $user->id,
-            'variant_id' => $variant->id,
+            'product_variant_id' => $variant->id,
             'quantity' => 5,
         ]);
     }

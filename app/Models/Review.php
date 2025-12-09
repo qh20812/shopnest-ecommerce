@@ -30,6 +30,7 @@ class Review extends Model
         'title',
         'comment',
         'is_verified_purchase',
+        'is_approved',
         'helpful_count',
     ];
 
@@ -41,6 +42,7 @@ class Review extends Model
     protected $casts = [
         'rating' => 'integer',
         'is_verified_purchase' => 'boolean',
+        'is_approved' => 'boolean',
         'helpful_count' => 'integer',
     ];
 

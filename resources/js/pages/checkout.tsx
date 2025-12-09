@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { router } from '@inertiajs/react';
 import TopNav from '../components/top-nav';
 import Footer from '../components/footer';
 import Input from '../components/ui/input';
@@ -7,6 +8,8 @@ import { Truck, CreditCard, Wallet } from 'lucide-react';
 
 interface CartItem {
     id: number;
+    product_id: number;
+    variant_id: number;
     name: string;
     image: string;
     color: string;
@@ -14,35 +17,40 @@ interface CartItem {
     quantity: number;
 }
 
-function CheckoutContent() {
+interface Address {
+    id: number;
+    label: string;
+    recipient_name: string;
+    phone_number: string;
+    address_line1: string;
+    address_line2: string;
+    is_default: boolean;
+}
+
+interface CheckoutProps {
+    cartItems: CartItem[];
+    subtotal: number;
+    shipping: number;
+    total: number;
+    addresses: Address[];
+}
+
+function CheckoutContent({ cartItems, subtotal, shipping, total, addresses }: CheckoutProps) {
     const { showSuccess, showError } = useToast();
 
-    const [cartItems] = useState<CartItem[]>([
-        {
-            id: 1,
-            name: 'Tai nghe không dây',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDPHcVWSj_HTG2XqzClkE5SpZxqSTMbCcEnCYKEMa_xbDd4rJqjsJyrUJevOPfgYkEvjv6iNNHxjtRSiS7qcQPueRPlzF9Aue5LW_lr0FVXn9UIkKI5Bq21ItYV_Wn45xycvWOmMOz7RykU5KOzelN0VBsmfJQIcjJBIZSUuHr6KKCNQLeb6v8srFZ8c5EpdNRxF4Oh40SBSPsqewAUR19-X9PS4Xgc5v6l9-_LtFkR9wzP0ppQIVNI7QDXT0OBZxzUfHav61frpxs',
-            color: 'Đen',
-            price: 1250000,
-            quantity: 1,
-        },
-        {
-            id: 2,
-            name: 'Đồng hồ thông minh',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCD9ncBBhzi2Db0DFaD7c6VNw9AijOwGBC5xZWwfTY8aPwW9Ntp16-9U3AdtDt8yOVptdyU_6B6vh5SeZJVzoMBayYjoltDSrnyFslFa7Cz0cu81NfJZ9H8cPII_bW4XmSswdeLw83LbAISWagZZEdCo3DCzkb009c3DKQm_507v0f4m04q7ohbP6VX3f7ApRIjCCKsQ3p3AVbGaOfqHwocFgiI-QCPchNYdA1g6a_mXAHKWE_e2ZGCv0Didsl9Ubni3guYhG-0GEI',
-            color: 'Bạc',
-            price: 3490000,
-            quantity: 1,
-        },
-    ]);
+    // Find default address or use first address
+    const defaultAddress = addresses.find(addr => addr.is_default) || addresses[0];
 
     const [shippingMethod, setShippingMethod] = useState<'standard' | 'express'>('standard');
-    const [paymentMethod, setPaymentMethod] = useState<'cod' | 'card' | 'wallet'>('cod');
-
+    const [paymentMethod, setPaymentMethod] = useState<'cod' | 'credit_card' | 'e_wallet'>('cod');
+    const [selectedAddressId, setSelectedAddressId] = useState<number | null>(defaultAddress?.id || null);
     const [voucherCode, setVoucherCode] = useState('');
+    const [note, setNote] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Calculate dynamic shipping based on method
     const shippingFee = shippingMethod === 'standard' ? 30000 : 50000;
-    const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const total = subtotal + shippingFee;
+    const finalTotal = subtotal + shippingFee;
 
     const formatPrice = (price: number) => {
         return new Intl.NumberFormat('vi-VN', {
@@ -62,7 +70,36 @@ function CheckoutContent() {
     };
 
     const handleCheckout = () => {
-        showSuccess('Đơn hàng của bạn đã được xác nhận!');
+        if (cartItems.length === 0) {
+            showError('Giỏ hàng trống');
+            return;
+        }
+
+        if (!selectedAddressId && addresses.length === 0) {
+            showError('Vui lòng thêm địa chỉ giao hàng');
+            return;
+        }
+
+        setIsSubmitting(true);
+
+        router.post('/checkout', {
+            shipping_address_id: selectedAddressId || defaultAddress?.id,
+            payment_method: paymentMethod,
+            shipping_method: shippingMethod,
+            note: note.trim() || null,
+        }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                showSuccess('Đơn hàng của bạn đã được xác nhận!');
+            },
+            onError: (errors) => {
+                const errorMessage = Object.values(errors)[0] as string;
+                showError(errorMessage || 'Có lỗi xảy ra, vui lòng thử lại');
+            },
+            onFinish: () => {
+                setIsSubmitting(false);
+            },
+        });
     };
 
     return (
@@ -99,6 +136,9 @@ function CheckoutContent() {
                                                 className="h-12"
                                                 id="name"
                                                 type="text"
+                                                value={defaultAddress?.recipient_name || ''}
+                                                readOnly
+                                                placeholder="Chưa có địa chỉ"
                                             />
                                         </div>
                                         <div className="sm:col-span-2">
@@ -109,6 +149,9 @@ function CheckoutContent() {
                                                 className="h-12"
                                                 id="address"
                                                 type="text"
+                                                value={[defaultAddress?.address_line1, defaultAddress?.address_line2].filter(Boolean).join(', ') || ''}
+                                                readOnly
+                                                placeholder="Chưa có địa chỉ"
                                             />
                                         </div>
                                         <div>
@@ -119,6 +162,9 @@ function CheckoutContent() {
                                                 className="h-12"
                                                 id="city"
                                                 type="text"
+                                                value=""
+                                                readOnly
+                                                placeholder="Chưa có thông tin"
                                             />
                                         </div>
                                         <div>
@@ -129,6 +175,9 @@ function CheckoutContent() {
                                                 className="h-12"
                                                 id="district"
                                                 type="text"
+                                                value=""
+                                                readOnly
+                                                placeholder="Chưa có thông tin"
                                             />
                                         </div>
                                         <div>
@@ -139,6 +188,9 @@ function CheckoutContent() {
                                                 className="h-12"
                                                 id="phone"
                                                 type="tel"
+                                                value={defaultAddress?.phone_number || ''}
+                                                readOnly
+                                                placeholder="Chưa có số điện thoại"
                                             />
                                         </div>
                                         <div className="sm:col-span-2">
@@ -150,6 +202,8 @@ function CheckoutContent() {
                                                 className="min-h-[72px]"
                                                 id="notes"
                                                 rows={3}
+                                                value={note}
+                                                onChange={(e) => setNote(e.target.value)}
                                             />
                                         </div>
                                     </div>
@@ -239,17 +293,17 @@ function CheckoutContent() {
                                         </label>
                                         <label
                                             className={`flex cursor-pointer items-center gap-4 rounded-lg border p-4 transition-colors ${
-                                                paymentMethod === 'card'
+                                                paymentMethod === 'credit_card'
                                                     ? 'border-primary bg-primary/5'
                                                     : 'border-border bg-background hover:border-gray-300'
                                             }`}
                                         >
                                             <input
-                                                checked={paymentMethod === 'card'}
+                                                checked={paymentMethod === 'credit_card'}
                                                 className="form-radio h-5 w-5 text-primary focus:ring-primary/50"
                                                 name="payment-method"
                                                 type="radio"
-                                                onChange={() => setPaymentMethod('card')}
+                                                onChange={() => setPaymentMethod('credit_card')}
                                             />
                                             <div className="flex flex-1 flex-col sm:flex-row sm:items-center sm:justify-between">
                                                 <span className="font-medium">Thẻ tín dụng / Ghi nợ</span>
@@ -258,17 +312,17 @@ function CheckoutContent() {
                                         </label>
                                         <label
                                             className={`flex cursor-pointer items-center gap-4 rounded-lg border p-4 transition-colors ${
-                                                paymentMethod === 'wallet'
+                                                paymentMethod === 'e_wallet'
                                                     ? 'border-primary bg-primary/5'
                                                     : 'border-border bg-background hover:border-gray-300'
                                             }`}
                                         >
                                             <input
-                                                checked={paymentMethod === 'wallet'}
+                                                checked={paymentMethod === 'e_wallet'}
                                                 className="form-radio h-5 w-5 text-primary focus:ring-primary/50"
                                                 name="payment-method"
                                                 type="radio"
-                                                onChange={() => setPaymentMethod('wallet')}
+                                                onChange={() => setPaymentMethod('e_wallet')}
                                             />
                                             <div className="flex flex-1 flex-col sm:flex-row sm:items-center sm:justify-between">
                                                 <span className="font-medium">Ví điện tử</span>
@@ -347,13 +401,14 @@ function CheckoutContent() {
                                     <hr className="mb-6 border-border" />
                                     <div className="mb-6 flex justify-between">
                                         <span className="text-lg font-bold">Tổng cộng</span>
-                                        <span className="text-xl font-bold text-primary">{formatPrice(total)}</span>
+                                        <span className="text-xl font-bold text-primary">{formatPrice(finalTotal)}</span>
                                     </div>
                                     <button
                                         onClick={handleCheckout}
-                                        className="flex h-12 w-full max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-primary px-6 text-base font-bold leading-normal tracking-[0.015em] text-white transition-colors hover:bg-primary/90"
+                                        disabled={isSubmitting || cartItems.length === 0}
+                                        className="flex h-12 w-full max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-primary px-6 text-base font-bold leading-normal tracking-[0.015em] text-white transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
                                     >
-                                        <span className="truncate">Xác nhận thanh toán</span>
+                                        <span className="truncate">{isSubmitting ? 'Đang xử lý...' : 'Xác nhận thanh toán'}</span>
                                     </button>
                                 </div>
                             </div>
@@ -366,10 +421,10 @@ function CheckoutContent() {
     );
 }
 
-export default function Checkout() {
+export default function Checkout(props: CheckoutProps) {
     return (
         <ToastProvider>
-            <CheckoutContent />
+            <CheckoutContent {...props} />
         </ToastProvider>
     );
 }

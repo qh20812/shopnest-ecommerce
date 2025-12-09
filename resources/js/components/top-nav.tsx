@@ -1,7 +1,6 @@
 import { ShoppingBag, Heart, Search, User, Package, Home, CreditCard, LogOut, Sun, Moon } from 'lucide-react';
 import Input from './ui/input';
 import { Link, usePage } from '@inertiajs/react';
-import { useToast } from '../lib/toastContext';
 import { useState, useRef, useEffect } from 'react';
 
 type PageProps = {
@@ -18,7 +17,7 @@ type PageProps = {
 };
 
 export default function TopNav() {
-    const { showError } = useToast();
+    // Toast utilities not used in header (wishlist redirects to route)
     const page = usePage<PageProps>();
     const authUser = page.props?.auth?.user ?? null;
     const [isAvatarHover, setIsAvatarHover] = useState(false);
@@ -89,12 +88,12 @@ export default function TopNav() {
                 <div className="container mx-auto px-4">
                     <div className="flex h-20 items-center justify-between whitespace-nowrap">
                         <div className="flex items-center gap-8">
-                            <div className="flex items-center gap-2">
+                            <Link href="/" className="flex items-center gap-2">
                                 <img src="/ShopNest2.png" alt="ShopNest Logo" className='h-10 w-10' />
                                 <h1 className="text-2xl font-bold leading-tight tracking-[-0.015em]">
                                     ShopNest
                                 </h1>
-                            </div>
+                            </Link>
                             <nav className="hidden items-center gap-9 md:flex">
                                 <Link
                                     href="#"
@@ -103,7 +102,7 @@ export default function TopNav() {
                                     Trang chủ
                                 </Link>
                                 <Link
-                                    href="#"
+                                    href="/shopping"
                                     className="text-sm font-medium leading-normal text-muted-foreground transition-colors hover:text-primary"
                                 >
                                     Sản phẩm
@@ -129,15 +128,20 @@ export default function TopNav() {
                                 </div>
                             </label>
                             <div className="flex gap-2">
-                                <button
+                                <Link
+                                    href="/wish-list"
                                     className="flex h-10 w-10 cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-card text-foreground transition-colors hover:bg-primary/10 hover:text-primary"
-                                    onClick={() => showError('Vui lòng đăng nhập để thêm sản phẩm yêu thích')}
+                                    title="Danh sách yêu thích"
                                 >
                                     <Heart className="h-5 w-5" />
-                                </button>
-                                <button className="flex h-10 w-10 cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-card text-foreground transition-colors hover:bg-primary/10 hover:text-primary">
+                                </Link>
+                                <Link
+                                    href="/cart"
+                                    className="flex h-10 w-10 cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-card text-foreground transition-colors hover:bg-primary/10 hover:text-primary"
+                                    title="Giỏ hàng"
+                                >
                                     <ShoppingBag className="h-5 w-5" />
-                                </button>
+                                </Link>
                                 <button
                                     className="flex h-10 w-10 cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-card text-foreground transition-colors hover:bg-primary/10 hover:text-primary"
                                     onClick={toggleDarkMode}
@@ -213,7 +217,7 @@ export default function TopNav() {
                                         <span>Đơn hàng của tôi</span>
                                     </Link>
                                     <Link
-                                        href="#"
+                                        href="/wish-list"
                                         className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-card"
                                     >
                                         <Heart className="h-5 w-5 text-muted-foreground" />

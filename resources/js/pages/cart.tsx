@@ -8,36 +8,28 @@ import { PageHeader } from '../components/ui/page-header';
 
 interface CartItem {
     id: number;
+    product_id: number;
+    variant_id: number;
     name: string;
     image: string;
     color: string;
     price: number;
+    compare_at_price: number;
     quantity: number;
+    stock_quantity: number;
 }
 
-function CartContent() {
+interface CartProps {
+    cartItems: CartItem[];
+    subtotal: number;
+    shipping: number;
+    total: number;
+}
+
+function CartContent({ cartItems: initialCartItems, subtotal: initialSubtotal, shipping: initialShipping, total: initialTotal }: CartProps) {
     const { showSuccess, showInfo } = useToast();
     const [couponCode, setCouponCode] = useState('');
-
-    // Sample cart items - replace with real data later
-    const [cartItems, setCartItems] = useState<CartItem[]>([
-        {
-            id: 1,
-            name: 'Tai nghe không dây',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDPHcVWSj_HTG2XqzClkE5SpZxqSTMbCcEnCYKEMa_xbDd4rJqjsJyrUJevOPfgYkEvjv6iNNHxjtRSiS7qcQPueRPlzF9Aue5LW_lr0FVXn9UIkKI5Bq21ItYV_Wn45xycvWOmMOz7RykU5KOzelN0VBsmfJQIcjJBIZSUuHr6KKCNQLeb6v8srFZ8c5EpdNRxF4Oh40SBSPsqewAUR19-X9PS4Xgc5v6l9-_LtFkR9wzP0ppQIVNI7QDXT0OBZxzUfHav61frpxs',
-            color: 'Đen',
-            price: 1250000,
-            quantity: 1,
-        },
-        {
-            id: 2,
-            name: 'Đồng hồ thông minh',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCD9ncBBhzi2Db0DFaD7c6VNw9AijOwGBC5xZWwfTY8aPwW9Ntp16-9U3AdtDt8yOVptdyU_6B6vh5SeZJVzoMBayYjoltDSrnyFslFa7Cz0cu81NfJZ9H8cPII_bW4XmSswdeLw83LbAISWagZZEdCo3DCzkb009c3DKQm_507v0f4m04q7ohbP6VX3f7ApRIjCCKsQ3p3AVbGaOfqHwocFgiI-QCPchNYdA1g6a_mXAHKWE_e2ZGCv0Didsl9Ubni3guYhG-0GEI',
-            color: 'Bạc',
-            price: 3490000,
-            quantity: 1,
-        },
-    ]);
+    const [isUpdating, setIsUpdating] = useState(false);
 
     const formatPrice = (price: number) =>
         new Intl.NumberFormat('vi-VN', {
@@ -46,20 +38,37 @@ function CartContent() {
         }).format(price);
 
     const updateQuantity = (id: number, delta: number) => {
-        setCartItems((items) =>
-            items.map((item) => {
-                if (item.id === id) {
-                    const newQuantity = Math.max(1, item.quantity + delta);
-                    return { ...item, quantity: newQuantity };
-                }
-                return item;
-            })
-        );
+        const item = initialCartItems.find(i => i.id === id);
+        if (!item) return;
+
+        const newQuantity = Math.max(1, item.quantity + delta);
+        
+        if (newQuantity > item.stock_quantity) {
+            showInfo(`Số lượng tối đa: ${item.stock_quantity}`);
+            return;
+        }
+
+        setIsUpdating(true);
+        router.patch(`/cart/${id}`, { quantity: newQuantity }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                showSuccess('Đã cập nhật số lượng');
+                setIsUpdating(false);
+            },
+            onError: () => {
+                showInfo('Không thể cập nhật số lượng');
+                setIsUpdating(false);
+            }
+        });
     };
 
     const removeItem = (id: number) => {
-        setCartItems((items) => items.filter((item) => item.id !== id));
-        showSuccess('Đã xóa sản phẩm khỏi giỏ hàng');
+        router.delete(`/cart/${id}`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                showSuccess('Đã xóa sản phẩm khỏi giỏ hàng');
+            }
+        });
     };
 
     const applyCoupon = () => {
@@ -67,20 +76,28 @@ function CartContent() {
             showInfo('Vui lòng nhập mã giảm giá');
             return;
         }
-        showInfo('Mã giảm giá không hợp lệ');
+        
+        router.post('/cart/apply-coupon', { coupon_code: couponCode }, {
+            preserveScroll: true,
+            onError: () => {
+                showInfo('Mã giảm giá không hợp lệ');
+            }
+        });
     };
+
     const removeAll = () => {
-        if (cartItems.length === 0) {
+        if (initialCartItems.length === 0) {
             showInfo('Giỏ hàng trống');
             return;
         }
-        setCartItems([]);
-        showSuccess('Đã xóa tất cả sản phẩm khỏi giỏ hàng');
-    }
-
-    const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const shipping = 0; // Free shipping
-    const total = subtotal + shipping;
+        
+        router.post('/cart/clear', {}, {
+            preserveScroll: true,
+            onSuccess: () => {
+                showSuccess('Đã xóa tất cả sản phẩm khỏi giỏ hàng');
+            }
+        });
+    };
 
     const handleCheckout = () => {
         showSuccess('Đang chuyển đến trang thanh toán...');
@@ -124,7 +141,7 @@ function CartContent() {
                             </div>
 
                             {/* Cart Items List */}
-                            {cartItems.map((item, index) => (
+                            {initialCartItems.map((item, index) => (
                                 <div key={item.id}>
                                     <div className="grid grid-cols-1 gap-6 md:grid-cols-6 md:items-center">
                                         {/* Product Info */}
@@ -194,7 +211,7 @@ function CartContent() {
                                             </button>
                                         </div>
                                     </div>
-                                    {index < cartItems.length - 1 && (
+                                    {index < initialCartItems.length - 1 && (
                                         <hr className="mt-6 border-border" />
                                     )}
                                 </div>
@@ -211,7 +228,7 @@ function CartContent() {
                                     <div className="flex justify-between text-muted-foreground">
                                         <span>Tạm tính</span>
                                         <span className="font-medium text-foreground">
-                                            {formatPrice(subtotal)}
+                                            {formatPrice(initialSubtotal)}
                                         </span>
                                     </div>
                                     <div className="flex justify-between text-muted-foreground">
@@ -248,7 +265,7 @@ function CartContent() {
                                 <div className="mb-6 flex justify-between">
                                     <span className="text-lg font-bold">Tổng cộng</span>
                                     <span className="text-xl font-bold text-primary">
-                                        {formatPrice(total)}
+                                        {formatPrice(initialTotal)}
                                     </span>
                                 </div>
 
@@ -271,10 +288,15 @@ function CartContent() {
     );
 }
 
-export default function Cart() {
+export default function Cart({ cartItems = [], subtotal = 0, shipping = 0, total = 0 }: CartProps) {
     return (
         <ToastProvider>
-            <CartContent />
+            <CartContent 
+                cartItems={cartItems}
+                subtotal={subtotal}
+                shipping={shipping}
+                total={total}
+            />
         </ToastProvider>
     );
 }

@@ -1,0 +1,842 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\AdministrativeDivision;
+use App\Models\Brand;
+use App\Models\CartItem;
+use App\Models\Category;
+use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\Product;
+use App\Models\ProductVariant;
+use App\Models\Shop;
+use App\Models\User;
+use App\Models\UserAddress;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class checkoutTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+    }
+
+    private function createTestData($sellerData = [])
+    {
+        $seller = User::create(array_merge([
+            'full_name' => 'Seller',
+            'email' => 'seller@example.com',
+            'password' => bcrypt('password'),
+        ], $sellerData));
+
+        $category = Category::create([
+            'category_name' => 'Electronics',
+            'slug' => 'electronics-' . uniqid(),
+            'is_active' => true,
+        ]);
+
+        $brand = Brand::create([
+            'brand_name' => 'Apple',
+            'slug' => 'apple-' . uniqid(),
+            'is_active' => true,
+        ]);
+
+        $shop = Shop::create([
+            'owner_id' => $seller->id,
+            'shop_name' => 'Test Shop',
+            'slug' => 'test-shop-' . uniqid(),
+            'is_active' => true,
+        ]);
+
+        $country = AdministrativeDivision::create([
+            'name' => 'Vietnam',
+            'code' => 'VN',
+            'type' => 'country',
+            'level' => 1,
+        ]);
+
+        $province = AdministrativeDivision::create([
+            'parent_id' => $country->id,
+            'name' => 'Ho Chi Minh',
+            'code' => 'HCM',
+            'type' => 'province',
+            'level' => 2,
+        ]);
+
+        return [
+            'seller' => $seller,
+            'category' => $category,
+            'brand' => $brand,
+            'shop' => $shop,
+            'country' => $country,
+            'province' => $province,
+        ];
+    }
+
+    public function test_guest_cannot_access_checkout()
+    {
+        $response = $this->get('/checkout');
+        $response->assertStatus(200);
+        $response->assertInertia(fn($page) => 
+            $page->component('checkout')
+                ->has('cartItems', 0)
+                ->where('subtotal', 0)
+        );
+    }
+
+    public function test_user_can_view_checkout_with_cart_items()
+    {
+        $user = User::create([
+            'full_name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $seller = User::create([
+            'full_name' => 'Seller',
+            'email' => 'seller@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $shop = Shop::create([
+            'shop_name' => 'Test Shop',
+            'owner_id' => $seller->id,
+            'slug' => 'test-shop',
+        ]);
+
+        $product =Product::create([
+     'category_id' => 1,
+     'seller_id' => $seller->id,
+     'product_name' => 'Test Product',
+            'slug' => 'test-product',
+            'shop_id' => $shop->id,
+            'base_price' => 100000,
+            'status' => 'active',
+        ]);
+
+        $variant = ProductVariant::create([
+            'product_id' => $product->id,
+            'price' => 100000,
+            'stock_quantity' => 10,
+            'is_active' => true,
+        ]);
+
+        CartItem::create([
+            'user_id' => $user->id,
+            'product_variant_id' => $variant->id,
+            'quantity' => 2,
+        ]);
+
+        $response = $this->actingAs($user)->get('/checkout');
+        
+        $response->assertStatus(200);
+        $response->assertInertia(fn($page) => 
+            $page->component('checkout')
+                ->has('cartItems', 1)
+                ->where('subtotal', 200000)
+                ->where('shipping', 30000)
+                ->where('total', 230000)
+        );
+    }
+
+    public function test_user_can_view_checkout_with_addresses()
+    {
+        $user = User::create([
+            'full_name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $address = UserAddress::create([
+            'address_label' => 'Home',
+            'country_id' => 1,
+            'user_id' => $user->id,
+            'recipient_name' => 'John Doe',
+            'phone_number' => '0123456789',
+            'address_line1' => '123 Main St',
+            'is_default' => true,
+        ]);
+
+        $response = $this->actingAs($user)->get('/checkout');
+        
+        $response->assertStatus(200);
+        $response->assertInertia(fn($page) => 
+            $page->component('checkout')
+                ->has('addresses', 1)
+                ->where('addresses.0.recipient_name', 'John Doe')
+        );
+    }
+
+    public function test_guest_cannot_create_order()
+    {
+        $response = $this->postJson('/checkout', [
+            'shipping_address_id' => 1,
+            'payment_method' => 'cod',
+            'shipping_method' => 'standard',
+        ]);
+
+        $response->assertStatus(401);
+        $response->assertJson(['message' => 'Bạn cần đăng nhập']);
+    }
+
+    public function test_cannot_checkout_with_empty_cart()
+    {
+        $user = User::create([
+            'full_name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $address = UserAddress::create([
+            'address_label' => 'Home',
+            'country_id' => 1,
+            'user_id' => $user->id,
+            'recipient_name' => 'John Doe',
+            'phone_number' => '0123456789',
+            'address_line1' => '123 Main St',
+        ]);
+
+        $response = $this->actingAs($user)->postJson('/checkout', [
+            'shipping_address_id' => $address->id,
+            'payment_method' => 'cod',
+            'shipping_method' => 'standard',
+        ]);
+
+        $response->assertStatus(400);
+        $response->assertJson(['message' => 'Giỏ hàng trống']);
+    }
+
+    public function test_cannot_checkout_with_invalid_address()
+    {
+        $user = User::create([
+            'full_name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $otherUser = User::create([
+            'full_name' => 'Other User',
+            'email' => 'other@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $address = UserAddress::create([
+            'address_label' => 'Home',
+            'country_id' => 1,
+            'user_id' => $otherUser->id,
+            'recipient_name' => 'Other User',
+            'phone_number' => '0123456789',
+            'address_line1' => '456 Other St',
+        ]);
+
+        $response = $this->actingAs($user)->postJson('/checkout', [
+            'shipping_address_id' => $address->id,
+            'payment_method' => 'cod',
+            'shipping_method' => 'standard',
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJson(['message' => 'Địa chỉ không hợp lệ']);
+    }
+
+    public function test_user_can_create_order_successfully()
+    {
+        $user = User::create([
+            'full_name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $seller = User::create([
+            'full_name' => 'Seller',
+            'email' => 'seller@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $shop = Shop::create([
+            'shop_name' => 'Test Shop',
+            'owner_id' => $seller->id,
+            'slug' => 'test-shop',
+        ]);
+
+        $product =Product::create([
+     'category_id' => 1,
+     'seller_id' => $seller->id,
+     'product_name' => 'Test Product',
+            'slug' => 'test-product',
+            'shop_id' => $shop->id,
+            'base_price' => 100000,
+            'status' => 'active',
+        ]);
+
+        $variant = ProductVariant::create([
+            'product_id' => $product->id,
+            'price' => 100000,
+            'stock_quantity' => 10,
+            'is_active' => true,
+        ]);
+
+        CartItem::create([
+            'user_id' => $user->id,
+            'product_variant_id' => $variant->id,
+            'quantity' => 2,
+        ]);
+
+        $address = UserAddress::create([
+            'address_label' => 'Home',
+            'country_id' => 1,
+            'user_id' => $user->id,
+            'recipient_name' => 'John Doe',
+            'phone_number' => '0123456789',
+            'address_line1' => '123 Main St',
+        ]);
+
+        $response = $this->actingAs($user)->postJson('/checkout', [
+            'shipping_address_id' => $address->id,
+            'payment_method' => 'cod',
+            'shipping_method' => 'standard',
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson(['message' => 'Đơn hàng đã được tạo thành công']);
+        
+        $this->assertDatabaseHas('orders', [
+            'customer_id' => $user->id,
+            'shop_id' => $shop->id,
+            'status' => 'pending',
+            'payment_status' => 'unpaid',
+            'payment_method' => 'cod',
+            'shipping_address_id' => $address->id,
+        ]);
+
+        $this->assertDatabaseHas('order_items', [
+            'product_variant_id' => $variant->id,
+            'quantity' => 2,
+            'unit_price' => 100000,
+        ]);
+
+        // Cart should be cleared
+        $this->assertDatabaseCount('cart_items', 0);
+    }
+
+    public function test_order_reduces_stock_quantity()
+    {
+        $user = User::create([
+            'full_name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $seller = User::create([
+            'full_name' => 'Seller',
+            'email' => 'seller@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $shop = Shop::create([
+            'shop_name' => 'Test Shop',
+            'owner_id' => $seller->id,
+            'slug' => 'test-shop',
+        ]);
+
+        $product =Product::create([
+     'category_id' => 1,
+     'seller_id' => $seller->id,
+     'product_name' => 'Test Product',
+            'slug' => 'test-product',
+            'shop_id' => $shop->id,
+            'base_price' => 100000,
+            'status' => 'active',
+        ]);
+
+        $variant = ProductVariant::create([
+            'product_id' => $product->id,
+            'price' => 100000,
+            'stock_quantity' => 10,
+            'is_active' => true,
+        ]);
+
+        CartItem::create([
+            'user_id' => $user->id,
+            'product_variant_id' => $variant->id,
+            'quantity' => 3,
+        ]);
+
+        $address = UserAddress::create([
+            'address_label' => 'Home',
+            'country_id' => 1,
+            'user_id' => $user->id,
+            'recipient_name' => 'John Doe',
+            'phone_number' => '0123456789',
+            'address_line1' => '123 Main St',
+        ]);
+
+        $this->actingAs($user)->postJson('/checkout', [
+            'shipping_address_id' => $address->id,
+            'payment_method' => 'cod',
+            'shipping_method' => 'standard',
+        ]);
+
+        $variant->refresh();
+        $this->assertEquals(7, $variant->stock_quantity);
+    }
+
+    public function test_checkout_with_express_shipping()
+    {
+        $user = User::create([
+            'full_name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $seller = User::create([
+            'full_name' => 'Seller',
+            'email' => 'seller@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $shop = Shop::create([
+            'shop_name' => 'Test Shop',
+            'owner_id' => $seller->id,
+            'slug' => 'test-shop',
+        ]);
+
+        $product =Product::create([
+     'category_id' => 1,
+     'seller_id' => $seller->id,
+     'product_name' => 'Test Product',
+            'slug' => 'test-product',
+            'shop_id' => $shop->id,
+            'base_price' => 100000,
+            'status' => 'active',
+        ]);
+
+        $variant = ProductVariant::create([
+            'product_id' => $product->id,
+            'price' => 100000,
+            'stock_quantity' => 10,
+            'is_active' => true,
+        ]);
+
+        CartItem::create([
+            'user_id' => $user->id,
+            'product_variant_id' => $variant->id,
+            'quantity' => 1,
+        ]);
+
+        $address = UserAddress::create([
+            'address_label' => 'Home',
+            'country_id' => 1,
+            'user_id' => $user->id,
+            'recipient_name' => 'John Doe',
+            'phone_number' => '0123456789',
+            'address_line1' => '123 Main St',
+        ]);
+
+        $this->actingAs($user)->postJson('/checkout', [
+            'shipping_address_id' => $address->id,
+            'payment_method' => 'cod',
+            'shipping_method' => 'express',
+        ]);
+
+        $this->assertDatabaseHas('orders', [
+            'customer_id' => $user->id,
+            'shipping_fee' => 50000,
+        ]);
+    }
+
+    public function test_checkout_with_multiple_shops_creates_multiple_orders()
+    {
+        $user = User::create([
+            'full_name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $seller1 = User::create([
+            'full_name' => 'Seller 1',
+            'email' => 'seller1@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $seller2 = User::create([
+            'full_name' => 'Seller 2',
+            'email' => 'seller2@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $shop1 = Shop::create([
+            'shop_name' => 'Shop 1',
+            'owner_id' => $seller1->id,
+            'slug' => 'shop-1',
+        ]);
+
+        $shop2 = Shop::create([
+            'shop_name' => 'Shop 2',
+            'owner_id' => $seller2->id,
+            'slug' => 'shop-2',
+        ]);
+
+        $product1 =Product::create([
+     'category_id' => 1,
+     'seller_id' => $seller->id,
+     'product_name' => 'Product 1',
+            'slug' => 'product-1',
+            'shop_id' => $shop1->id,
+            'base_price' => 100000,
+            'status' => 'active',
+        ]);
+
+        $product2 =Product::create([
+     'category_id' => 1,
+     'seller_id' => $seller->id,
+     'product_name' => 'Product 2',
+            'slug' => 'product-2',
+            'shop_id' => $shop2->id,
+            'base_price' => 200000,
+            'status' => 'active',
+        ]);
+
+        $variant1 = ProductVariant::create([
+            'product_id' => $product1->id,
+            'price' => 100000,
+            'stock_quantity' => 10,
+            'is_active' => true,
+        ]);
+
+        $variant2 = ProductVariant::create([
+            'product_id' => $product2->id,
+            'price' => 200000,
+            'stock_quantity' => 10,
+            'is_active' => true,
+        ]);
+
+        CartItem::create([
+            'user_id' => $user->id,
+            'product_variant_id' => $variant1->id,
+            'quantity' => 1,
+        ]);
+
+        CartItem::create([
+            'user_id' => $user->id,
+            'product_variant_id' => $variant2->id,
+            'quantity' => 1,
+        ]);
+
+        $address = UserAddress::create([
+            'address_label' => 'Home',
+            'country_id' => 1,
+            'user_id' => $user->id,
+            'recipient_name' => 'John Doe',
+            'phone_number' => '0123456789',
+            'address_line1' => '123 Main St',
+        ]);
+
+        $response = $this->actingAs($user)->postJson('/checkout', [
+            'shipping_address_id' => $address->id,
+            'payment_method' => 'cod',
+            'shipping_method' => 'standard',
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJsonCount(2, 'orders');
+        
+        $this->assertDatabaseHas('orders', ['shop_id' => $shop1->id]);
+        $this->assertDatabaseHas('orders', ['shop_id' => $shop2->id]);
+    }
+
+    public function test_checkout_validates_required_fields()
+    {
+        $user = User::create([
+            'full_name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $response = $this->actingAs($user)->postJson('/checkout', []);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['shipping_address_id', 'payment_method', 'shipping_method']);
+    }
+
+    public function test_checkout_validates_payment_method()
+    {
+        $user = User::create([
+            'full_name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $address = UserAddress::create([
+            'address_label' => 'Home',
+            'country_id' => 1,
+            'user_id' => $user->id,
+            'recipient_name' => 'John Doe',
+            'phone_number' => '0123456789',
+            'address_line1' => '123 Main St',
+        ]);
+
+        $response = $this->actingAs($user)->postJson('/checkout', [
+            'shipping_address_id' => $address->id,
+            'payment_method' => 'invalid_method',
+            'shipping_method' => 'standard',
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['payment_method']);
+    }
+
+    public function test_checkout_with_note()
+    {
+        $user = User::create([
+            'full_name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $seller = User::create([
+            'full_name' => 'Seller',
+            'email' => 'seller@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $shop = Shop::create([
+            'shop_name' => 'Test Shop',
+            'owner_id' => $seller->id,
+            'slug' => 'test-shop',
+        ]);
+
+        $product =Product::create([
+     'category_id' => 1,
+     'seller_id' => $seller->id,
+     'product_name' => 'Test Product',
+            'slug' => 'test-product',
+            'shop_id' => $shop->id,
+            'base_price' => 100000,
+            'status' => 'active',
+        ]);
+
+        $variant = ProductVariant::create([
+            'product_id' => $product->id,
+            'price' => 100000,
+            'stock_quantity' => 10,
+            'is_active' => true,
+        ]);
+
+        CartItem::create([
+            'user_id' => $user->id,
+            'product_variant_id' => $variant->id,
+            'quantity' => 1,
+        ]);
+
+        $address = UserAddress::create([
+            'address_label' => 'Home',
+            'country_id' => 1,
+            'user_id' => $user->id,
+            'recipient_name' => 'John Doe',
+            'phone_number' => '0123456789',
+            'address_line1' => '123 Main St',
+        ]);
+
+        $this->actingAs($user)->postJson('/checkout', [
+            'shipping_address_id' => $address->id,
+            'payment_method' => 'cod',
+            'shipping_method' => 'standard',
+            'note' => 'Please deliver after 6 PM',
+        ]);
+
+        $this->assertDatabaseHas('orders', [
+            'customer_id' => $user->id,
+            'note' => 'Please deliver after 6 PM',
+        ]);
+    }
+
+    public function test_order_number_is_unique()
+    {
+        $user = User::create([
+            'full_name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $seller = User::create([
+            'full_name' => 'Seller',
+            'email' => 'seller@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $shop = Shop::create([
+            'shop_name' => 'Test Shop',
+            'owner_id' => $seller->id,
+            'slug' => 'test-shop',
+        ]);
+
+        $product =Product::create([
+     'category_id' => 1,
+     'seller_id' => $seller->id,
+     'product_name' => 'Test Product',
+            'slug' => 'test-product',
+            'shop_id' => $shop->id,
+            'base_price' => 100000,
+            'status' => 'active',
+        ]);
+
+        $variant = ProductVariant::create([
+            'product_id' => $product->id,
+            'price' => 100000,
+            'stock_quantity' => 20,
+            'is_active' => true,
+        ]);
+
+        $address = UserAddress::create([
+            'address_label' => 'Home',
+            'country_id' => 1,
+            'user_id' => $user->id,
+            'recipient_name' => 'John Doe',
+            'phone_number' => '0123456789',
+            'address_line1' => '123 Main St',
+        ]);
+
+        // Create first order
+        CartItem::create([
+            'user_id' => $user->id,
+            'product_variant_id' => $variant->id,
+            'quantity' => 1,
+        ]);
+
+        $this->actingAs($user)->postJson('/checkout', [
+            'shipping_address_id' => $address->id,
+            'payment_method' => 'cod',
+            'shipping_method' => 'standard',
+        ]);
+
+        $firstOrderNumber = Order::first()->order_number;
+
+        // Create second order
+        CartItem::create([
+            'user_id' => $user->id,
+            'product_variant_id' => $variant->id,
+            'quantity' => 1,
+        ]);
+
+        $this->actingAs($user)->postJson('/checkout', [
+            'shipping_address_id' => $address->id,
+            'payment_method' => 'cod',
+            'shipping_method' => 'standard',
+        ]);
+
+        $secondOrderNumber = Order::latest()->first()->order_number;
+
+        $this->assertNotEquals($firstOrderNumber, $secondOrderNumber);
+    }
+
+    public function test_free_shipping_for_orders_over_one_million()
+    {
+        $user = User::create([
+            'full_name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $seller = User::create([
+            'full_name' => 'Seller',
+            'email' => 'seller@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $shop = Shop::create([
+            'shop_name' => 'Test Shop',
+            'owner_id' => $seller->id,
+            'slug' => 'test-shop',
+        ]);
+
+        $product =Product::create([
+     'category_id' => 1,
+     'seller_id' => $seller->id,
+     'product_name' => 'Expensive Product',
+            'slug' => 'expensive-product',
+            'shop_id' => $shop->id,
+            'base_price' => 1500000,
+            'status' => 'active',
+        ]);
+
+        $variant = ProductVariant::create([
+            'product_id' => $product->id,
+            'price' => 1500000,
+            'stock_quantity' => 10,
+            'is_active' => true,
+        ]);
+
+        CartItem::create([
+            'user_id' => $user->id,
+            'product_variant_id' => $variant->id,
+            'quantity' => 1,
+        ]);
+
+        $response = $this->actingAs($user)->get('/checkout');
+        
+        $response->assertInertia(fn($page) => 
+            $page->where('shipping', 0)
+                ->where('total', 1500000)
+        );
+    }
+
+    public function test_checkout_filters_inactive_products()
+    {
+        $user = User::create([
+            'full_name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $seller = User::create([
+            'full_name' => 'Seller',
+            'email' => 'seller@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $shop = Shop::create([
+            'shop_name' => 'Test Shop',
+            'owner_id' => $seller->id,
+            'slug' => 'test-shop',
+        ]);
+
+        $inactiveProduct =Product::create([
+     'category_id' => 1,
+     'seller_id' => $seller->id,
+     'product_name' => 'Inactive Product',
+            'slug' => 'inactive-product',
+            'shop_id' => $shop->id,
+            'base_price' => 100000,
+            'status' => 'inactive',
+        ]);
+
+        $variant = ProductVariant::create([
+            'product_id' => $inactiveProduct->id,
+            'price' => 100000,
+            'stock_quantity' => 10,
+            'is_active' => true,
+        ]);
+
+        CartItem::create([
+            'user_id' => $user->id,
+            'product_variant_id' => $variant->id,
+            'quantity' => 1,
+        ]);
+
+        $response = $this->actingAs($user)->get('/checkout');
+        
+        $response->assertInertia(fn($page) => 
+            $page->has('cartItems', 0)
+        );
+    }
+}
+
+
+
+
+

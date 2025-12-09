@@ -117,7 +117,7 @@ class DetailController extends Controller
             // Check if item already exists in cart
             $cartItem = DB::table('cart_items')
                 ->where('user_id', $user->id)
-                ->where('variant_id', $variant->id)
+                ->where('product_variant_id', $variant->id)
                 ->first();
 
             if ($cartItem) {
@@ -140,7 +140,7 @@ class DetailController extends Controller
                 // Add new item
                 DB::table('cart_items')->insert([
                     'user_id' => $user->id,
-                    'variant_id' => $variant->id,
+                    'product_variant_id' => $variant->id,
                     'quantity' => $data['quantity'],
                     'created_at' => now(),
                     'updated_at' => now(),
@@ -402,15 +402,15 @@ class DetailController extends Controller
             $minPrice = $product->variants->min('price') ?? 0;
 
             // Get rating
-            $avgRating = Review::where('product_id', $product->product_id)
+            $avgRating = Review::where('product_id', $product->id)
                 ->where('is_approved', true)
                 ->avg('rating');
-            $reviewCount = Review::where('product_id', $product->product_id)
+            $reviewCount = Review::where('product_id', $product->id)
                 ->where('is_approved', true)
                 ->count();
 
             return [
-                'id' => (int) $product->product_id,
+                'id' => (int) $product->id,
                 'name' => $product->product_name ?? $product->name ?? '',
                 'category' => $product->category?->category_name ?? $product->category?->name ?? '',
                 'image' => $firstImage?->image_url ?? 'https://via.placeholder.com/300x300',
@@ -437,7 +437,7 @@ class DetailController extends Controller
 
         $items = $paginator->through(function (Review $review) {
             return [
-                'id' => $review->review_id,
+                'id' => $review->id,
                 'rating' => (int) $review->rating,
                 'comment' => $review->comment,
                 'created_at' => $review->created_at->format('d/m/Y'),

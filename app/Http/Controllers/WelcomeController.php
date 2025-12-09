@@ -132,7 +132,7 @@ class WelcomeController extends Controller
         return Cache::remember('welcome_flash_sale', 900, function () {
             try {
                 // Find active flash sale event
-                $activeEvent = FlashSaleEvent::where('status', 'active')
+                $activeEvent = FlashSaleEvent::where('is_active', true)
                     ->where('start_time', '<=', now())
                     ->where('end_time', '>=', now())
                     ->first();
@@ -144,7 +144,7 @@ class WelcomeController extends Controller
                 // Get flash sale products
                 $flashSaleProducts = FlashSaleProduct::where('flash_sale_event_id', $activeEvent->id)
                     ->where(function (Builder $query) {
-                        $query->whereColumn('sold_count', '<', 'quantity_limit')
+                        $query->whereColumn('sold_quantity', '<', 'quantity_limit')
                             ->orWhere('quantity_limit', 0)
                             ->orWhereNull('quantity_limit');
                     })
@@ -173,7 +173,7 @@ class WelcomeController extends Controller
                             'id' => $product->product_id,
                             'name' => $product->product_name,
                             'image' => $image?->image_url ?? '/images/placeholder.jpg',
-                            'price' => (float) $flashSaleProduct->flash_sale_price,
+                            'price' => (float) $flashSaleProduct->flash_price,
                             'oldPrice' => (float) ($variant?->price ?? 0),
                             'discount' => (int) round($flashSaleProduct->calculated_discount_percentage ?? 0),
                         ];
@@ -189,7 +189,7 @@ class WelcomeController extends Controller
                 return [
                     'event' => [
                         'id' => $activeEvent->id,
-                        'name' => $activeEvent->name,
+                        'name' => $activeEvent->event_name,
                         'start_time' => $activeEvent->start_time?->toIso8601String(),
                         'end_time' => $activeEvent->end_time?->toIso8601String(),
                     ],

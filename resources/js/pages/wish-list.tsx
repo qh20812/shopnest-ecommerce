@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Trash2, ShoppingCart } from 'lucide-react';
-import { Link } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import TopNav from '../components/top-nav';
 import Footer from '../components/footer';
 import { ToastProvider, useToast } from '../lib/toastContext';
@@ -8,41 +8,21 @@ import { PageHeader } from '../components/ui/page-header';
 
 interface WishListItem {
     id: number;
+    product_id: number;
     name: string;
-    image: string;
+    image: string | null;
     price: number;
+}
+
+interface WishListPageProps {
+    wishlistItems: WishListItem[];
+    [key: string]: unknown;
 }
 
 function WishListContent() {
     const { showSuccess, showInfo } = useToast();
-
-    // Sample wishlist items - replace with real data later
-    const [wishListItems, setWishListItems] = useState<WishListItem[]>([
-        {
-            id: 1,
-            name: 'Ghế sofa hiện đại',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA9uGUJM3fOiuvfyaQBWOm22jgY1q5pysCTNfHVYTUJZK5PRh0WMJkzxTBq0DFnSIujRMboVW7Cw1CWVEjVOIxGkElzFfag9xgMyfPPBgjoDST2mxglOz70oqHPwzmBXwnAzbr2hV98rDNZ4HEOoj2yfMYlc3tEFTYer-UUmVXykCYu5wxwFe47rsq-rSClwvzrlux2IKatu94GMsfXXcD7uVvzfbbjjiqSa5Bmx0SNqnq8pECwHe_L6mnDjed0CHoGb1EqaW2puh8',
-            price: 2500000,
-        },
-        {
-            id: 2,
-            name: 'Đèn bàn tối giản',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA9uGUJM3fOiuvfyaQBWOm22jgY1q5pysCTNfHVYTUJZK5PRh0WMJkzxTBq0DFnSIujRMboVW7Cw1CWVEjVOIxGkElzFfag9xgMyfPPBgjoDST2mxglOz70oqHPwzmBXwnAzbr2hV98rDNZ4HEOoj2yfMYlc3tEFTYer-UUmVXykCYu5wxwFe47rsq-rSClwvzrlux2IKatu94GMsfXXcD7uVvzfbbjjiqSa5Bmx0SNqnq8pECwHe_L6mnDjed0CHoGb1EqaW2puh8',
-            price: 750000,
-        },
-        {
-            id: 3,
-            name: 'Tai nghe không dây',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA9uGUJM3fOiuvfyaQBWOm22jgY1q5pysCTNfHVYTUJZK5PRh0WMJkzxTBq0DFnSIujRMboVW7Cw1CWVEjVOIxGkElzFfag9xgMyfPPBgjoDST2mxglOz70oqHPwzmBXwnAzbr2hV98rDNZ4HEOoj2yfMYlc3tEFTYer-UUmVXykCYu5wxwFe47rsq-rSClwvzrlux2IKatu94GMsfXXcD7uVvzfbbjjiqSa5Bmx0SNqnq8pECwHe_L6mnDjed0CHoGb1EqaW2puh8',
-            price: 3200000,
-        },
-        {
-            id: 4,
-            name: 'Đồng hồ thông minh',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA9uGUJM3fOiuvfyaQBWOm22jgY1q5pysCTNfHVYTUJZK5PRh0WMJkzxTBq0DFnSIujRMboVW7Cw1CWVEjVOIxGkElzFfag9xgMyfPPBgjoDST2mxglOz70oqHPwzmBXwnAzbr2hV98rDNZ4HEOoj2yfMYlc3tEFTYer-UUmVXykCYu5wxwFe47rsq-rSClwvzrlux2IKatu94GMsfXXcD7uVvzfbbjjiqSa5Bmx0SNqnq8pECwHe_L6mnDjed0CHoGb1EqaW2puh8',
-            price: 5500000,
-        },
-    ]);
+    const { wishlistItems: initialItems } = usePage<WishListPageProps>().props;
+    const [wishListItems, setWishListItems] = useState<WishListItem[]>(initialItems || []);
 
     const formatPrice = (price: number) =>
         new Intl.NumberFormat('vi-VN', {
@@ -50,30 +30,67 @@ function WishListContent() {
             currency: 'VND',
         }).format(price);
 
-    const removeItem = (id: number) => {
-        setWishListItems((items) => items.filter((item) => item.id !== id));
-        showSuccess('Đã xóa sản phẩm khỏi danh sách yêu thích');
+    const removeItem = async (id: number) => {
+        try {
+            await router.delete(`/wish-list/${id}`, {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setWishListItems((items) => items.filter((item) => item.id !== id));
+                    showSuccess('Đã xóa sản phẩm khỏi danh sách yêu thích');
+                },
+                onError: () => {
+                    showInfo('Không thể xóa sản phẩm');
+                },
+            });
+        } catch (error) {
+            showInfo('Đã có lỗi xảy ra');
+        }
     };
 
-    const removeAll = () => {
+    const removeAll = async () => {
         if (wishListItems.length === 0) {
             showInfo('Danh sách yêu thích trống');
             return;
         }
-        setWishListItems([]);
-        showSuccess('Đã xóa tất cả sản phẩm khỏi danh sách yêu thích');
+        try {
+            await router.post('/wish-list/clear', {}, {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setWishListItems([]);
+                    showSuccess('Đã xóa tất cả sản phẩm khỏi danh sách yêu thích');
+                },
+                onError: () => {
+                    showInfo('Không thể xóa danh sách');
+                },
+            });
+        } catch {
+            showInfo('Đã có lỗi xảy ra');
+        }
     };
 
-    const addToCart = () => {
-        showSuccess('Đã thêm sản phẩm vào giỏ hàng');
+    const addToCart = (productId: number) => {
+        // Navigate to product detail page where user can select variant and add to cart
+        router.visit(`/product/${productId}`);
     };
 
-    const addAllToCart = () => {
+    const addAllToCart = async () => {
         if (wishListItems.length === 0) {
             showInfo('Danh sách yêu thích trống');
             return;
         }
-        showSuccess(`Đã thêm ${wishListItems.length} sản phẩm vào giỏ hàng`);
+        try {
+            await router.post('/wish-list/add-all-to-cart', {}, {
+                preserveScroll: true,
+                onSuccess: () => {
+                    showSuccess(`Đã thêm ${wishListItems.length} sản phẩm vào giỏ hàng`);
+                },
+                onError: () => {
+                    showInfo('Không thể thêm vào giỏ hàng');
+                },
+            });
+        } catch {
+            showInfo('Đã có lỗi xảy ra');
+        }
     };
 
     return (
@@ -100,18 +117,30 @@ function WishListContent() {
                         ]}
                     />
 
-                    {/* Product Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {/* Empty State */}
+                    {wishListItems.length === 0 ? (
+                        <div className="text-center py-16">
+                            <p className="text-muted-foreground text-lg mb-4">Danh sách yêu thích của bạn đang trống</p>
+                            <Link
+                                href="/"
+                                className="inline-flex items-center justify-center rounded-lg h-11 px-6 bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors"
+                            >
+                                Khám phá sản phẩm
+                            </Link>
+                        </div>
+                    ) : (
+                        /* Product Grid */
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {wishListItems.map((item) => (
                             <div
                                 key={item.id}
                                 className="flex flex-col overflow-hidden rounded-xl bg-card border border-border"
                             >
                                 {/* Product Image */}
-                                <Link href="#" className="relative block group">
+                                <Link href={`/product/${item.product_id}`} className="relative block group">
                                     <div
                                         className="aspect-[4/3] bg-cover bg-center bg-gray-200"
-                                        style={{ backgroundImage: `url("${item.image}")` }}
+                                        style={{ backgroundImage: item.image ? `url("${item.image}")` : 'none' }}
                                     />
                                     <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                         <button className="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] shadow-sm hover:bg-primary/90 transition-colors">
@@ -132,7 +161,7 @@ function WishListContent() {
                                     {/* Actions */}
                                     <div className="flex flex-col gap-2 mt-2">
                                         <button
-                                            onClick={addToCart}
+                                            onClick={() => addToCart(item.product_id)}
                                             className="flex w-full min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-11 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors"
                                         >
                                             <ShoppingCart className="mr-2 h-5 w-5" />
@@ -149,7 +178,8 @@ function WishListContent() {
                                 </div>
                             </div>
                         ))}
-                    </div>
+                        </div>
+                    )}
                 </div>
             </main>
 
