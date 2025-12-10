@@ -5,7 +5,7 @@ import { SkeletonPage } from '../components/skeletons';
 import { usePageLoading } from '../hooks/usePageLoading';
 import TopNav from '../components/top-nav';
 import Footer from '../components/footer';
-import { usePage } from '@inertiajs/react';
+import { usePage, Link } from '@inertiajs/react';
 
 interface Category {
     id: number;
@@ -457,8 +457,9 @@ function WelcomeContent() {
                                         className="flex items-stretch gap-6 pb-4 overflow-x-auto [-ms-scrollbar-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
                                     >
                                         {suggestedProducts.map((product) => (
-                                            <div
+                                            <Link
                                                 key={product.id}
+                                                href={`/product/${product.id}`}
                                                 className="flex w-full sm:w-1/2 md:w-1/3 lg:w-[calc((100%-72px)/4)] min-w-0 flex-col rounded-lg border border-border bg-card overflow-hidden group"
                                                 style={{ flexShrink: 0 }}
                                             >
@@ -466,7 +467,7 @@ function WelcomeContent() {
                                             className="relative aspect-square w-full overflow-hidden bg-cover bg-center bg-no-repeat"
                                             style={{ backgroundImage: `url("${product.image}")` }}
                                         >
-                                            <button className="absolute right-3 top-3 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-white/80 text-foreground backdrop-blur-sm transition-colors hover:text-primary dark:bg-card/80">
+                                            <button onClick={(e) => e.preventDefault()} className="absolute right-3 top-3 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-white/80 text-foreground backdrop-blur-sm transition-colors hover:text-primary dark:bg-card/80">
                                                 <Heart className="h-5 w-5" />
                                             </button>
                                         </div>
@@ -488,12 +489,12 @@ function WelcomeContent() {
                                                 <p className="text-lg font-bold text-foreground">
                                                     {formatPrice(product.price)}
                                                 </p>
-                                                <button className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg bg-secondary/20 text-secondary transition-colors hover:bg-secondary hover:text-white" onClick={() => showSuccess('Đã thêm vào giỏ hàng!')}>
+                                                <button className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg bg-secondary/20 text-secondary transition-colors hover:bg-secondary hover:text-white" onClick={(e) => { e.preventDefault(); showSuccess('Đã thêm vào giỏ hàng!'); }}>
                                                     <ShoppingBag className="h-5 w-5" />
                                                 </button>
                                             </div>
                                         </div>
-                                    </div>
+                                    </Link>
                                         ))}
                                     </div>
                                 </div>

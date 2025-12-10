@@ -18,8 +18,8 @@ class ProductImagesSeeder extends Seeder
             try {
                 DB::table('product_images')->insert([
                 'product_id' => $faker->numberBetween(1, 100),
-                'image_url' => $faker->imageUrl(800, 800, "products"),
-                'thumbnail_url' => $faker->imageUrl(200, 200, "products"),
+                'image_url' => "https://dummyimage.com/300x300/666266/ffffff",
+                'thumbnail_url' => "https://dummyimage.com/100x100/666266/ffffff",
                 'display_order' => $faker->numberBetween(0, 10),
                 'is_primary' => $faker->boolean(20),
                     'created_at' => now(),

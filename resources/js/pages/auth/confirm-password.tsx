@@ -1,7 +1,7 @@
 import { useState, FormEvent } from 'react';
 import SimpleAuthLayout from '../../components/auth/simple-auth-layout';
 import AuthForm from '../../components/auth/auth-form';
-import AuthInput from '../../components/auth/auth-input';
+import AuthPasswordInput from '../../components/auth/auth-password-input';
 import AuthButton from '../../components/auth/auth-button';
 import AuthLink from '../../components/auth/auth-link';
 
@@ -22,11 +22,10 @@ export default function ConfirmPassword() {
             <AuthForm onSubmit={handleSubmit}>
                         <div className="space-y-4 rounded-md">
                             {/* Current Password */}
-                            <AuthInput
+                            <AuthPasswordInput
                                 id="current-password"
                                 label="Mật khẩu hiện tại"
                                 name="current-password"
-                                type="password"
                                 autoComplete="current-password"
                                 required
                                 value={password}

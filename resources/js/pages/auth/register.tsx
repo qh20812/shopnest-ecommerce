@@ -3,6 +3,7 @@ import { useForm } from '@inertiajs/react';
 import SimpleAuthLayout from '../../components/auth/simple-auth-layout';
 import AuthForm from '../../components/auth/auth-form';
 import AuthInput from '../../components/auth/auth-input';
+import AuthPasswordInput from '../../components/auth/auth-password-input';
 import AuthButton from '../../components/auth/auth-button';
 import AuthLink from '../../components/auth/auth-link';
 
@@ -59,36 +60,30 @@ export default function Register() {
                             )}
 
                             {/* Password */}
-                            <AuthInput
+                            <AuthPasswordInput
                                 id="password"
                                 label="Mật khẩu"
                                 name="password"
-                                type="password"
                                 autoComplete="new-password"
                                 required
                                 value={data.password}
                                 onChange={(e) => setData('password', e.target.value)}
                                 placeholder="Mật khẩu"
+                                error={errors.password}
                             />
-                            {errors.password && (
-                                <p className="text-sm text-red-600">{errors.password}</p>
-                            )}
 
                             {/* Confirm Password */}
-                            <AuthInput
+                            <AuthPasswordInput
                                 id="confirm-password"
                                 label="Xác nhận mật khẩu"
                                 name="password_confirmation"
-                                type="password"
                                 autoComplete="new-password"
                                 required
                                 value={data.password_confirmation}
                                 onChange={(e) => setData('password_confirmation', e.target.value)}
                                 placeholder="Xác nhận mật khẩu"
+                                error={errors.password_confirmation}
                             />
-                            {errors.password_confirmation && (
-                                <p className="text-sm text-red-600">{errors.password_confirmation}</p>
-                            )}
                         </div>
 
                         {/* Submit Button */}

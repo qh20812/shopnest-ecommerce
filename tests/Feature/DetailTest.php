@@ -405,4 +405,281 @@ class DetailTest extends TestCase
             'email_verified_at' => now(),
         ]);
     }
+
+    /**
+     * Test UI: product images are displayed correctly
+     */
+    public function test_ui_product_images_are_displayed(): void
+    {
+        $product = $this->createTestProduct();
+        
+        // Create multiple images
+        ProductImage::create([
+            'product_id' => $product->id,
+            'image_url' => 'https://via.placeholder.com/600x601',
+            'alt_text' => 'Test Image 2',
+            'display_order' => 2,
+        ]);
+        
+        ProductImage::create([
+            'product_id' => $product->id,
+            'image_url' => 'https://via.placeholder.com/600x602',
+            'alt_text' => 'Test Image 3',
+            'display_order' => 3,
+        ]);
+
+        $response = $this->get("/product/{$product->id}");
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->has('product.images', 3)
+            ->where('product.images.0.url', 'https://via.placeholder.com/600x600')
+            ->where('product.images.1.url', 'https://via.placeholder.com/600x601')
+            ->where('product.images.2.url', 'https://via.placeholder.com/600x602')
+        );
+    }
+
+    /**
+     * Test UI: product pricing displays correctly
+     */
+    public function test_ui_product_pricing_displays_correctly(): void
+    {
+        $product = $this->createTestProduct();
+        $variant = $product->variants->first();
+        
+        // Update variant with compare price
+        $variant->update([
+            'price' => 100000,
+        ]);
+
+        $response = $this->get("/product/{$product->id}");
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->has('product.variants')
+            ->where('product.variants.0.final_price', 100000)
+            ->where('product.variants.0.price', 100000)
+        );
+    }
+
+    /**
+     * Test UI: rating and reviews display correctly
+     */
+    public function test_ui_rating_and_reviews_display_correctly(): void
+    {
+        $product = $this->createTestProduct();
+        $user1 = $this->createTestUser();
+        $user2 = $this->createTestUser();
+        $user3 = $this->createTestUser();
+        
+        // Create reviews with different ratings
+        Review::create([
+            'product_id' => $product->id,
+            'user_id' => $user1->id,
+            'rating' => 5,
+            'comment' => 'Excellent!',
+            'is_approved' => true,
+        ]);
+        
+        Review::create([
+            'product_id' => $product->id,
+            'user_id' => $user2->id,
+            'rating' => 4,
+            'comment' => 'Very good',
+            'is_approved' => true,
+        ]);
+        
+        Review::create([
+            'product_id' => $product->id,
+            'user_id' => $user3->id,
+            'rating' => 3,
+            'comment' => 'Average',
+            'is_approved' => true,
+        ]);
+
+        $response = $this->get("/product/{$product->id}");
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->where('rating.count', 3)
+            ->where('rating.average', 4) // Average is returned as integer
+            ->has('rating.breakdown', 5) // 5 stars breakdown
+            ->has('reviews.data', 3)
+            ->where('reviews.data.0.rating', 5)
+            ->where('reviews.data.1.rating', 4)
+            ->where('reviews.data.2.rating', 3)
+        );
+    }
+
+    /**
+     * Test UI: stock status displays correctly
+     */
+    public function test_ui_stock_status_displays_correctly(): void
+    {
+        $product = $this->createTestProduct();
+        $variant = $product->variants->first();
+        
+        // Test in-stock variant
+        $variant->update(['stock_quantity' => 10, 'reserved_quantity' => 0]);
+
+        $response = $this->get("/product/{$product->id}");
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->where('product.variants.0.in_stock', true)
+            ->where('product.variants.0.available_quantity', 10)
+        );
+
+        // Test out-of-stock variant
+        $variant->update(['stock_quantity' => 5, 'reserved_quantity' => 5]);
+
+        $response = $this->get("/product/{$product->id}");
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->where('product.variants.0.in_stock', false)
+            ->where('product.variants.0.available_quantity', 0)
+        );
+    }
+
+    /**
+     * Test UI: related products display with correct structure
+     */
+    public function test_ui_related_products_display_correctly(): void
+    {
+        $product1 = $this->createTestProduct();
+        $categoryId = $product1->category_id;
+        
+        // Create 5 related products in same category (should only return 4)
+        for ($i = 0; $i < 5; $i++) {
+            $this->createTestProduct(['category_id' => $categoryId]);
+        }
+
+        $response = $this->get("/product/{$product1->id}");
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->has('relatedProducts') // Has related products array
+        );
+        
+        // Check that relatedProducts array has max 4 items
+        $props = $response->viewData('page')['props'];
+        $this->assertLessThanOrEqual(4, count($props['relatedProducts']));
+        
+        // If there are related products, check structure
+        if (count($props['relatedProducts']) > 0) {
+            $response->assertInertia(fn ($page) => $page
+                ->has('relatedProducts.0', fn ($product) => $product
+                    ->has('id')
+                    ->has('name')
+                    ->has('category')
+                    ->has('image')
+                    ->has('price')
+                    ->has('rating')
+                    ->has('reviewCount')
+                    ->has('isWishlisted')
+                )
+            );
+        }
+    }
+
+    /**
+     * Test UI: shop information displays correctly
+     */
+    public function test_ui_shop_information_displays_correctly(): void
+    {
+        $product = $this->createTestProduct();
+
+        $response = $this->get("/product/{$product->id}");
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->has('product.shop')
+            ->where('product.shop.id', $product->shop->id)
+            ->where('product.shop.name', $product->shop->shop_name)
+            ->has('product.shop.rating')
+        );
+    }
+
+    /**
+     * Test UI: sold count displays correctly
+     */
+    public function test_ui_sold_count_displays_correctly(): void
+    {
+        $product = $this->createTestProduct();
+
+        $response = $this->get("/product/{$product->id}");
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->has('soldCount')
+            ->where('soldCount', 0) // Initially 0
+        );
+    }
+
+    /**
+     * Test UI: product with no reviews shows zero rating
+     */
+    public function test_ui_product_with_no_reviews_shows_zero_rating(): void
+    {
+        $product = $this->createTestProduct();
+
+        $response = $this->get("/product/{$product->id}");
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->where('rating.count', 0)
+            ->where('rating.average', 0)
+            ->has('reviews.data', 0)
+        );
+    }
+
+    /**
+     * Test UI: product category and brand display correctly
+     */
+    public function test_ui_product_category_and_brand_display(): void
+    {
+        $product = $this->createTestProduct();
+
+        $response = $this->get("/product/{$product->id}");
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->has('product.category')
+            ->where('product.category.id', $product->category->id)
+            ->where('product.category.name', $product->category->category_name)
+            ->has('product.brand')
+            ->where('product.brand.id', $product->brand->id)
+            ->where('product.brand.name', $product->brand->brand_name)
+        );
+    }
+
+    /**
+     * Test UI: product variants with attributes display correctly
+     */
+    public function test_ui_product_variants_with_attributes_display(): void
+    {
+        $product = $this->createTestProduct();
+        
+        // Add attribute values to variant (would normally be done through pivot tables)
+        // This tests the basic variant structure is correct
+        $response = $this->get("/product/{$product->id}");
+
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => $page
+            ->has('product.variants')
+            ->has('product.variants.0', fn ($variant) => $variant
+                ->has('variant_id')
+                ->has('sku')
+                ->has('price')
+                ->has('compare_price')
+                ->has('final_price')
+                ->has('stock_quantity')
+                ->has('available_quantity')
+                ->has('attribute_values')
+                ->has('in_stock')
+                ->etc()
+            )
+        );
+    }
 }

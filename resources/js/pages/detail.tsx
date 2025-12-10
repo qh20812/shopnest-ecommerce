@@ -1,103 +1,148 @@
 import { useState } from 'react';
 import { ShoppingCart, Heart, Star, Minus, Plus } from 'lucide-react';
-import { Link } from '@inertiajs/react';
+import { Link, usePage, router } from '@inertiajs/react';
 import TopNav from '../components/top-nav';
 import Footer from '../components/footer';
 import { ToastProvider, useToast } from '../lib/toastContext';
 
+interface ProductImage {
+    id: number;
+    url: string;
+    alt: string;
+}
+
+interface ProductVariant {
+    variant_id: number;
+    sku: string;
+    price: number;
+    compare_price: number | null;
+    final_price: number;
+    stock_quantity: number;
+    available_quantity: number;
+    attribute_values: Array<{
+        attribute_id: number;
+        attribute_name: string;
+        value_id: number;
+        value: string;
+    }>;
+    in_stock: boolean;
+}
+
+interface ProductAttribute {
+    attribute_id: number;
+    name: string;
+    values: Array<{
+        value_id: number;
+        value: string;
+    }>;
+}
+
+interface Product {
+    id: number;
+    name: string;
+    description: string;
+    price: number;
+    minPrice: number;
+    maxPrice: number;
+    images: ProductImage[];
+    variants: ProductVariant[];
+    attributes: ProductAttribute[];
+    default_variant_id: number | null;
+    inStock: boolean;
+    category: {
+        id: number;
+        name: string;
+    } | null;
+    brand: {
+        id: number;
+        name: string;
+    } | null;
+    shop: {
+        id: number;
+        name: string;
+        logo: string;
+        rating: number;
+    } | null;
+}
+
+interface RelatedProduct {
+    id: number;
+    name: string;
+    category: string;
+    image: string;
+    price: number;
+    rating: number;
+    reviewCount: number;
+    isWishlisted: boolean;
+}
+
+interface Rating {
+    average: number;
+    count: number;
+    breakdown: Array<{
+        rating: number;
+        count: number;
+        percentage: number;
+    }>;
+}
+
+interface Review {
+    id: number;
+    rating: number;
+    comment: string;
+    created_at: string;
+    user: {
+        name: string;
+        avatar: string | null;
+    };
+}
+
+interface Reviews {
+    data: Review[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+}
+
+interface DetailProps {
+    product: Product;
+    rating: Rating;
+    soldCount: number;
+    relatedProducts: RelatedProduct[];
+    reviews: Reviews;
+    user: {
+        id: number;
+        name: string;
+        email: string;
+        avatar: string | null;
+    } | null;
+    cartCount: number;
+    [key: string]: unknown;
+}
+
 function DetailContent() {
     const { showSuccess } = useToast();
+    const { product, rating, soldCount, relatedProducts: initialRelatedProducts, reviews } = usePage<DetailProps>().props;
     
-    // Sample product data - replace with real data from props/API
-    const product = {
-        id: 1,
-        name: 'Ghế công thái học ErgoFlex',
-        price: 3200000,
-        rating: 4.5,
-        reviewCount: 124,
-        inStock: true,
-        description: 'Ghế ErgoFlex được thiết kế để mang lại sự thoải mái và hỗ trợ tối đa trong suốt ngày làm việc của bạn. Với các tính năng có thể điều chỉnh và vật liệu thoáng khí, đây là sự bổ sung hoàn hảo cho bất kỳ không gian văn phòng nào.',
-        images: [
-            {
-                id: 1,
-                url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA_3Hg8MXQwtiERSX43afboTM1H1-41w4KBQxetVoKydoputfI3u-8Vr6lMZPGmmgK3Vj2a8FocftUvTeNfDtyuDk6vulQgy2XQ6sJD-C6NSeXYh2CYNUSAGjsHDVlALoSmMzJp2YqQhCYDHCKO7d1_eS61l4Ddw8y6y5pss7Yg3BsRbqUordq7yP-W65WHG38K4MqowehadHRhDBne6loSh9agztSqMoxAn5DQ2Ydqg9M5b4sBAP2tnRwZIE3rmUdiQ7c_TkDRAB4',
-                alt: 'Main view of ergonomic chair',
-            },
-            {
-                id: 2,
-                url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCkNtXATLmOIJnKx70va9XhmPPxykO9u9z61UpaQOswvx19FxC4O9YTIgT28UBv1DdY8_1bGI4NMNOjX1ejRjtVDco-hrsEbd0JrXAmbv22na62uEkTlPEfo0xRzEXCH6yIv0d2m7U_3zPB3QAPmtySQwO3gTMDIQK4WKk45Pv684j7-FbtoDk8jLjG9t7unpJNwd5AfKtmjSbSaYLBYxVHgjeVgmbbhqG3lO3HjA046s2IdOGgjWTtANTlOtlQRQKpNL2qSeB2Kzg',
-                alt: 'Ergonomic chair from the side',
-            },
-            {
-                id: 3,
-                url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB6uyEwMR3gMRUrklfZlBr28GDqPnN6aSosyUfSCXLKATasiOR79kKEokRDE7DWVQZGD1krMyfn6UC6yHiu_7DfW3skxKkGPE6PVY_xSte8uBwVY_zBymneYgS7NQmf66SgULay5fwl4TNA0v4_0Siq7NSXRJFENgFxhvFoqRk5B0zYRp27D0Z-kxFNtvp0nAlBLXHzAC0vMPBWaZHrt9vN1iWi-MTnGonNhdQRYFiCDixVZJ2DnAutSvTtOvIZ5hEydn4FmI4dUNA',
-                alt: 'Ergonomic chair from the back',
-            },
-            {
-                id: 4,
-                url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAiKa3-APIYDn3nDm_R6fPxi11SYcKzkn80Jf7cEVw_7ejxEy4Tz1a7YqpZSymfbzQflEFAoD5jRdkak9mQCeP7rwJwNROp0Y6O2auBPYUkCY4mb-H_LH9PlTpmWSy69o74itY-rYpu3EJJUiNMckXcY5KACbxXBX0uLgiMXyS2Up0zqg5s5Q4mW4Of2omS1roDDqf5dUi-Y4vdva58Ngbo0nYRz_9fpN-feS_ORg3EypX32D-8VR4MFbVdtRzT9fhfXYrWC-5UR0Y',
-                alt: "Close-up of the chair's fabric",
-            },
-            {
-                id: 5,
-                url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBpCzenaO_Gb7s5XLwpkJrdxwOSgIYbHplGmRjdqYYAkDM9I1qfwB7DggjljS8lqKH7yjnCnsQCumi0362GPLlv8VmSePM7EWOg7wh5btw0txS-5T0UCALxQdZKOHdIsuSg2sj68bBogiZcpPb5nHR5ZSXq3ZoYY77wjiF-pc-29U6P9W9tUg-rnGRkfElGuwufd9yNIQxWwzUQhDjB0OdLLZcD8CwRdAAaHBK9eXjiqFQJiOX2quWSKWZeGmNLgmWFh4GRMrxn8wc',
-                alt: 'Chair in an office setting',
-            },
-        ],
-        colors: [
-            { id: 1, name: 'Đen', hex: '#1F2937', selected: true },
-            { id: 2, name: 'Xám', hex: '#9CA3AF', selected: false },
-            { id: 3, name: 'Xanh', hex: '#3B82F6', selected: false },
-        ],
-    };
-
-    // Sample related products - replace with real data later
-    const [relatedProducts, setRelatedProducts] = useState([
-        {
-            id: 2,
-            name: 'Bàn làm việc đứng FlexiDesk',
-            category: 'Văn phòng hiện đại',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBfD0wBvdH6m6eANTBqK0wmVndkuK5MPHmToxF_wbyvtHl11WJmY-oSiglrY7MN1yE5-brXKMP9sfnNO3RkKw2IaLfcA9fq0QeYEa9HNNVoOnCZsJPDnyhb6lRMR8c9rZd5APSgVnS0YClS0zaDvLjHXQcuLN4TSpY1RXZBiOZ1hoap1z4xl0dbXeZVeGm-APy3VpUwu9cRc5Cmwh7K91HRcuiCwNWeTyBm0SAI44ikAAaVq4-AEvv9L__Ibk5E1092gyqmc9HO5n4',
-            price: 5500000,
-            rating: 4,
-            reviewCount: 89,
-            isWishlisted: false,
-        },
-        {
-            id: 3,
-            name: 'Đèn bàn LED LumiTask',
-            category: 'Chiếu sáng',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBfD0wBvdH6m6eANTBqK0wmVndkuK5MPHmToxF_wbyvtHl11WJmY-oSiglrY7MN1yE5-brXKMP9sfnNO3RkKw2IaLfcA9fq0QeYEa9HNNVoOnCZsJPDnyhb6lRMR8c9rZd5APSgVnS0YClS0zaDvLjHXQcuLN4TSpY1RXZBiOZ1hoap1z4xl0dbXeZVeGm-APy3VpUwu9cRc5Cmwh7K91HRcuiCwNWeTyBm0SAI44ikAAaVq4-AEvv9L__Ibk5E1092gyqmc9HO5n4',
-            price: 1200000,
-            rating: 5,
-            reviewCount: 210,
-            isWishlisted: false,
-        },
-        {
-            id: 4,
-            name: 'Kệ sách gỗ sồi Oaka',
-            category: 'Lưu trữ',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBfD0wBvdH6m6eANTBqK0wmVndkuK5MPHmToxF_wbyvtHl11WJmY-oSiglrY7MN1yE5-brXKMP9sfnNO3RkKw2IaLfcA9fq0QeYEa9HNNVoOnCZsJPDnyhb6lRMR8c9rZd5APSgVnS0YClS0zaDvLjHXQcuLN4TSpY1RXZBiOZ1hoap1z4xl0dbXeZVeGm-APy3VpUwu9cRc5Cmwh7K91HRcuiCwNWeTyBm0SAI44ikAAaVq4-AEvv9L__Ibk5E1092gyqmc9HO5n4',
-            price: 2800000,
-            rating: 4.5,
-            reviewCount: 154,
-            isWishlisted: true,
-        },
-        {
-            id: 5,
-            name: 'Thảm lót sàn CozyStep',
-            category: 'Trang trí',
-            image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBfD0wBvdH6m6eANTBqK0wmVndkuK5MPHmToxF_wbyvtHl11WJmY-oSiglrY7MN1yE5-brXKMP9sfnNO3RkKw2IaLfcA9fq0QeYEa9HNNVoOnCZsJPDnyhb6lRMR8c9rZd5APSgVnS0YClS0zaDvLjHXQcuLN4TSpY1RXZBiOZ1hoap1z4xl0dbXeZVeGm-APy3VpUwu9cRc5Cmwh7K91HRcuiCwNWeTyBm0SAI44ikAAaVq4-AEvv9L__Ibk5E1092gyqmc9HO5n4',
-            price: 950000,
-            rating: 5,
-            reviewCount: 301,
-            isWishlisted: false,
-        },
-    ]);
-
+    const [relatedProducts, setRelatedProducts] = useState(initialRelatedProducts);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [quantity, setQuantity] = useState(1);
+    const [selectedVariantId, setSelectedVariantId] = useState(product.default_variant_id);
     const [activeTab, setActiveTab] = useState<'description' | 'specs' | 'reviews'>('description');
+
+    // Get selected variant with fallback
+    const selectedVariant = product.variants.find(v => v.variant_id === selectedVariantId) || product.variants[0] || {
+        variant_id: 0,
+        sku: '',
+        price: product.price || 0,
+        compare_price: null,
+        final_price: product.price || 0,
+        stock_quantity: 0,
+        available_quantity: 0,
+        attribute_values: [],
+        in_stock: false,
+    };
 
     const formatPrice = (price: number) =>
         new Intl.NumberFormat('vi-VN', {
@@ -105,10 +150,10 @@ function DetailContent() {
             currency: 'VND',
         }).format(price);
 
-    const renderStars = (rating: number) => {
+    const renderStars = (ratingValue: number) => {
         const stars = [];
-        const fullStars = Math.floor(rating);
-        const hasHalfStar = rating % 1 !== 0;
+        const fullStars = Math.floor(ratingValue);
+        const hasHalfStar = ratingValue % 1 !== 0;
 
         for (let i = 0; i < fullStars; i++) {
             stars.push(
@@ -129,11 +174,37 @@ function DetailContent() {
     };
 
     const handleQuantityChange = (delta: number) => {
-        setQuantity((prev) => Math.max(1, prev + delta));
+        const maxQuantity = selectedVariant.available_quantity || 1;
+        setQuantity((prev) => Math.max(1, Math.min(maxQuantity, prev + delta)));
     };
 
     const handleAddToCart = () => {
-        showSuccess(`Đã thêm ${quantity} sản phẩm vào giỏ hàng`);
+        if (!selectedVariantId) {
+            showSuccess('Vui lòng chọn loại sản phẩm');
+            return;
+        }
+        
+        router.post(`/product/${product.id}/cart`, {
+            variant_id: selectedVariantId,
+            quantity: quantity,
+        }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                showSuccess(`Đã thêm ${quantity} sản phẩm vào giỏ hàng`);
+            },
+        });
+    };
+
+    const handleBuyNow = () => {
+        if (!selectedVariantId) {
+            showSuccess('Vui lòng chọn loại sản phẩm');
+            return;
+        }
+        
+        router.post(`/product/${product.id}/buy-now`, {
+            variant_id: selectedVariantId,
+            quantity: quantity,
+        });
     };
 
     const handleAddToWishlist = () => {
@@ -146,10 +217,10 @@ function DetailContent() {
                 p.id === productId ? { ...p, isWishlisted: !p.isWishlisted } : p
             )
         );
-        const product = relatedProducts.find((p) => p.id === productId);
-        if (product) {
+        const relatedProduct = relatedProducts.find((p) => p.id === productId);
+        if (relatedProduct) {
             showSuccess(
-                product.isWishlisted
+                relatedProduct.isWishlisted
                     ? 'Đã xóa khỏi danh sách yêu thích'
                     : 'Đã thêm vào danh sách yêu thích'
             );
@@ -157,9 +228,29 @@ function DetailContent() {
     };
 
     const handleAddRelatedToCart = (productId: number) => {
-        const product = relatedProducts.find((p) => p.id === productId);
-        if (product) {
-            showSuccess(`Đã thêm ${product.name} vào giỏ hàng`);
+        const relatedProduct = relatedProducts.find((p) => p.id === productId);
+        if (relatedProduct) {
+            showSuccess(`Đã thêm ${relatedProduct.name} vào giỏ hàng`);
+        }
+    };
+
+    const handleAttributeChange = (attributeId: number, valueId: number) => {
+        // Find variant matching the selected attribute values
+        const currentValues = selectedVariant.attribute_values || [];
+        const newValues = currentValues.map(av => 
+            av.attribute_id === attributeId ? { ...av, value_id: valueId } : av
+        );
+        
+        const matchingVariant = product.variants.find(variant =>
+            newValues.every(nv =>
+                variant.attribute_values.some(av =>
+                    av.attribute_id === nv.attribute_id && av.value_id === nv.value_id
+                )
+            )
+        );
+        
+        if (matchingVariant) {
+            setSelectedVariantId(matchingVariant.variant_id);
         }
     };
 
@@ -213,46 +304,91 @@ function DetailContent() {
                             {/* Rating & Stock */}
                             <div className="flex items-center gap-4 mb-5">
                                 <div className="flex items-center gap-1">
-                                    {renderStars(product.rating)}
+                                    {renderStars(rating.average)}
                                     <span className="text-sm text-muted-foreground ml-1.5 font-medium">
-                                        {product.rating} ({product.reviewCount} đánh giá)
+                                        {rating.average.toFixed(1)} ({rating.count} đánh giá)
                                     </span>
                                 </div>
                                 <div className="h-5 w-px bg-border" />
                                 <span className="text-sm font-medium text-secondary">
-                                    {product.inStock ? 'Còn hàng' : 'Hết hàng'}
+                                    {selectedVariant.in_stock ? `Còn ${selectedVariant.available_quantity} sản phẩm` : 'Hết hàng'}
                                 </span>
+                                {soldCount > 0 && (
+                                    <>
+                                        <div className="h-5 w-px bg-border" />
+                                        <span className="text-sm text-muted-foreground">Đã bán {soldCount}</span>
+                                    </>
+                                )}
                             </div>
 
                             {/* Price */}
-                            <p className="text-4xl font-bold text-primary mb-6">
-                                {formatPrice(product.price)}
-                            </p>
+                            <div className="mb-6">
+                                <p className="text-4xl font-bold text-primary">
+                                    {formatPrice(selectedVariant.final_price)}
+                                </p>
+                                {selectedVariant.compare_price && selectedVariant.compare_price > selectedVariant.final_price && (
+                                    <div className="flex items-center gap-2 mt-2">
+                                        <span className="text-lg text-muted-foreground line-through">
+                                            {formatPrice(selectedVariant.compare_price)}
+                                        </span>
+                                        <span className="text-sm font-semibold text-red-500 bg-red-50 dark:bg-red-950 px-2 py-0.5 rounded">
+                                            -{Math.round((1 - selectedVariant.final_price / selectedVariant.compare_price) * 100)}%
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
 
                             {/* Description */}
                             <p className="text-muted-foreground mb-8 leading-relaxed">
                                 {product.description}
                             </p>
 
-                            {/* Options */}
-                            <div className="flex flex-col gap-6 mb-8">
-                                {/* Color Selection */}
-                                <div className="flex flex-col gap-3">
-                                    <label className="text-sm font-semibold">Màu sắc</label>
-                                    <div className="flex items-center gap-3">
-                                        {product.colors.map((color) => (
-                                            <button
-                                                key={color.id}
-                                                className={`h-8 w-8 rounded-full ring-2 ring-offset-2 ring-offset-background transition ${
-                                                    color.selected
-                                                        ? 'ring-primary'
-                                                        : 'ring-transparent hover:ring-primary/50'
-                                                }`}
-                                                style={{ backgroundColor: color.hex }}
-                                            />
-                                        ))}
+                            {/* Shop Info */}
+                            {product.shop && (
+                                <div className="flex items-center gap-3 p-4 mb-8 border border-border rounded-lg">
+                                    <div className="h-12 w-12 rounded-full bg-muted overflow-hidden">
+                                        {product.shop.logo && (
+                                            <img src={product.shop.logo} alt={product.shop.name} className="w-full h-full object-cover" />
+                                        )}
+                                    </div>
+                                    <div>
+                                        <p className="font-semibold">{product.shop.name}</p>
+                                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                            <Star className="h-3.5 w-3.5 fill-yellow-500 text-yellow-500" />
+                                            <span>{product.shop.rating.toFixed(1)}</span>
+                                        </div>
                                     </div>
                                 </div>
+                            )}
+
+                            {/* Options */}
+                            <div className="flex flex-col gap-6 mb-8">
+                                {/* Attribute Selection */}
+                                {product.attributes.map((attribute) => (
+                                    <div key={attribute.attribute_id} className="flex flex-col gap-3">
+                                        <label className="text-sm font-semibold">{attribute.name}</label>
+                                        <div className="flex items-center gap-3 flex-wrap">
+                                            {attribute.values.map((value) => {
+                                                const isSelected = selectedVariant.attribute_values.some(
+                                                    av => av.attribute_id === attribute.attribute_id && av.value_id === value.value_id
+                                                );
+                                                return (
+                                                    <button
+                                                        key={value.value_id}
+                                                        onClick={() => handleAttributeChange(attribute.attribute_id, value.value_id)}
+                                                        className={`px-4 py-2 rounded-lg border-2 transition ${
+                                                            isSelected
+                                                                ? 'border-primary bg-primary/10 text-primary font-semibold'
+                                                                : 'border-border hover:border-primary'
+                                                        }`}
+                                                    >
+                                                        {value.value}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                ))}
 
                                 {/* Quantity */}
                                 <div className="flex flex-col gap-3">
@@ -260,7 +396,8 @@ function DetailContent() {
                                     <div className="flex items-center border border-border rounded-lg w-fit">
                                         <button
                                             onClick={() => handleQuantityChange(-1)}
-                                            className="h-10 w-10 text-muted-foreground hover:bg-card transition rounded-l-lg"
+                                            disabled={quantity <= 1}
+                                            className="h-10 w-10 text-muted-foreground hover:bg-card transition rounded-l-lg disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             <Minus className="h-4 w-4 mx-auto" />
                                         </button>
@@ -272,7 +409,8 @@ function DetailContent() {
                                         />
                                         <button
                                             onClick={() => handleQuantityChange(1)}
-                                            className="h-10 w-10 text-muted-foreground hover:bg-card transition rounded-r-lg"
+                                            disabled={quantity >= selectedVariant.available_quantity}
+                                            className="h-10 w-10 text-muted-foreground hover:bg-card transition rounded-r-lg disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             <Plus className="h-4 w-4 mx-auto" />
                                         </button>
@@ -284,10 +422,18 @@ function DetailContent() {
                             <div className="flex flex-col sm:flex-row gap-4 mb-8">
                                 <button
                                     onClick={handleAddToCart}
-                                    className="flex flex-1 min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-14 px-6 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors gap-2"
+                                    disabled={!selectedVariant.in_stock}
+                                    className="flex flex-1 min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-14 px-6 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <ShoppingCart className="h-5 w-5" />
                                     <span className="truncate">Thêm vào giỏ hàng</span>
+                                </button>
+                                <button
+                                    onClick={handleBuyNow}
+                                    disabled={!selectedVariant.in_stock}
+                                    className="flex flex-1 min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-14 px-6 bg-secondary text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-secondary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <span className="truncate">Mua ngay</span>
                                 </button>
                                 <button
                                     onClick={handleAddToWishlist}
@@ -333,37 +479,142 @@ function DetailContent() {
                                         : 'border-transparent text-muted-foreground hover:text-primary'
                                 }`}
                             >
-                                Đánh giá ({product.reviewCount})
+                                Đánh giá ({rating.count})
                             </button>
                         </div>
 
                         {/* Tab Content */}
                         <div className="prose prose-sm md:prose-base max-w-none text-muted-foreground leading-relaxed">
                             {activeTab === 'description' && (
-                                <div>
-                                    <p>
-                                        Ghế ErgoFlex được thiết kế một cách khoa học để cung cấp sự hỗ trợ vượt trội cho lưng và thúc đẩy tư thế ngồi tốt. Lưng lưới thoáng khí cho phép không khí lưu thông để giữ cho bạn mát mẻ, trong khi đệm ngồi có đường viền giúp giảm áp lực lên chân.
-                                    </p>
-                                    <p>
-                                        Với các tính năng có thể điều chỉnh linh hoạt bao gồm chiều cao ghế, tay vịn, và độ nghiêng, bạn có thể tùy chỉnh ErgoFlex để phù hợp hoàn hảo với cơ thể của mình. Cấu trúc chắc chắn đảm bảo độ bền và ổn định lâu dài.
-                                    </p>
-                                    <ul className="space-y-2">
-                                        <li>Hỗ trợ thắt lưng có thể điều chỉnh</li>
-                                        <li>Tay vịn 3D (lên/xuống, trước/sau, xoay)</li>
-                                        <li>Cơ chế nghiêng đồng bộ với khóa đa vị trí</li>
-                                        <li>Lưng lưới cao cấp và đệm ngồi bằng vải</li>
-                                        <li>Chân đế nylon chắc chắn với bánh xe lăn êm</li>
-                                    </ul>
+                                <div className="whitespace-pre-line">
+                                    {product.description}
                                 </div>
                             )}
                             {activeTab === 'specs' && (
                                 <div>
-                                    <p>Thông số kỹ thuật đang được cập nhật...</p>
+                                    <table className="w-full">
+                                        <tbody>
+                                            {product.brand && (
+                                                <tr className="border-b border-border">
+                                                    <td className="py-3 font-semibold w-1/3">Thương hiệu</td>
+                                                    <td className="py-3">{product.brand.name}</td>
+                                                </tr>
+                                            )}
+                                            {product.category && (
+                                                <tr className="border-b border-border">
+                                                    <td className="py-3 font-semibold w-1/3">Danh mục</td>
+                                                    <td className="py-3">{product.category.name}</td>
+                                                </tr>
+                                            )}
+                                            <tr className="border-b border-border">
+                                                <td className="py-3 font-semibold w-1/3">SKU</td>
+                                                <td className="py-3">{selectedVariant.sku}</td>
+                                            </tr>
+                                            <tr className="border-b border-border">
+                                                <td className="py-3 font-semibold w-1/3">Tình trạng</td>
+                                                <td className="py-3">{selectedVariant.in_stock ? 'Còn hàng' : 'Hết hàng'}</td>
+                                            </tr>
+                                            {selectedVariant.attribute_values.map((av) => (
+                                                <tr key={av.attribute_id} className="border-b border-border">
+                                                    <td className="py-3 font-semibold w-1/3">{av.attribute_name}</td>
+                                                    <td className="py-3">{av.value}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
                                 </div>
                             )}
                             {activeTab === 'reviews' && (
                                 <div>
-                                    <p>Đánh giá của khách hàng đang được cập nhật...</p>
+                                    {/* Rating Summary */}
+                                    <div className="mb-8 p-6 bg-card rounded-lg border border-border">
+                                        <div className="flex items-start gap-8">
+                                            <div className="text-center">
+                                                <div className="text-5xl font-bold text-primary mb-2">
+                                                    {rating.average.toFixed(1)}
+                                                </div>
+                                                <div className="flex items-center gap-1 justify-center mb-1">
+                                                    {renderStars(rating.average)}
+                                                </div>
+                                                <div className="text-sm text-muted-foreground">
+                                                    {rating.count} đánh giá
+                                                </div>
+                                            </div>
+                                            <div className="flex-1">
+                                                {rating.breakdown.map((item) => (
+                                                    <div key={item.rating} className="flex items-center gap-3 mb-2">
+                                                        <div className="flex items-center gap-1 w-16">
+                                                            <span className="text-sm font-medium">{item.rating}</span>
+                                                            <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
+                                                        </div>
+                                                        <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                                                            <div 
+                                                                className="h-full bg-yellow-500" 
+                                                                style={{ width: `${item.percentage}%` }}
+                                                            />
+                                                        </div>
+                                                        <span className="text-sm text-muted-foreground w-16 text-right">
+                                                            {item.count}
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Reviews List */}
+                                    <div className="space-y-6">
+                                        {reviews.data.length > 0 ? (
+                                            reviews.data.map((review) => (
+                                                <div key={review.id} className="border-b border-border pb-6 last:border-0">
+                                                    <div className="flex items-start gap-4 mb-3">
+                                                        <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center overflow-hidden">
+                                                            {review.user.avatar ? (
+                                                                <img src={review.user.avatar} alt={review.user.name} className="w-full h-full object-cover" />
+                                                            ) : (
+                                                                <span className="text-sm font-semibold">{review.user.name.charAt(0).toUpperCase()}</span>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center gap-2 mb-1">
+                                                                <span className="font-semibold">{review.user.name}</span>
+                                                                <span className="text-sm text-muted-foreground">
+                                                                    {new Date(review.created_at).toLocaleDateString('vi-VN')}
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex items-center gap-1 mb-2">
+                                                                {renderStars(review.rating)}
+                                                            </div>
+                                                            <p className="text-sm leading-relaxed">{review.comment}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <p className="text-center text-muted-foreground py-8">
+                                                Chưa có đánh giá nào cho sản phẩm này
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* Pagination */}
+                                    {reviews.last_page > 1 && (
+                                        <div className="flex justify-center gap-2 mt-8">
+                                            {Array.from({ length: reviews.last_page }, (_, i) => i + 1).map((page) => (
+                                                <Link
+                                                    key={page}
+                                                    href={`/product/${product.id}?page=${page}`}
+                                                    className={`px-4 py-2 rounded-lg transition ${
+                                                        page === reviews.current_page
+                                                            ? 'bg-primary text-white'
+                                                            : 'bg-card border border-border hover:border-primary'
+                                                    }`}
+                                                >
+                                                    {page}
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -380,7 +631,7 @@ function DetailContent() {
                                 >
                                     {/* Product Image */}
                                     <div className="relative">
-                                        <Link href={`/products/${relatedProduct.id}`}>
+                                        <Link href={`/product/${relatedProduct.id}`}>
                                             <div
                                                 className="aspect-square w-full bg-cover bg-center"
                                                 style={{
@@ -390,7 +641,7 @@ function DetailContent() {
                                         </Link>
                                         <div className="absolute top-3 right-3">
                                             <button
-                                                onClick={() => handleToggleWishlist(relatedProduct.id)}
+                                                onClick={(e) => { e.stopPropagation(); handleToggleWishlist(relatedProduct.id); }}
                                                 className="h-9 w-9 flex items-center justify-center rounded-full bg-white/80 dark:bg-surface-dark/80 backdrop-blur-sm text-foreground hover:text-primary transition-colors"
                                             >
                                                 <Heart
@@ -404,7 +655,7 @@ function DetailContent() {
 
                                     {/* Product Info */}
                                     <div className="p-4 flex flex-col flex-1">
-                                        <Link href={`/products/${relatedProduct.id}`}>
+                                        <Link href={`/product/${relatedProduct.id}`}>
                                             <h3 className="font-semibold text-base text-foreground mb-1 leading-snug hover:text-primary transition-colors">
                                                 {relatedProduct.name}
                                             </h3>
@@ -427,7 +678,7 @@ function DetailContent() {
                                                 {formatPrice(relatedProduct.price)}
                                             </p>
                                             <button
-                                                onClick={() => handleAddRelatedToCart(relatedProduct.id)}
+                                                onClick={(e) => { e.stopPropagation(); handleAddRelatedToCart(relatedProduct.id); }}
                                                 className="h-9 w-9 flex items-center justify-center rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors"
                                             >
                                                 <ShoppingCart className="h-5 w-5" />

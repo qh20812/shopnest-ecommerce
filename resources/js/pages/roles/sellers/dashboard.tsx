@@ -8,10 +8,52 @@ interface DashboardProps {
     email: string;
     avatar_url?: string;
   };
+  stats: {
+    revenue: number;
+    revenue_change: number;
+    orders: number;
+    orders_change: number;
+    products: number;
+    products_change: number;
+    customers: number;
+    customers_change: number;
+  };
+  sales_chart: {
+    labels: string[];
+    data: number[];
+  };
+  top_products: Array<{
+    name: string;
+    sales: number;
+    revenue: string;
+    image: string;
+  }>;
 }
 
-export default function Dashboard({ user }: DashboardProps) {
+export default function Dashboard({ user, stats, sales_chart, top_products }: DashboardProps) {
   const chartRef = useRef<HTMLCanvasElement>(null);
+
+  // Format currency
+  const formatCurrency = (value: number): string => {
+    if (value >= 1000000000) {
+      return `${(value / 1000000000).toFixed(1)}B đ`;
+    } else if (value >= 1000000) {
+      return `${(value / 1000000).toFixed(1)}M đ`;
+    } else if (value >= 1000) {
+      return `${(value / 1000).toFixed(1)}K đ`;
+    }
+    return `${value.toFixed(0)} đ`;
+  };
+
+  // Format number
+  const formatNumber = (value: number): string => {
+    if (value >= 1000000) {
+      return `${(value / 1000000).toFixed(1)}M`;
+    } else if (value >= 1000) {
+      return `${(value / 1000).toFixed(1)}K`;
+    }
+    return value.toString();
+  };
 
   useEffect(() => {
     if (!chartRef.current) return;
@@ -26,11 +68,11 @@ export default function Dashboard({ user }: DashboardProps) {
       const salesChart = new Chart(ctx, {
         type: 'line',
         data: {
-          labels: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7'],
+          labels: sales_chart.labels,
           datasets: [
             {
               label: 'Doanh thu (triệu đ)',
-              data: [45, 52, 60, 55, 70, 68, 75],
+              data: sales_chart.data,
               backgroundColor: 'rgba(255, 107, 107, 0.2)',
               borderColor: '#FF6B6B',
               borderWidth: 2,
@@ -99,79 +141,48 @@ export default function Dashboard({ user }: DashboardProps) {
         observer.disconnect();
       };
     });
-  }, []);
+  }, [sales_chart]);
 
   const statCards = [
     {
       label: 'Doanh thu',
-      value: '250.6M đ',
-      change: '+12.5%',
-      isPositive: true,
+      value: formatCurrency(stats.revenue),
+      change: `${stats.revenue_change >= 0 ? '+' : ''}${stats.revenue_change}%`,
+      isPositive: stats.revenue_change >= 0,
       icon: <DollarSign className="w-6 h-6" />,
       bgColor: 'bg-blue-500/10',
       iconColor: 'text-blue-500',
     },
     {
       label: 'Đơn hàng',
-      value: '1,254',
-      change: '+8.2%',
-      isPositive: true,
+      value: formatNumber(stats.orders),
+      change: `${stats.orders_change >= 0 ? '+' : ''}${stats.orders_change}%`,
+      isPositive: stats.orders_change >= 0,
       icon: <ShoppingCart className="w-6 h-6" />,
       bgColor: 'bg-green-500/10',
       iconColor: 'text-green-500',
     },
     {
       label: 'Sản phẩm',
-      value: '3,520',
-      change: '-2.4%',
-      isPositive: false,
+      value: formatNumber(stats.products),
+      change: `${stats.products_change >= 0 ? '+' : ''}${stats.products_change}%`,
+      isPositive: stats.products_change >= 0,
       icon: <Package className="w-6 h-6" />,
       bgColor: 'bg-orange-500/10',
       iconColor: 'text-orange-500',
     },
     {
       label: 'Khách hàng',
-      value: '25,8K',
-      change: '+15.3%',
-      isPositive: true,
+      value: formatNumber(stats.customers),
+      change: `${stats.customers_change >= 0 ? '+' : ''}${stats.customers_change}%`,
+      isPositive: stats.customers_change >= 0,
       icon: <Users className="w-6 h-6" />,
       bgColor: 'bg-purple-500/10',
       iconColor: 'text-purple-500',
     },
   ];
 
-  const topProducts = [
-    {
-      name: 'Áo thun nam cotton',
-      sales: 234,
-      revenue: '23.4M đ',
-      image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=100&h=100&fit=crop',
-    },
-    {
-      name: 'Quần jean nữ',
-      sales: 189,
-      revenue: '18.9M đ',
-      image: 'https://images.unsplash.com/photo-1542272604-787c3835535d?w=100&h=100&fit=crop',
-    },
-    {
-      name: 'Giày thể thao',
-      sales: 156,
-      revenue: '15.6M đ',
-      image: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=100&h=100&fit=crop',
-    },
-    {
-      name: 'Túi xách da',
-      sales: 142,
-      revenue: '14.2M đ',
-      image: 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=100&h=100&fit=crop',
-    },
-    {
-      name: 'Đồng hồ thông minh',
-      sales: 128,
-      revenue: '12.8M đ',
-      image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100&h=100&fit=crop',
-    },
-  ];
+
 
   return (
     <SellerLayout activePage="dashboard" user={user}>
@@ -224,7 +235,7 @@ export default function Dashboard({ user }: DashboardProps) {
               Sản phẩm bán chạy nhất
             </h3>
             <ul className="space-y-4">
-              {topProducts.map((product, index) => (
+              {top_products.map((product, index) => (
                 <li key={index} className="flex items-center gap-3">
                   <img
                     src={product.image}

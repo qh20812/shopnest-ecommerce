@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\User;
+use App\Services\AvatarService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -27,11 +28,15 @@ class RegistrationUserController extends Controller
      */
     public function store(RegisterRequest $request): RedirectResponse
     {
+        // Generate avatar URL with initials
+        $avatarUrl = AvatarService::generateInitialsAvatar($request->full_name);
+
         // Create user with validated data
         $user = User::create([
             'full_name' => $request->full_name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'avatar_url' => $avatarUrl,
             'is_active' => true,
         ]);
 

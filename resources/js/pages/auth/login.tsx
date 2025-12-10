@@ -3,6 +3,7 @@ import { useForm } from '@inertiajs/react';
 import SimpleAuthLayout from '../../components/auth/simple-auth-layout';
 import AuthForm from '../../components/auth/auth-form';
 import AuthInput from '../../components/auth/auth-input';
+import AuthPasswordInput from '../../components/auth/auth-password-input';
 import AuthButton from '../../components/auth/auth-button';
 import AuthLink from '../../components/auth/auth-link';
 
@@ -42,20 +43,17 @@ export default function LoginPage() {
                             )}
 
                             {/* Password */}
-                            <AuthInput
+                            <AuthPasswordInput
                                 id="password"
                                 label="Mật khẩu"
                                 name="password"
-                                type="password"
                                 autoComplete="current-password"
                                 required
                                 value={data.password}
                                 onChange={(e) => setData('password', e.target.value)}
                                 placeholder="Mật khẩu"
+                                error={errors.password}
                             />
-                            {errors.password && (
-                                <p className="text-sm text-red-600">{errors.password}</p>
-                            )}
                         </div>
 
                         {/* Remember Me & Forgot Password */}

@@ -267,22 +267,24 @@ function ShoppingContent({ products, pagination, categories, brands, filters }: 
                                         key={product.id}
                                         className="group flex flex-col overflow-hidden rounded-lg border border-border bg-card transition-shadow hover:shadow-xl"
                                     >
-                                        <div className="relative aspect-square w-full overflow-hidden bg-gray-200">
-                                            <img
-                                                src={product.image}
-                                                alt={product.name}
-                                                className="h-full w-full object-cover"
-                                            />
+                                        <div className="relative">
+                                            <Link href={`/product/${product.id}`} className="block aspect-square w-full overflow-hidden bg-gray-200">
+                                                <img
+                                                    src={product.image}
+                                                    alt={product.name}
+                                                    className="h-full w-full object-cover"
+                                                />
+                                            </Link>
                                             <button
                                                 onClick={handleAddToWishlist}
-                                                className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-muted-foreground shadow-md transition-colors hover:bg-white hover:text-primary"
+                                                className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-muted-foreground shadow-md transition-colors hover:bg-white hover:text-primary z-10"
                                             >
                                                 <Heart className="h-5 w-5" />
                                             </button>
                                         </div>
                                         <div className="flex flex-col gap-4 p-4">
                                             <div>
-                                                <Link href="#" className="group-hover:text-primary">
+                                                <Link href={`/product/${product.id}`} className="group-hover:text-primary">
                                                     <h3 className="mb-1 text-lg font-bold text-foreground">
                                                         {product.name}
                                                     </h3>
@@ -311,7 +313,7 @@ function ShoppingContent({ products, pagination, categories, brands, filters }: 
                                                     )}
                                                 </div>
                                                 <button
-                                                    onClick={handleAddToCart}
+                                                    onClick={(e) => { e.preventDefault(); handleAddToCart(); }}
                                                     className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-white transition-colors hover:bg-secondary/90"
                                                 >
                                                     <ShoppingBag className="h-5 w-5" />

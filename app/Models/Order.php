@@ -47,6 +47,7 @@ class Order extends Model
         'cancelled_at',
         'confirmed_at',
         'delivered_at',
+        'created_at', // Allow setting created_at for testing purposes
     ];
 
     /**

@@ -1,7 +1,7 @@
 import { ShoppingBag, Heart, Search, User, Package, Home, CreditCard, LogOut, Sun, Moon } from 'lucide-react';
 import Input from './ui/input';
 import { Link, usePage } from '@inertiajs/react';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 
 type PageProps = {
     auth?: {
@@ -26,6 +26,37 @@ export default function TopNav() {
     const dropdownRef = useRef<HTMLDivElement | null>(null);
 
     const isDropdownOpen = isAvatarHover || isDropdownHover || isDropdownClick;
+
+    // Helper function to get user initials
+    const getInitials = (name?: string): string => {
+        if (!name) return 'U';
+        const parts = name.trim().split(/\s+/);
+        if (parts.length === 1) {
+            return parts[0].substring(0, 2).toUpperCase();
+        }
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    };
+
+    // Generate consistent color from user name
+    const getColorFromName = (name?: string): string => {
+        const colors = ['3B82F6', '8B5CF6', 'EC4899', 'F59E0B', '10B981', '06B6D4', 'EF4444', '6366F1'];
+        if (!name) return colors[0];
+        let hash = 0;
+        for (let i = 0; i < name.length; i++) {
+            hash = name.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        return colors[Math.abs(hash) % colors.length];
+    };
+
+    // Memoize avatar URL to avoid recalculation on every render
+    const avatarUrl = useMemo(() => {
+        if (authUser?.avatar_url) return authUser.avatar_url;
+        if (authUser?.avatar) return authUser.avatar;
+        // Generate UI Avatars URL as fallback
+        const initials = getInitials(authUser?.full_name);
+        const color = getColorFromName(authUser?.full_name);
+        return `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&size=200&background=${color}&color=fff&bold=true`;
+    }, [authUser?.avatar_url, authUser?.avatar, authUser?.full_name]);
 
     // Get initial dark mode state
     const getInitialDarkMode = () => {
@@ -96,7 +127,7 @@ export default function TopNav() {
                             </Link>
                             <nav className="hidden items-center gap-9 md:flex">
                                 <Link
-                                    href="#"
+                                    href="/"
                                     className="text-sm font-medium leading-normal text-foreground transition-colors hover:text-primary"
                                 >
                                     Trang chủ
@@ -108,7 +139,7 @@ export default function TopNav() {
                                     Sản phẩm
                                 </Link>
                                 <Link
-                                    href="#"
+                                    href="/deals"
                                     className="text-sm font-medium leading-normal text-muted-foreground transition-colors hover:text-primary"
                                 >
                                     Ưu đãi
@@ -174,7 +205,7 @@ export default function TopNav() {
                                     className="h-10 w-10 cursor-pointer rounded-full bg-cover bg-center"
                                     style={{
                                         backgroundImage:
-                                            `url("${authUser.avatar_url ?? authUser.avatar ?? '/default-avatar.png'}")`,
+                                            `url("${avatarUrl}")`,
                                     }}
                                     onClick={() => setIsDropdownClick((v) => !v)}
                                 />
@@ -192,7 +223,7 @@ export default function TopNav() {
                                             className="h-12 w-12 rounded-full bg-cover bg-center"
                                             style={{
                                                 backgroundImage:
-                                                    `url("${authUser.avatar_url ?? authUser.avatar ?? '/default-avatar.png'}")`,
+                                                    `url("${avatarUrl}")`,
                                             }}
                                         />
                                         <div>

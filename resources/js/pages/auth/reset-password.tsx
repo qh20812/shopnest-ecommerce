@@ -1,7 +1,7 @@
 import { useState, FormEvent } from 'react';
 import SimpleAuthLayout from '../../components/auth/simple-auth-layout';
 import AuthForm from '../../components/auth/auth-form';
-import AuthInput from '../../components/auth/auth-input';
+import AuthPasswordInput from '../../components/auth/auth-password-input';
 import AuthButton from '../../components/auth/auth-button';
 import AuthLink from '../../components/auth/auth-link';
 
@@ -32,11 +32,10 @@ export default function ResetPassword() {
             <AuthForm onSubmit={handleSubmit}>
                         <div className="space-y-4 rounded-md">
                             {/* New Password */}
-                            <AuthInput
+                            <AuthPasswordInput
                                 id="new-password"
                                 label="Mật khẩu mới"
                                 name="newPassword"
-                                type="password"
                                 autoComplete="new-password"
                                 required
                                 value={formData.newPassword}
@@ -45,11 +44,10 @@ export default function ResetPassword() {
                             />
 
                             {/* Confirm Password */}
-                            <AuthInput
+                            <AuthPasswordInput
                                 id="confirm-password"
                                 label="Xác nhận mật khẩu mới"
                                 name="confirmPassword"
-                                type="password"
                                 autoComplete="new-password"
                                 required
                                 value={formData.confirmPassword}
