@@ -26,12 +26,12 @@ class ProductVariant extends Model
         'product_id',
         'sku',
         'variant_name',
+        'attribute_values',
         'price',
         'compare_at_price',
         'cost_per_item',
         'stock_quantity',
         'reserved_quantity',
-        'image_id',
         'weight_grams',
         'is_active',
     ];
@@ -42,6 +42,7 @@ class ProductVariant extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'attribute_values' => 'array',
         'price' => 'decimal:2',
         'compare_at_price' => 'decimal:2',
         'cost_per_item' => 'decimal:2',
@@ -60,11 +61,11 @@ class ProductVariant extends Model
     }
 
     /**
-     * Get the image relationship.
+     * Get the images relationship (multiple images per variant).
      */
-    public function image()
+    public function images()
     {
-        return $this->belongsTo(\App\Models\ProductImage::class, 'image_id');
+        return $this->hasMany(\App\Models\ProductImage::class, 'variant_id');
     }
 
     /**

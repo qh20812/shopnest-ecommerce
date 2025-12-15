@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import SellerLayout from '../../../layouts/seller-layout';
 import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, Package, Users } from 'lucide-react';
 
@@ -33,6 +33,21 @@ interface DashboardProps {
 export default function Dashboard({ user, stats, sales_chart, top_products }: DashboardProps) {
   const chartRef = useRef<HTMLCanvasElement>(null);
 
+  // Provide default values if props are undefined
+  const safeStats = useMemo(() => stats || {
+    revenue: 0,
+    revenue_change: 0,
+    orders: 0,
+    orders_change: 0,
+    products: 0,
+    products_change: 0,
+    customers: 0,
+    customers_change: 0,
+  }, [stats]);
+
+  const safeSalesChart = useMemo(() => sales_chart || { labels: [], data: [] }, [sales_chart]);
+  const safeTopProducts = useMemo(() => top_products || [], [top_products]);
+
   // Format currency
   const formatCurrency = (value: number): string => {
     if (value >= 1000000000) {
@@ -56,7 +71,7 @@ export default function Dashboard({ user, stats, sales_chart, top_products }: Da
   };
 
   useEffect(() => {
-    if (!chartRef.current) return;
+    if (!chartRef.current || safeSalesChart.labels.length === 0) return;
 
     // Dynamically import Chart.js only on client side
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -68,11 +83,11 @@ export default function Dashboard({ user, stats, sales_chart, top_products }: Da
       const salesChart = new Chart(ctx, {
         type: 'line',
         data: {
-          labels: sales_chart.labels,
+          labels: safeSalesChart.labels,
           datasets: [
             {
               label: 'Doanh thu (triệu đ)',
-              data: sales_chart.data,
+              data: safeSalesChart.data,
               backgroundColor: 'rgba(255, 107, 107, 0.2)',
               borderColor: '#FF6B6B',
               borderWidth: 2,
@@ -141,41 +156,41 @@ export default function Dashboard({ user, stats, sales_chart, top_products }: Da
         observer.disconnect();
       };
     });
-  }, [sales_chart]);
+  }, [safeSalesChart]);
 
   const statCards = [
     {
       label: 'Doanh thu',
-      value: formatCurrency(stats.revenue),
-      change: `${stats.revenue_change >= 0 ? '+' : ''}${stats.revenue_change}%`,
-      isPositive: stats.revenue_change >= 0,
+      value: formatCurrency(safeStats.revenue),
+      change: `${safeStats.revenue_change >= 0 ? '+' : ''}${safeStats.revenue_change}%`,
+      isPositive: safeStats.revenue_change >= 0,
       icon: <DollarSign className="w-6 h-6" />,
       bgColor: 'bg-blue-500/10',
       iconColor: 'text-blue-500',
     },
     {
       label: 'Đơn hàng',
-      value: formatNumber(stats.orders),
-      change: `${stats.orders_change >= 0 ? '+' : ''}${stats.orders_change}%`,
-      isPositive: stats.orders_change >= 0,
+      value: formatNumber(safeStats.orders),
+      change: `${safeStats.orders_change >= 0 ? '+' : ''}${safeStats.orders_change}%`,
+      isPositive: safeStats.orders_change >= 0,
       icon: <ShoppingCart className="w-6 h-6" />,
       bgColor: 'bg-green-500/10',
       iconColor: 'text-green-500',
     },
     {
       label: 'Sản phẩm',
-      value: formatNumber(stats.products),
-      change: `${stats.products_change >= 0 ? '+' : ''}${stats.products_change}%`,
-      isPositive: stats.products_change >= 0,
+      value: formatNumber(safeStats.products),
+      change: `${safeStats.products_change >= 0 ? '+' : ''}${safeStats.products_change}%`,
+      isPositive: safeStats.products_change >= 0,
       icon: <Package className="w-6 h-6" />,
       bgColor: 'bg-orange-500/10',
       iconColor: 'text-orange-500',
     },
     {
       label: 'Khách hàng',
-      value: formatNumber(stats.customers),
-      change: `${stats.customers_change >= 0 ? '+' : ''}${stats.customers_change}%`,
-      isPositive: stats.customers_change >= 0,
+      value: formatNumber(safeStats.customers),
+      change: `${safeStats.customers_change >= 0 ? '+' : ''}${safeStats.customers_change}%`,
+      isPositive: safeStats.customers_change >= 0,
       icon: <Users className="w-6 h-6" />,
       bgColor: 'bg-purple-500/10',
       iconColor: 'text-purple-500',
@@ -235,7 +250,7 @@ export default function Dashboard({ user, stats, sales_chart, top_products }: Da
               Sản phẩm bán chạy nhất
             </h3>
             <ul className="space-y-4">
-              {top_products.map((product, index) => (
+              {safeTopProducts.map((product, index) => (
                 <li key={index} className="flex items-center gap-3">
                   <img
                     src={product.image}

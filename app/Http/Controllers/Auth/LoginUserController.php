@@ -7,6 +7,7 @@ use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route as RouteFacade;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -43,8 +44,15 @@ class LoginUserController extends Controller
             ]);
         }
 
-        // Redirect to home page for all users
-        return redirect()->intended(route('home'))->with('status', 'Đăng nhập thành công!');
+        // Redirect based on role if no intended URL present
+        $fallback = route('home');
+        if ($user->isSeller() && RouteFacade::has('seller.dashboard')) {
+            $fallback = route('seller.dashboard');
+        } elseif ($user->isAdmin() && RouteFacade::has('admin.dashboard')) {
+            $fallback = route('admin.dashboard');
+        }
+
+        return redirect()->intended($fallback)->with('status', 'Đăng nhập thành công!');
     }
 
     /**

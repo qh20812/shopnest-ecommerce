@@ -1,7 +1,41 @@
 import React, { useState } from 'react';
 import SellerLayout from '../../../../layouts/seller-layout';
-import { Save, X, PlusCircle, Trash2, Upload } from 'lucide-react';
-import { router } from '@inertiajs/react';
+import { Save, X, PlusCircle, Trash2, Upload, Image as ImageIcon } from 'lucide-react';
+import { router, useForm } from '@inertiajs/react';
+import { index, update } from '../../../../routes/seller/products';
+
+interface Category {
+  id: number;
+  category_name: string;
+  slug: string;
+}
+
+interface ProductImage {
+  id: number;
+  url: string;
+  is_primary: boolean;
+}
+
+interface ProductVariant {
+  id?: number;
+  size: string;
+  color: string;
+  stock_quantity: number;
+  images?: File[];
+  existing_images?: Array<{ id: number; url: string }>;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: string;
+  stock: number;
+  category: number;
+  status: string;
+  variants: ProductVariant[];
+  images: ProductImage[];
+}
 
 interface UpdateProps {
   user?: {
@@ -9,84 +43,190 @@ interface UpdateProps {
     email: string;
     avatar_url?: string;
   };
-  product?: {
-    id: string;
-    name: string;
-    description: string;
-    price: string;
-    compare_price: string;
-    stock: number;
-    category: string;
-    status: string;
-    variants: ProductVariant[];
-    images: string[];
+  product: Product;
+  categories: Category[];
+}
+
+export default function Update({ user, product, categories }: UpdateProps) {
+  const productId = product.id.replace('#', '').replace(/^0+/, '');
+  
+  // Ensure product.images and product.variants are always arrays
+  const productImages = Array.isArray(product.images) ? product.images : [];
+  const productVariants = Array.isArray(product.variants) ? product.variants : [];
+  
+  const { data, setData, put, processing, errors } = useForm({
+    product_name: product.name || '',
+    description: product.description || '',
+    base_price: product.price.replace(/[^0-9]/g, '') || '',
+    stock_quantity: product.stock?.toString() || '',
+    category_id: product.category || categories[0]?.id || '',
+    status: product.status || 'active',
+    variants: productVariants,
+    images: [] as File[],
+    delete_images: [] as number[],
+  });
+
+  const [variants, setVariants] = useState<ProductVariant[]>(productVariants);
+  const [imagesToDelete, setImagesToDelete] = useState<number[]>([]);
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      console.debug('Selected files (update)', files.map((f) => f.name));
+      
+      // Create preview URLs
+      const newPreviewUrls = files.map(file => URL.createObjectURL(file));
+      setImagePreviewUrls(prev => [...prev, ...newPreviewUrls]);
+      
+      // Add to existing images
+      setData('images', [...data.images, ...files]);
+    }
   };
-}
 
-interface ProductVariant {
-  id: string;
-  size: string;
-  color: string;
-  stock: number;
-}
+  const handleRemoveNewImage = (index: number) => {
+    // Revoke the preview URL to free memory
+    URL.revokeObjectURL(imagePreviewUrls[index]);
+    
+    // Remove from previews
+    setImagePreviewUrls(prev => prev.filter((_, i) => i !== index));
+    
+    // Remove from data
+    setData('images', data.images.filter((_, i) => i !== index));
+  };
 
-export default function Update({ user, product }: UpdateProps) {
-  const [productName, setProductName] = useState(product?.name || 'Tai nghe không dây');
-  const [description, setDescription] = useState(
-    product?.description ||
-      'Tai nghe bluetooth cao cấp với chất lượng âm thanh vượt trội, pin sử dụng lên đến 24 giờ.'
-  );
-  const [price, setPrice] = useState(product?.price || '1,250,000đ');
-  const [comparePrice, setComparePrice] = useState(product?.compare_price || '1,500,000đ');
-  const [stock, setStock] = useState(product?.stock?.toString() || '120');
-  const [category, setCategory] = useState(product?.category || 'electronics');
-  const [status, setStatus] = useState(product?.status || 'active');
-  const [variants, setVariants] = useState<ProductVariant[]>(
-    product?.variants || [
-      { id: '1', size: 'M', color: 'Đen', stock: 50 },
-      { id: '2', size: 'L', color: 'Trắng', stock: 30 },
-    ]
-  );
+  const handleDeleteImage = (imageId: number) => {
+    const updatedDeleteImages = [...imagesToDelete, imageId];
+    setImagesToDelete(updatedDeleteImages);
+    setData('delete_images', updatedDeleteImages);
+  };
+
+  const handleVariantImageChange = (variantIndex: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      const updatedVariants = variants.map((v, i) => 
+        i === variantIndex ? { ...v, images: [...(v.images || []), ...files] } : v
+      );
+      setVariants(updatedVariants);
+      setData('variants', updatedVariants);
+    }
+  };
+
+  const handleRemoveVariantImage = (variantIndex: number, imageIndex: number) => {
+    const updatedVariants = variants.map((v, i) => {
+      if (i === variantIndex) {
+        const newImages = (v.images || []).filter((_, idx) => idx !== imageIndex);
+        return { ...v, images: newImages };
+      }
+      return v;
+    });
+    setVariants(updatedVariants);
+    setData('variants', updatedVariants);
+  };
+
+  const handleRemoveExistingVariantImage = (variantIndex: number, imageId: number) => {
+    const updatedVariants = variants.map((v, i) => {
+      if (i === variantIndex) {
+        const newExistingImages = (v.existing_images || []).filter(img => img.id !== imageId);
+        return { ...v, existing_images: newExistingImages };
+      }
+      return v;
+    });
+    setVariants(updatedVariants);
+    setData('variants', updatedVariants);
+    
+    // Also add to delete_images list
+    const updatedDeleteImages = [...imagesToDelete, imageId];
+    setImagesToDelete(updatedDeleteImages);
+    setData('delete_images', updatedDeleteImages);
+  };
 
   const handleAddVariant = () => {
     const newVariant: ProductVariant = {
-      id: Date.now().toString(),
       size: '',
       color: '',
-      stock: 0,
+      stock_quantity: 0,
     };
-    setVariants([...variants, newVariant]);
+    const updatedVariants = [...variants, newVariant];
+    setVariants(updatedVariants);
+    setData('variants', updatedVariants);
   };
 
-  const handleRemoveVariant = (id: string) => {
-    setVariants(variants.filter((v) => v.id !== id));
+  const handleRemoveVariant = (index: number) => {
+    const updatedVariants = variants.filter((_, i) => i !== index);
+    setVariants(updatedVariants);
+    setData('variants', updatedVariants);
   };
 
-  const handleVariantChange = (id: string, field: keyof ProductVariant, value: string | number) => {
-    setVariants(
-      variants.map((v) =>
-        v.id === id ? { ...v, [field]: value } : v
-      )
+  const handleVariantChange = (index: number, field: keyof ProductVariant, value: string | number) => {
+    const updatedVariants = variants.map((v, i) =>
+      i === index ? { ...v, [field]: value } : v
     );
+    setVariants(updatedVariants);
+    setData('variants', updatedVariants);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Handle form submission
-    console.log({
-      productName,
-      description,
-      price,
-      comparePrice,
-      stock,
-      category,
-      status,
-      variants,
+  const handleSubmit = (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
+    
+    // Sync local state to form data before submitting
+    const submitData = {
+      product_name: data.product_name,
+      description: data.description,
+      base_price: data.base_price,
+      stock_quantity: data.stock_quantity,
+      category_id: data.category_id,
+      status: data.status,
+      variants: data.variants,
+      images: data.images,
+      delete_images: data.delete_images,
+    };
+    
+    console.debug('Submitting product update', submitData);
+    console.debug('Form data:', {
+      product_name: submitData.product_name,
+      base_price: submitData.base_price,
+      stock_quantity: submitData.stock_quantity,
+      category_id: submitData.category_id,
+      status: submitData.status,
+      variants_count: submitData.variants.length,
+      images_count: submitData.images.length,
+      delete_images_count: submitData.delete_images.length,
+    });
+    
+    // Log detailed variant information
+    console.debug('Detailed variants info:', submitData.variants.map((v, i) => ({
+      index: i,
+      id: v.id,
+      size: v.size,
+      color: v.color,
+      stock_quantity: v.stock_quantity,
+      has_images: !!v.images,
+      images_count: v.images?.length || 0,
+      images_names: v.images?.map(img => img.name) || [],
+      has_existing_images: !!v.existing_images,
+      existing_images_count: v.existing_images?.length || 0,
+    })));
+    
+    // Submit using router.post with _method spoofing for PUT
+    router.post(update.url({ product: productId }), {
+      _method: 'put',
+      ...submitData,
+    }, {
+      forceFormData: true,
+      onSuccess: () => {
+        console.log('Product updated successfully!');
+      },
+      onError: (errors) => {
+        console.error('Validation errors:', errors);
+      },
     });
   };
 
   const handleCancel = () => {
-    router.visit('/sellerproduct');
+    router.visit(index.url());
   };
 
   return (
@@ -106,16 +246,22 @@ export default function Update({ user, product }: UpdateProps) {
               Hủy
             </button>
             <button
-              onClick={handleSubmit}
-              className="flex items-center justify-center gap-2 h-10 px-5 bg-primary text-white rounded-lg font-semibold text-sm hover:bg-primary/90 transition-colors"
+              type="button"
+              onClick={() => handleSubmit()}
+              disabled={processing}
+              className="flex items-center justify-center gap-2 h-10 px-5 bg-primary text-white rounded-lg font-semibold text-sm hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save className="w-5 h-5" />
-              <span>Cập nhật sản phẩm</span>
+              <span>{processing ? 'Đang cập nhật...' : 'Cập nhật sản phẩm'}</span>
             </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-8">
+        <form
+          className="grid grid-cols-3 gap-8"
+          onSubmit={handleSubmit}
+          encType="multipart/form-data"
+        >
           {/* Left Column - Main Content */}
           <div className="col-span-2 space-y-8">
             {/* Basic Information */}
@@ -130,11 +276,12 @@ export default function Update({ user, product }: UpdateProps) {
                 <input
                   id="product-name"
                   type="text"
-                  value={productName}
-                  onChange={(e) => setProductName(e.target.value)}
-                  className="form-input w-full h-10 px-4 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary/50 focus:border-primary/50"
+                  value={data.product_name}
+                  onChange={(e) => setData('product_name', e.target.value)}
+                  className={`form-input w-full h-10 px-4 rounded-lg bg-background-light dark:bg-background-dark border ${errors.product_name ? 'border-red-500' : 'border-border-light dark:border-border-dark'} focus:ring-2 focus:ring-primary/50 focus:border-primary/50`}
                   placeholder="Nhập tên sản phẩm..."
                 />
+                {errors.product_name && <p className="mt-1 text-sm text-red-500">{errors.product_name}</p>}
               </div>
               <div>
                 <label
@@ -146,8 +293,8 @@ export default function Update({ user, product }: UpdateProps) {
                 <textarea
                   id="product-description"
                   rows={5}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  value={data.description}
+                  onChange={(e) => setData('description', e.target.value)}
                   className="form-textarea w-full px-4 py-3 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary/50 focus:border-primary/50"
                   placeholder="Nhập mô tả sản phẩm..."
                 />
@@ -159,7 +306,7 @@ export default function Update({ user, product }: UpdateProps) {
               <h3 className="text-lg font-semibold mb-4 text-text-primary-light dark:text-text-primary-dark">
                 Giá & Tồn kho
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label
                     htmlFor="price"
@@ -170,27 +317,12 @@ export default function Update({ user, product }: UpdateProps) {
                   <input
                     id="price"
                     type="text"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    className="form-input w-full h-10 px-4 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary/50 focus:border-primary/50"
+                    value={data.base_price}
+                    onChange={(e) => setData('base_price', e.target.value)}
+                    className={`form-input w-full h-10 px-4 rounded-lg bg-background-light dark:bg-background-dark border ${errors.base_price ? 'border-red-500' : 'border-border-light dark:border-border-dark'} focus:ring-2 focus:ring-primary/50 focus:border-primary/50`}
                     placeholder="0đ"
                   />
-                </div>
-                <div>
-                  <label
-                    htmlFor="compare-price"
-                    className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2"
-                  >
-                    Giá so sánh
-                  </label>
-                  <input
-                    id="compare-price"
-                    type="text"
-                    value={comparePrice}
-                    onChange={(e) => setComparePrice(e.target.value)}
-                    className="form-input w-full h-10 px-4 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary/50 focus:border-primary/50"
-                    placeholder="0đ"
-                  />
+                  {errors.base_price && <p className="mt-1 text-sm text-red-500">{errors.base_price}</p>}
                 </div>
                 <div>
                   <label
@@ -202,11 +334,12 @@ export default function Update({ user, product }: UpdateProps) {
                   <input
                     id="stock"
                     type="number"
-                    value={stock}
-                    onChange={(e) => setStock(e.target.value)}
-                    className="form-input w-full h-10 px-4 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary/50 focus:border-primary/50"
+                    value={data.stock_quantity}
+                    onChange={(e) => setData('stock_quantity', e.target.value)}
+                    className={`form-input w-full h-10 px-4 rounded-lg bg-background-light dark:bg-background-dark border ${errors.stock_quantity ? 'border-red-500' : 'border-border-light dark:border-border-dark'} focus:ring-2 focus:ring-primary/50 focus:border-primary/50`}
                     placeholder="0"
                   />
+                  {errors.stock_quantity && <p className="mt-1 text-sm text-red-500">{errors.stock_quantity}</p>}
                 </div>
               </div>
             </div>
@@ -216,59 +349,117 @@ export default function Update({ user, product }: UpdateProps) {
               <h3 className="text-lg font-semibold mb-4 text-text-primary-light dark:text-text-primary-dark">
                 Biến thể sản phẩm
               </h3>
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {variants.map((variant, index) => (
-                  <div key={variant.id} className="grid grid-cols-12 gap-4 items-end">
-                    <div className="col-span-4">
-                      {index === 0 && (
-                        <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
-                          Kích cỡ
-                        </label>
-                      )}
-                      <input
-                        type="text"
-                        value={variant.size}
-                        onChange={(e) => handleVariantChange(variant.id, 'size', e.target.value)}
-                        className="form-input w-full h-10 px-4 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary/50 focus:border-primary/50"
-                        placeholder="M, L, XL..."
-                      />
+                  <div key={index} className="p-4 bg-background-light dark:bg-background-dark rounded-lg border border-border-light dark:border-border-dark">
+                    <div className="grid grid-cols-12 gap-4 items-end mb-4">
+                      <div className="col-span-4">
+                        {index === 0 && (
+                          <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
+                            Kích cỡ
+                          </label>
+                        )}
+                        <input
+                          type="text"
+                          value={variant.size}
+                          onChange={(e) => handleVariantChange(index, 'size', e.target.value)}
+                          className="form-input w-full h-10 px-4 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary/50 focus:border-primary/50"
+                          placeholder="M, L, XL..."
+                        />
+                      </div>
+                      <div className="col-span-4">
+                        {index === 0 && (
+                          <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
+                            Màu sắc
+                          </label>
+                        )}
+                        <input
+                          type="text"
+                          value={variant.color}
+                          onChange={(e) => handleVariantChange(index, 'color', e.target.value)}
+                          className="form-input w-full h-10 px-4 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary/50 focus:border-primary/50"
+                          placeholder="Đen, Trắng..."
+                        />
+                      </div>
+                      <div className="col-span-3">
+                        {index === 0 && (
+                          <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
+                            Tồn kho
+                          </label>
+                        )}
+                        <input
+                          type="number"
+                          value={variant.stock_quantity}
+                          onChange={(e) => handleVariantChange(index, 'stock_quantity', parseInt(e.target.value) || 0)}
+                          className="form-input w-full h-10 px-4 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary/50 focus:border-primary/50"
+                          placeholder="0"
+                        />
+                      </div>
+                      <div className="col-span-1">
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveVariant(index)}
+                          className="flex items-center justify-center h-10 w-10 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      </div>
                     </div>
-                    <div className="col-span-4">
-                      {index === 0 && (
-                        <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
-                          Màu sắc
+                    
+                    {/* Variant Images */}
+                    <div className="mt-3">
+                      <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
+                        Hình ảnh biến thể (giúp khách hàng dễ dàng nhận diện)
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {/* Existing variant images */}
+                        {variant.existing_images && variant.existing_images.map((img) => (
+                          <div key={`existing-${img.id}`} className="relative w-20 h-20">
+                            <img
+                              src={img.url}
+                              alt={`Variant ${index} - Existing`}
+                              className="w-full h-full object-cover rounded-lg border-2 border-border-light dark:border-border-dark"
+                              onError={(e) => {
+                                e.currentTarget.src = 'https://via.placeholder.com/80?text=No+Image';
+                              }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveExistingVariantImage(index, img.id)}
+                              className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                        {/* New variant images */}
+                        {variant.images && variant.images.map((img, imgIdx) => (
+                          <div key={`new-${imgIdx}`} className="relative w-20 h-20">
+                            <img
+                              src={URL.createObjectURL(img)}
+                              alt={`Variant ${index} - New ${imgIdx}`}
+                              className="w-full h-full object-cover rounded-lg border-2 border-border-light dark:border-border-dark"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveVariantImage(index, imgIdx)}
+                              className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                        <label className="w-20 h-20 flex items-center justify-center border-2 border-dashed border-border-light dark:border-border-dark rounded-lg cursor-pointer hover:border-primary transition-colors">
+                          <ImageIcon className="w-6 h-6 text-text-secondary-light dark:text-text-secondary-dark" />
+                          <input
+                            type="file"
+                            multiple
+                            accept="image/*"
+                            className="sr-only"
+                            onChange={(e) => handleVariantImageChange(index, e)}
+                          />
                         </label>
-                      )}
-                      <input
-                        type="text"
-                        value={variant.color}
-                        onChange={(e) => handleVariantChange(variant.id, 'color', e.target.value)}
-                        className="form-input w-full h-10 px-4 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary/50 focus:border-primary/50"
-                        placeholder="Đen, Trắng..."
-                      />
-                    </div>
-                    <div className="col-span-3">
-                      {index === 0 && (
-                        <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
-                          Tồn kho
-                        </label>
-                      )}
-                      <input
-                        type="number"
-                        value={variant.stock}
-                        onChange={(e) => handleVariantChange(variant.id, 'stock', parseInt(e.target.value) || 0)}
-                        className="form-input w-full h-10 px-4 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary/50 focus:border-primary/50"
-                        placeholder="0"
-                      />
-                    </div>
-                    <div className="col-span-1">
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveVariant(variant.id)}
-                        className="flex items-center justify-center h-10 w-10 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -298,14 +489,15 @@ export default function Update({ user, product }: UpdateProps) {
                 <div className="relative">
                   <select
                     id="product-category"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="form-select w-full h-10 px-3 pr-8 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary/50 focus:border-primary/50 appearance-none"
+                    value={data.category_id}
+                    onChange={(e) => setData('category_id', e.target.value)}
+                    className={`form-select w-full h-10 px-3 pr-8 rounded-lg bg-background-light dark:bg-background-dark border ${errors.category_id ? 'border-red-500' : 'border-border-light dark:border-border-dark'} focus:ring-2 focus:ring-primary/50 focus:border-primary/50 appearance-none`}
                   >
-                    <option value="electronics">Thiết bị điện tử</option>
-                    <option value="fashion">Thời trang</option>
-                    <option value="home">Đồ gia dụng</option>
-                    <option value="accessories">Phụ kiện</option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.category_name}
+                      </option>
+                    ))}
                   </select>
                   <svg
                     className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none w-5 h-5 text-text-secondary-light dark:text-text-secondary-dark"
@@ -316,6 +508,7 @@ export default function Update({ user, product }: UpdateProps) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
+                {errors.category_id && <p className="mt-1 text-sm text-red-500">{errors.category_id}</p>}
               </div>
               <div>
                 <label
@@ -327,8 +520,8 @@ export default function Update({ user, product }: UpdateProps) {
                 <div className="relative">
                   <select
                     id="product-status"
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value)}
+                    value={data.status}
+                    onChange={(e) => setData('status', e.target.value)}
                     className="form-select w-full h-10 px-3 pr-8 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary/50 focus:border-primary/50 appearance-none"
                   >
                     <option value="active">Đang hiển thị</option>
@@ -349,7 +542,7 @@ export default function Update({ user, product }: UpdateProps) {
             {/* Image Upload */}
             <div className="bg-surface-light dark:bg-surface-dark p-6 rounded-xl border border-border-light dark:border-border-dark">
               <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
-                Hình ảnh sản phẩm
+                Hình ảnh sản phẩm chung
               </label>
               <div className="mt-2 flex justify-center rounded-lg border-2 border-dashed border-border-light dark:border-border-dark px-6 py-10 hover:border-primary transition-colors cursor-pointer">
                 <div className="text-center">
@@ -360,38 +553,100 @@ export default function Update({ user, product }: UpdateProps) {
                       className="relative cursor-pointer rounded-md font-semibold text-primary hover:text-primary/80"
                     >
                       <span>Tải ảnh lên</span>
-                      <input id="file-upload" name="file-upload" type="file" className="sr-only" multiple />
+                      <input 
+                        id="file-upload" 
+                        name="file-upload" 
+                        type="file" 
+                        className="sr-only" 
+                        multiple 
+                        accept="image/*"
+                        onChange={handleFileChange}
+                      />
                     </label>
                     <p className="pl-1">hoặc kéo thả</p>
                   </div>
                   <p className="text-xs leading-5 text-text-secondary-light dark:text-text-secondary-dark">
-                    PNG, JPG, GIF tối đa 10MB
+                    PNG, JPG, GIF tối đa 10MB mỗi ảnh
                   </p>
                 </div>
               </div>
-              {/* Show existing images if any */}
-              {product?.images && product.images.length > 0 && (
+              
+              {/* Show existing images and new images */}
+              {(productImages.length > 0 || imagePreviewUrls.length > 0) && (
                 <div className="mt-4 grid grid-cols-3 gap-2">
-                  {product.images.map((img, idx) => (
-                    <div key={idx} className="relative aspect-square">
-                      <img
-                        src={img}
-                        alt={`Product ${idx + 1}`}
-                        className="w-full h-full object-cover rounded-lg"
-                      />
-                      <button
-                        type="button"
-                        className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
+                  {/* Existing images */}
+                  {productImages
+                    .filter((img) => !imagesToDelete.includes(img.id))
+                    .map((img, idx) => (
+                      <div key={`existing-${img.id}`} className="relative aspect-square group">
+                        <img
+                          src={img.url}
+                          alt={`Product ${idx + 1}`}
+                          className="w-full h-full object-cover rounded-lg border-2 border-border-light dark:border-border-dark"
+                          onError={(e) => {
+                            e.currentTarget.src = 'https://via.placeholder.com/300x300?text=No+Image';
+                          }}
+                        />
+                        {img.is_primary && (
+                          <span className="absolute top-2 left-2 px-2 py-1 bg-primary text-white text-xs font-semibold rounded">
+                            Chính
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteImage(img.id)}
+                          className="absolute -top-2 -right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  
+                  {/* New image previews */}
+                  {imagePreviewUrls.map((url, idx) => {
+                    const isFirstNewImage = productImages.filter((img) => !imagesToDelete.includes(img.id)).length === 0 && idx === 0;
+                    return (
+                      <div key={`new-${idx}`} className="relative aspect-square group">
+                        <img
+                          src={url}
+                          alt={`New Preview ${idx + 1}`}
+                          className="w-full h-full object-cover rounded-lg border-2 border-border-light dark:border-border-dark"
+                        />
+                        {isFirstNewImage && (
+                          <span className="absolute top-2 left-2 px-2 py-1 bg-primary text-white text-xs font-semibold rounded">
+                            Chính
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveNewImage(idx)}
+                          className="absolute -top-2 -right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 text-center rounded-b-lg opacity-0 group-hover:opacity-100 transition-opacity truncate">
+                          {data.images[idx]?.name}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
+              )}
+              
+              {(data.images.length > 0 || productImages.filter((img) => !imagesToDelete.includes(img.id)).length > 0) && (
+                <p className="mt-3 text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                  {productImages.filter((img) => !imagesToDelete.includes(img.id)).length > 0 && (
+                    <span>{productImages.filter((img) => !imagesToDelete.includes(img.id)).length} ảnh hiện có. </span>
+                  )}
+                  {data.images.length > 0 && (
+                    <span>{data.images.length} ảnh mới được chọn. </span>
+                  )}
+                  Ảnh đầu tiên sẽ là ảnh chính.
+                </p>
               )}
             </div>
           </div>
-        </div>
+        </form>
       </div>
     </SellerLayout>
   );

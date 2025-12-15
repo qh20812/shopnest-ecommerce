@@ -25,7 +25,7 @@ class IsSeller
 
         // Check if user has seller role
         if (!$user->isSeller()) {
-            return redirect()->route('welcome')->with('error', 'Bạn không có quyền truy cập vào khu vực người bán.');
+            return redirect()->route('home')->with('error', 'Bạn không có quyền truy cập vào khu vực người bán.');
         }
 
         return $next($request);

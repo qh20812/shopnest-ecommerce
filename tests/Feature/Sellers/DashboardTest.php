@@ -57,6 +57,13 @@ class DashboardTest extends TestCase
             'is_active' => true,
         ]);
 
+        // Assign seller role
+        $sellerRole = \App\Models\Role::firstOrCreate(
+            ['role_name' => 'seller'],
+            ['slug' => 'seller']
+        );
+        $seller->roles()->attach($sellerRole);
+
         $shop = Shop::create([
             'owner_id' => $seller->id,
             'shop_name' => 'Test Shop',
@@ -142,6 +149,75 @@ class DashboardTest extends TestCase
     {
         $response = $this->get('/seller/dashboard');
         $response->assertRedirect('/login');
+    }
+
+    /** @test */
+    public function admin_cannot_access_seller_dashboard(): void
+    {
+        $admin = User::create([
+            'full_name' => 'Test Admin',
+            'email' => 'admin' . uniqid() . '@test.com',
+            'password' => bcrypt('password'),
+            'is_active' => true,
+        ]);
+        
+        // Assign admin role
+        $adminRole = \App\Models\Role::firstOrCreate(
+            ['role_name' => 'admin'],
+            ['slug' => 'admin']
+        );
+        $admin->roles()->attach($adminRole);
+        
+        $response = $this->actingAs($admin)->get('/seller/dashboard');
+        
+        $response->assertRedirect('/');
+        $response->assertSessionHas('error', 'Bạn không có quyền truy cập vào khu vực người bán.');
+    }
+
+    /** @test */
+    public function customer_cannot_access_seller_dashboard(): void
+    {
+        $customer = User::create([
+            'full_name' => 'Test Customer',
+            'email' => 'customer' . uniqid() . '@test.com',
+            'password' => bcrypt('password'),
+            'is_active' => true,
+        ]);
+        
+        // Assign customer role
+        $customerRole = \App\Models\Role::firstOrCreate(
+            ['role_name' => 'customer'],
+            ['slug' => 'customer']
+        );
+        $customer->roles()->attach($customerRole);
+        
+        $response = $this->actingAs($customer)->get('/seller/dashboard');
+        
+        $response->assertRedirect('/');
+        $response->assertSessionHas('error', 'Bạn không có quyền truy cập vào khu vực người bán.');
+    }
+
+    /** @test */
+    public function shipper_cannot_access_seller_dashboard(): void
+    {
+        $shipper = User::create([
+            'full_name' => 'Test Shipper',
+            'email' => 'shipper' . uniqid() . '@test.com',
+            'password' => bcrypt('password'),
+            'is_active' => true,
+        ]);
+        
+        // Assign shipper role
+        $shipperRole = \App\Models\Role::firstOrCreate(
+            ['role_name' => 'shipper'],
+            ['slug' => 'shipper']
+        );
+        $shipper->roles()->attach($shipperRole);
+        
+        $response = $this->actingAs($shipper)->get('/seller/dashboard');
+        
+        $response->assertRedirect('/');
+        $response->assertSessionHas('error', 'Bạn không có quyền truy cập vào khu vực người bán.');
     }
 
     /** @test */
@@ -427,6 +503,13 @@ class DashboardTest extends TestCase
             'is_active' => true,
         ]);
         
+        // Assign seller role even without shop
+        $sellerRole = \App\Models\Role::firstOrCreate(
+            ['role_name' => 'seller'],
+            ['slug' => 'seller']
+        );
+        $seller->roles()->attach($sellerRole);
+        
         $response = $this->actingAs($seller)->get('/seller/dashboard');
         
         $response->assertStatus(200);
@@ -494,6 +577,105 @@ class DashboardTest extends TestCase
         $response->assertInertia(fn ($page) => 
             $page->where('stats.revenue', 1000000)
                 ->where('stats.orders', 1)
+        );
+    }
+
+    /** @test */
+    public function dashboard_renders_successfully_with_all_required_props(): void
+    {
+        $data = $this->createSellerWithShop();
+        $customer = User::factory()->create();
+
+        // Create test data
+        $this->createProduct($data['shop'], 100, 50000);
+        $this->createProduct($data['shop'], 200, 75000);
+        $this->createOrder($data['shop'], $customer->id, 1000000, 'paid');
+        
+        $response = $this->actingAs($data['seller'])->get('/seller/dashboard');
+        
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => 
+            $page->component('roles/sellers/dashboard')
+                // Verify stats structure
+                ->has('stats')
+                ->where('stats.revenue', 1000000)
+                ->where('stats.orders', 1)
+                ->where('stats.products', 2)
+                ->where('stats.customers', 1)
+                ->has('stats.revenue_change')
+                ->has('stats.orders_change')
+                ->has('stats.products_change')
+                ->has('stats.customers_change')
+                // Verify sales_chart structure
+                ->has('sales_chart')
+                ->has('sales_chart.labels', 7)
+                ->has('sales_chart.data', 7)
+                // Verify top_products structure
+                ->has('top_products')
+                ->has('top_products.0')
+                ->has('top_products.0.name')
+                ->has('top_products.0.sales')
+                ->has('top_products.0.revenue')
+                ->has('top_products.0.image')
+        );
+    }
+
+    /** @test */
+    public function dashboard_renders_with_empty_data_gracefully(): void
+    {
+        $data = $this->createSellerWithShop();
+        
+        $response = $this->actingAs($data['seller'])->get('/seller/dashboard');
+        
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => 
+            $page->component('roles/sellers/dashboard')
+                ->where('stats.revenue', 0)
+                ->where('stats.orders', 0)
+                ->where('stats.products', 0)
+                ->where('stats.customers', 0)
+                ->has('sales_chart.labels', 7)
+                ->has('sales_chart.data', 7)
+                ->where('top_products', [])
+        );
+    }
+
+    /** @test */
+    public function dashboard_renders_with_complex_data_set(): void
+    {
+        $data = $this->createSellerWithShop();
+        $customer1 = User::factory()->create();
+        $customer2 = User::factory()->create();
+
+        // Create multiple products
+        for ($i = 0; $i < 10; $i++) {
+            $this->createProduct($data['shop'], rand(10, 500), rand(10000, 100000));
+        }
+
+        // Create orders across different months
+        for ($i = 0; $i < 15; $i++) {
+            $this->createOrder(
+                $data['shop'], 
+                rand(0, 1) === 0 ? $customer1->id : $customer2->id, 
+                rand(100000, 5000000), 
+                'paid',
+                now()->subMonths(rand(0, 6))->addDays(rand(1, 28))
+            );
+        }
+        
+        $response = $this->actingAs($data['seller'])->get('/seller/dashboard');
+        
+        $response->assertStatus(200);
+        $response->assertInertia(fn ($page) => 
+            $page->component('roles/sellers/dashboard')
+                ->has('stats')
+                ->has('stats.revenue')
+                ->has('stats.orders')
+                ->has('stats.products')
+                ->has('stats.customers')
+                ->has('sales_chart.labels', 7)
+                ->has('sales_chart.data', 7)
+                ->has('top_products', 5) // Should return max 5 products
         );
     }
 }

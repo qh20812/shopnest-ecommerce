@@ -23,6 +23,7 @@ class ProductImage extends Model
      */
     protected $fillable = [
         'product_id',
+        'variant_id',
         'image_url',
         'thumbnail_url',
         'alt_text',
@@ -49,10 +50,26 @@ class ProductImage extends Model
     }
 
     /**
-     * Get the variants relationship.
+     * Get the variant relationship (for variant-specific images).
      */
-    public function variants()
+    public function variant()
     {
-        return $this->hasMany(\App\Models\ProductVariant::class, 'image_id');
+        return $this->belongsTo(\App\Models\ProductVariant::class, 'variant_id');
+    }
+
+    /**
+     * Scope: Get only product-level images (not variant-specific).
+     */
+    public function scopeProductOnly($query)
+    {
+        return $query->whereNull('variant_id');
+    }
+
+    /**
+     * Scope: Get only variant-specific images.
+     */
+    public function scopeVariantOnly($query)
+    {
+        return $query->whereNotNull('variant_id');
     }
 }
