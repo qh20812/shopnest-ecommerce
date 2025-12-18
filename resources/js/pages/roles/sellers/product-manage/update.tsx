@@ -48,13 +48,13 @@ interface UpdateProps {
 }
 
 export default function Update({ user, product, categories }: UpdateProps) {
-  const productId = product.id.replace('#', '').replace(/^0+/, '');
+  const productId = parseInt(product.id.replace('#', '').replace(/^0+/, ''), 10);
   
   // Ensure product.images and product.variants are always arrays
   const productImages = Array.isArray(product.images) ? product.images : [];
   const productVariants = Array.isArray(product.variants) ? product.variants : [];
   
-  const { data, setData, put, processing, errors } = useForm({
+  const { data, setData, processing, errors } = useForm({
     product_name: product.name || '',
     description: product.description || '',
     base_price: product.price.replace(/[^0-9]/g, '') || '',
@@ -210,12 +210,48 @@ export default function Update({ user, product, categories }: UpdateProps) {
       existing_images_count: v.existing_images?.length || 0,
     })));
     
-    // Submit using router.post with _method spoofing for PUT
-    router.post(update.url({ product: productId }), {
-      _method: 'put',
-      ...submitData,
-    }, {
-      forceFormData: true,
+    // Build a FormData payload so nested objects and files are appended correctly
+    const formData = new FormData();
+    formData.append('_method', 'put');
+    formData.append('product_name', String(submitData.product_name));
+    formData.append('description', String(submitData.description));
+    formData.append('base_price', String(submitData.base_price));
+    formData.append('stock_quantity', String(submitData.stock_quantity));
+    formData.append('category_id', String(submitData.category_id));
+    formData.append('status', String(submitData.status));
+    
+    // Append delete images
+    submitData.delete_images.forEach((id, idx) => {
+      formData.append(`delete_images[${idx}]`, String(id));
+    });
+    
+    // Append new product images
+    submitData.images.forEach((file) => {
+      formData.append('images[]', file);
+    });
+    
+    // Append variants (nested fields + variant images)
+    submitData.variants.forEach((v, vi) => {
+      if (v.id !== undefined) {
+        formData.append(`variants[${vi}][id]`, String(v.id));
+      }
+      formData.append(`variants[${vi}][size]`, String(v.size ?? ''));
+      formData.append(`variants[${vi}][color]`, String(v.color ?? ''));
+      formData.append(`variants[${vi}][stock_quantity]`, String(v.stock_quantity ?? 0));
+      
+      // existing image ids (if any) so backend can keep them
+      (v.existing_images || []).forEach((ei, eidx) => {
+        formData.append(`variants[${vi}][existing_images][${eidx}]`, String(ei.id));
+      });
+      
+      // new images for this variant
+      (v.images || []).forEach((file) => {
+        formData.append(`variants[${vi}][images][]`, file);
+      });
+    });
+    
+    // Send FormData directly (typed as FormData)
+    router.post(update.url({ product: productId }), formData as FormData, {
       onSuccess: () => {
         console.log('Product updated successfully!');
       },

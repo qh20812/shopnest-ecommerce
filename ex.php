@@ -1,84 +1,96 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\Seller;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\LoginRequest;
+use App\Models\Order;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class AuthenticatedSessionController extends Controller
+class OrderController extends Controller
 {
     /**
-     * Show the login page.
+     * Helper method để kiểm tra quyền truy cập của Seller vào một đơn hàng.
+     *
+     * @param Order $order
      */
-    public function create(Request $request): Response
+    private function authorizeSellerAccess(Order $order): void
     {
-        return Inertia::render('auth/login-page', [
-            'canResetPassword' => Route::has('password.request'),
-            'status' => $request->session()->get('status'),
+        $isSellerOrder = $order->items()
+            ->whereHas('variant.product', function ($query) {
+                $query->where('seller_id', Auth::id());
+            })->exists();
+
+        if (!$isSellerOrder) {
+            abort(403, 'Bạn không có quyền truy cập đơn hàng này.');
+        }
+    }
+
+    /**
+     * Hiển thị danh sách các đơn hàng có chứa sản phẩm của Seller.
+     */
+    public function index(): Response
+    {
+        $orders = Order::whereHas('items.variant.product', function ($query) {
+            $query->where('seller_id', Auth::id());
+        })
+        ->with('customer') // Tải sẵn thông tin khách hàng để tránh N+1 query
+        ->latest()
+        ->paginate(15);
+
+        return Inertia::render('Seller/Orders/Index', [
+            'orders' => $orders,
         ]);
     }
 
     /**
-     * Handle an incoming authentication request.
+     * Hiển thị thông tin chi tiết của một đơn hàng.
      */
-    public function store(LoginRequest $request): RedirectResponse
+    public function show(Order $order): Response
     {
-        $request->authenticate();
+        $this->authorizeSellerAccess($order);
 
-        $request->session()->regenerate();
+        // Tải tất cả các thông tin liên quan cần thiết
+        $order->load(['customer', 'shippingAddress', 'items.variant.product']);
 
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-        
-        // Check if user account is active
-        if ($user && !$user->is_active) {
-            Auth::logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
-            
-            return back()->withErrors([
-                'identifier' => 'Your account has been deactivated. Please contact support for assistance.',
-            ]);
-        }
-        
-        // Check user role and redirect accordingly
-        if ($user && $user->isAdmin()) {
-            return redirect()->intended(route('admin.dashboard', absolute: false))
-                ->with('success', 'Welcome back, Admin!');
-        }
-
-        // Check if user has Seller role
-        if($user && $user->role()->where('name->en', 'Seller')->exists()) {
-            return redirect()->intended(route('seller.dashboard', absolute: false))
-                ->with('success', 'Welcome back, Seller!');
-        }
-
-        // Check if user has Customer role
-        if ($user && $user->role()->where('name->en', 'Customer')->exists()) {
-            return redirect()->intended(route('home', absolute: false))
-                ->with('success', 'Login successful!');
-        }
-
-        return redirect()->intended(route('home', absolute: false))
-            ->with('success', 'Welcome back!');
+        return Inertia::render('Seller/Orders/Show', [
+            'order' => $order,
+        ]);
     }
 
     /**
-     * Destroy an authenticated session.
+     * Cập nhật trạng thái của một đơn hàng.
      */
-    public function destroy(Request $request): RedirectResponse
+    public function updateStatus(Request $request, Order $order): RedirectResponse
     {
-        Auth::guard('web')->logout();
+        $this->authorizeSellerAccess($order);
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        // Giả sử model Order có các hằng số định nghĩa trạng thái
+        $validated = $request->validate([
+            'status' => ['required', 'string', Rule::in([
+                'pending_confirmation',
+                'processing',
+                'pending_assignment',
+                'assigned_to_shipper',
+                'delivering',
+                'delivered',
+                'completed',
+                'cancelled',
+                'returned',
+            ])],
+        ]);
 
-        return redirect('/');
+        $order->update(['status' => $validated['status']]);
+
+        // Nâng cao: Gửi thông báo cho khách hàng về việc cập nhật trạng thái.
+        // Notification::send($order->customer, new OrderStatusUpdated($order));
+
+        return redirect()->route('seller.orders.show', $order->order_id)
+                         ->with('success', 'Cập nhật trạng thái đơn hàng thành công.');
     }
 }
+

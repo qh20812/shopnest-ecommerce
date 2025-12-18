@@ -179,7 +179,7 @@ class DashboardController extends Controller
                 'name' => $product->product_name,
                 'sales' => $product->total_sold,
                 'revenue' => number_format($revenue, 0, ',', '.') . ' đ',
-                'image' => $product->images->first()?->image_url ?? 'https://via.placeholder.com/100',
+                'image' => $product->images->first()?->image_url ?? '/ShopNest3.png',
             ];
         })->toArray();
     }

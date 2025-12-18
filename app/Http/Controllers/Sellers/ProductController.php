@@ -8,9 +8,11 @@ use App\Http\Requests\Sellers\UpdateProductRequest;
 use App\Models\Category;
 use App\Models\Product;
 use App\Services\ProductService;
+use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -103,7 +105,7 @@ class ProductController extends Controller
         }
 
         try {
-            \Log::info('Creating product', [
+            Log::info('Creating product', [
                 'shop_id' => $shop->id,
                 'data' => $request->except(['images']),
                 'images_count' => $request->hasFile('images') ? count($request->file('images')) : 0,
@@ -111,7 +113,7 @@ class ProductController extends Controller
 
             $product = $this->productService->createProduct($shop, $request->validated());
 
-            \Log::info('Product created successfully', [
+            Log::info('Product created successfully', [
                 'product_id' => $product->id,
                 'product_name' => $product->product_name,
             ]);
@@ -119,8 +121,8 @@ class ProductController extends Controller
             return redirect()
                 ->route('seller.products.index')
                 ->with('success', 'Tạo sản phẩm thành công!');
-        } catch (\Exception $e) {
-            \Log::error('Failed to create product', [
+        } catch (Exception $e) {
+            Log::error('Failed to create product', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
@@ -269,7 +271,7 @@ class ProductController extends Controller
     public function update(UpdateProductRequest $request, Product $product): RedirectResponse
     {
         try {
-            \Log::info('Product update request received', [
+            Log::info('Product update request received', [
                 'product_id' => $product->id,
                 'validated_data' => $request->validated(),
                 'has_images' => $request->hasFile('images'),
@@ -277,15 +279,15 @@ class ProductController extends Controller
 
             $this->productService->updateProduct($product, $request->validated());
 
-            \Log::info('Product updated successfully', [
+            Log::info('Product updated successfully', [
                 'product_id' => $product->id,
             ]);
 
             return redirect()
                 ->route('seller.products.index')
                 ->with('success', 'Cập nhật sản phẩm thành công!');
-        } catch (\Exception $e) {
-            \Log::error('Failed to update product', [
+        } catch (Exception $e) {
+            Log::error('Failed to update product', [
                 'product_id' => $product->id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -317,7 +319,7 @@ class ProductController extends Controller
             return redirect()
                 ->route('seller.products.index')
                 ->with('success', 'Xóa sản phẩm thành công!');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return redirect()
                 ->back()
                 ->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());

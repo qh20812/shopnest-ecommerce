@@ -227,7 +227,7 @@ export default function Index({ user, products, categories, filters }: ProductMa
                           className="w-12 h-12 object-cover rounded-lg"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
-                            target.src = 'https://via.placeholder.com/100?text=No+Image';
+                            target.src = '/ShopNest3.png';
                           }}
                         />
                       </td>

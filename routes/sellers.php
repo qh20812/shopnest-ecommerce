@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Sellers\DashboardController;
+use App\Http\Controllers\Sellers\OrderController;
 use App\Http\Controllers\Sellers\ProductController;
 use Illuminate\Support\Facades\Route;
 
@@ -26,4 +27,11 @@ Route::middleware(['auth', 'verified', 'is.seller'])->prefix('seller')->group(fu
         'update' => 'seller.products.update',
         'destroy' => 'seller.products.destroy',
     ]);
+
+    // Order management routes
+    Route::prefix('orders')->name('seller.orders.')->group(function () {
+        Route::get('/', [OrderController::class, 'index'])->name('index');
+        Route::get('/{order}', [OrderController::class, 'show'])->name('show');
+        Route::put('/{order}/status', [OrderController::class, 'updateStatus'])->name('updateStatus');
+    });
 });

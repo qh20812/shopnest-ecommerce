@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import SellerLayout from '../../../../layouts/seller-layout';
 import { ArrowLeft, Phone, Printer, RefreshCw, CheckCircle } from 'lucide-react';
 import { router } from '@inertiajs/react';
+import { index as ordersIndexRoute, updateStatus as updateStatusRoute } from '../../../../routes/seller/orders';
 
 interface ReadProps {
   user?: {
@@ -9,7 +10,7 @@ interface ReadProps {
     email: string;
     avatar_url?: string;
   };
-  order?: {
+  order: {
     id: string;
     date: string;
     customer: {
@@ -30,7 +31,7 @@ interface ReadProps {
 }
 
 interface OrderProduct {
-  id: string;
+  id: string | number;
   name: string;
   image: string;
   variant: string;
@@ -40,53 +41,15 @@ interface OrderProduct {
 }
 
 export default function Read({ user, order }: ReadProps) {
-  const [orderStatus, setOrderStatus] = useState(order?.status || 'processing');
-
-  // Sample order data
-  const orderData = order || {
-    id: '#SN1209',
-    date: '23 tháng 7, 2024',
-    customer: {
-      name: 'Nguyễn Văn An',
-      email: 'nguyen.van.an@email.com',
-      phone: '0987 654 321',
-      address: '123 Đường ABC, Phường XYZ, Quận 1, TP. Hồ Chí Minh',
-    },
-    products: [
-      {
-        id: '1',
-        name: 'Giày thể thao UltraBoost',
-        image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100&h=100&fit=crop',
-        variant: 'Size: 42, Màu: Đen',
-        quantity: 1,
-        price: '750.000đ',
-        total: '750.000đ',
-      },
-      {
-        id: '2',
-        name: 'Tai nghe không dây BassMax',
-        image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=100&h=100&fit=crop',
-        variant: 'Màu: Trắng',
-        quantity: 1,
-        price: '500.000đ',
-        total: '500.000đ',
-      },
-    ],
-    subtotal: '1.250.000đ',
-    shipping: '30.000đ',
-    discount: '0đ',
-    total: '1.280.000đ',
-    payment_method: 'COD',
-    payment_status: 'cod',
-    status: 'processing',
-  };
+  const [orderStatus, setOrderStatus] = useState(order.status);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const handleBack = () => {
-    router.visit('/sellerorder');
+    router.visit(ordersIndexRoute.url());
   };
 
   const handleContactCustomer = () => {
-    window.location.href = `tel:${orderData.customer.phone}`;
+    window.location.href = `tel:${order.customer.phone}`;
   };
 
   const handlePrintInvoice = () => {
@@ -94,8 +57,23 @@ export default function Read({ user, order }: ReadProps) {
   };
 
   const handleUpdateStatus = () => {
-    console.log('Updating order status to:', orderStatus);
-    // Handle status update logic
+    if (isUpdating || orderStatus === order.status) return;
+
+    const orderId = order.id.replace('#', '').replace(/^[A-Z]+-/, '');
+    
+    setIsUpdating(true);
+    router.put(updateStatusRoute.url({ order: orderId }), {
+      status: orderStatus,
+    }, {
+      preserveScroll: true,
+      onSuccess: () => {
+        setIsUpdating(false);
+      },
+      onError: (errors) => {
+        setIsUpdating(false);
+        console.error('Validation errors:', errors);
+      },
+    });
   };
 
   return (
@@ -112,10 +90,10 @@ export default function Read({ user, order }: ReadProps) {
               <span className="font-medium">Quay lại Đơn hàng</span>
             </button>
             <h2 className="text-3xl font-bold text-text-primary-light dark:text-text-primary-dark">
-              Đơn hàng {orderData.id}
+              Đơn hàng {order.id}
             </h2>
             <p className="text-text-secondary-light dark:text-text-secondary-dark mt-1">
-              Ngày đặt: {orderData.date}
+              Ngày đặt: {order.date}
             </p>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
@@ -135,10 +113,11 @@ export default function Read({ user, order }: ReadProps) {
             </button>
             <button
               onClick={handleUpdateStatus}
-              className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90 transition-colors"
+              disabled={isUpdating || orderStatus === order.status}
+              className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <RefreshCw className="w-5 h-5" />
-              <span>Cập nhật trạng thái</span>
+              <RefreshCw className={`w-5 h-5 ${isUpdating ? 'animate-spin' : ''}`} />
+              <span>{isUpdating ? 'Đang cập nhật...' : 'Cập nhật trạng thái'}</span>
             </button>
           </div>
         </div>
@@ -149,7 +128,7 @@ export default function Read({ user, order }: ReadProps) {
             <div className="bg-surface-light dark:bg-surface-dark p-6 rounded-xl border border-border-light dark:border-border-dark">
               <h3 className="text-lg font-semibold mb-4">Sản phẩm trong đơn hàng</h3>
               <div className="divide-y divide-border-light dark:divide-border-dark">
-                {orderData.products.map((product) => (
+                {order.products.map((product) => (
                   <div key={product.id} className="flex items-center gap-4 py-4">
                     <img
                       src={product.image}
@@ -177,19 +156,19 @@ export default function Read({ user, order }: ReadProps) {
                   <p className="text-text-secondary-light dark:text-text-secondary-dark">
                     Tổng tiền sản phẩm
                   </p>
-                  <p className="font-medium">{orderData.subtotal}</p>
+                  <p className="font-medium">{order.subtotal}</p>
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <p className="text-text-secondary-light dark:text-text-secondary-dark">Phí vận chuyển</p>
-                  <p className="font-medium">{orderData.shipping}</p>
+                  <p className="font-medium">{order.shipping}</p>
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <p className="text-text-secondary-light dark:text-text-secondary-dark">Giảm giá</p>
-                  <p className="font-medium text-primary">- {orderData.discount}</p>
+                  <p className="font-medium text-primary">- {order.discount}</p>
                 </div>
                 <div className="flex justify-between items-center font-semibold text-lg mt-2">
                   <p>Tổng cộng</p>
-                  <p>{orderData.total}</p>
+                  <p>{order.total}</p>
                 </div>
               </div>
             </div>
@@ -205,23 +184,23 @@ export default function Read({ user, order }: ReadProps) {
                   <p className="w-28 text-text-secondary-light dark:text-text-secondary-dark shrink-0">
                     Tên KH
                   </p>
-                  <p className="font-medium">{orderData.customer.name}</p>
+                  <p className="font-medium">{order.customer.name}</p>
                 </div>
                 <div className="flex">
                   <p className="w-28 text-text-secondary-light dark:text-text-secondary-dark shrink-0">Email</p>
-                  <p className="font-medium break-all">{orderData.customer.email}</p>
+                  <p className="font-medium break-all">{order.customer.email}</p>
                 </div>
                 <div className="flex">
                   <p className="w-28 text-text-secondary-light dark:text-text-secondary-dark shrink-0">
                     Điện thoại
                   </p>
-                  <p className="font-medium">{orderData.customer.phone}</p>
+                  <p className="font-medium">{order.customer.phone}</p>
                 </div>
                 <div className="flex">
                   <p className="w-28 text-text-secondary-light dark:text-text-secondary-dark shrink-0">
                     Địa chỉ
                   </p>
-                  <p className="font-medium">{orderData.customer.address}</p>
+                  <p className="font-medium">{order.customer.address}</p>
                 </div>
               </div>
             </div>
@@ -244,10 +223,12 @@ export default function Read({ user, order }: ReadProps) {
                       onChange={(e) => setOrderStatus(e.target.value)}
                       className="form-select w-full h-10 px-3 pr-8 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary/50 focus:border-primary/50 appearance-none"
                     >
-                      <option value="cancelled">Đã hủy</option>
+                      <option value="pending">Chờ xác nhận</option>
+                      <option value="confirmed">Đã xác nhận</option>
                       <option value="processing">Đang xử lý</option>
-                      <option value="shipped">Đang giao hàng</option>
+                      <option value="shipping">Đang giao hàng</option>
                       <option value="delivered">Đã giao hàng</option>
+                      <option value="cancelled">Đã hủy</option>
                     </select>
                     <svg
                       className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none w-5 h-5 text-text-secondary-light dark:text-text-secondary-dark"
@@ -270,11 +251,7 @@ export default function Read({ user, order }: ReadProps) {
                   </p>
                   <div className="flex items-center gap-2 mt-1">
                     <CheckCircle className="w-5 h-5 text-green-500" />
-                    <p className="font-medium">
-                      {orderData.payment_method === 'COD'
-                        ? 'Thanh toán khi nhận hàng (COD)'
-                        : orderData.payment_method}
-                    </p>
+                    <p className="font-medium">{order.payment_method}</p>
                   </div>
                 </div>
               </div>

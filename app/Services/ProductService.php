@@ -8,6 +8,7 @@ use App\Models\ProductVariant;
 use App\Models\Shop;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -52,7 +53,7 @@ class ProductService
     public function createProduct(Shop $shop, array $data): Product
     {
         return DB::transaction(function () use ($shop, $data) {
-            \Log::info('Starting product creation transaction', [
+            Log::info('Starting product creation transaction', [
                 'shop_id' => $shop->id,
                 'product_name' => $data['product_name'] ?? 'N/A',
                 'variants_count' => !empty($data['variants']) ? count($data['variants']) : 0,
@@ -90,22 +91,21 @@ class ProductService
                 'view_count' => 0,
             ]);
 
-            \Log::info('Product created in database', ['product_id' => $product->id]);
+            Log::info('Product created in database', ['product_id' => $product->id]);
 
             // Handle variants if provided
             if (!empty($data['variants'])) {
-                \Log::info('Creating variants', ['count' => count($data['variants'])]);
+                Log::info('Creating variants', ['count' => count($data['variants'])]);
                 $this->createVariants($product, $data['variants']);
             }
 
             // Handle images if provided
             if (!empty($data['images'])) {
-                \Log::info('Uploading images', ['count' => count($data['images'])]);
+                Log::info('Uploading images', ['count' => count($data['images'])]);
                 $this->uploadImages($product, $data['images']);
             }
 
-            \Log::info('Product creation transaction completed successfully');
-
+            Log::info('Product creation transaction completed successfully');
             return $product->fresh(['images', 'variants', 'category']);
         });
     }
@@ -116,7 +116,7 @@ class ProductService
     public function updateProduct(Product $product, array $data): Product
     {
         return DB::transaction(function () use ($product, $data) {
-            \Log::info('Updating product', [
+            Log::info('Updating product', [
                 'product_id' => $product->id,
                 'data' => $data,
             ]);
@@ -167,7 +167,7 @@ class ProductService
                 }
             }
 
-            \Log::info('Updating product with data', ['updateData' => $updateData]);
+            Log::info('Updating product with data', ['updateData' => $updateData]);
 
             $product->update($updateData);
 
@@ -212,7 +212,7 @@ class ProductService
     protected function createVariants(Product $product, array $variants): void
     {
         foreach ($variants as $index => $variantData) {
-            \Log::info("Creating variant {$index}", [
+            Log::info("Creating variant {$index}", [
                 'size' => $variantData['size'] ?? null,
                 'color' => $variantData['color'] ?? null,
                 'has_images' => !empty($variantData['images']),
@@ -229,16 +229,16 @@ class ProductService
                 'attribute_values' => $this->extractAttributeValues($variantData),
             ]);
 
-            \Log::info("Variant created with ID: {$variant->id}");
+            Log::info("Variant created with ID: {$variant->id}");
 
             // Handle variant images if provided
             if (!empty($variantData['images']) && is_array($variantData['images'])) {
-                \Log::info("Processing variant images for variant {$variant->id}", [
+                Log::info("Processing variant images for variant {$variant->id}", [
                     'images_count' => count($variantData['images']),
                 ]);
                 $this->uploadVariantImages($product, $variant, $variantData['images']);
             } else {
-                \Log::warning("No images found for variant {$variant->id}");
+                Log::warning("No images found for variant {$variant->id}");
             }
         }
     }
@@ -319,7 +319,7 @@ class ProductService
                 ]);
             } catch (\Exception $e) {
                 // Log error but don't fail the entire transaction
-                \Log::error('Failed to upload image: ' . $e->getMessage());
+                Log::error('Failed to upload image: ' . $e->getMessage());
                 throw $e; // Re-throw to rollback transaction
             }
         }
@@ -437,12 +437,12 @@ class ProductService
                     'is_primary' => false, // Variant images are not primary
                 ]);
 
-                \Log::info('Variant image uploaded successfully', [
+                Log::info('Variant image uploaded successfully', [
                     'variant_id' => $variant->id,
                     'path' => $path,
                 ]);
             } catch (\Exception $e) {
-                \Log::error('Failed to upload variant image', [
+                Log::error('Failed to upload variant image', [
                     'variant_id' => $variant->id,
                     'error' => $e->getMessage(),
                 ]);
