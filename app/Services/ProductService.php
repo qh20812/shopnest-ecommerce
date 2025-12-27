@@ -59,8 +59,7 @@ class ProductService
                 'variants_count' => !empty($data['variants']) ? count($data['variants']) : 0,
                 'variants_data' => !empty($data['variants']) ? array_map(function($v) {
                     return [
-                        'size' => $v['size'] ?? null,
-                        'color' => $v['color'] ?? null,
+                        'variant_name' => $v['variant_name'] ?? null,
                         'has_images' => !empty($v['images']),
                         'images_count' => !empty($v['images']) ? count($v['images']) : 0,
                     ];
@@ -148,7 +147,6 @@ class ProductService
                 $updateData['status'] = $data['status'];
             }
 
-            // Update category if provided
             if (isset($data['category_id'])) {
                 $updateData['category_id'] = $data['category_id'];
             }
@@ -213,20 +211,17 @@ class ProductService
     {
         foreach ($variants as $index => $variantData) {
             Log::info("Creating variant {$index}", [
-                'size' => $variantData['size'] ?? null,
-                'color' => $variantData['color'] ?? null,
+                'variant_name' => $variantData['variant_name'] ?? 'N/A',
                 'has_images' => !empty($variantData['images']),
                 'images_count' => !empty($variantData['images']) ? count($variantData['images']) : 0,
-                'images_type' => !empty($variantData['images']) ? gettype($variantData['images']) : null,
             ]);
 
             $variant = ProductVariant::create([
                 'product_id' => $product->id,
-                'variant_name' => $this->buildVariantName($variantData),
+                'variant_name' => $variantData['variant_name'] ?? 'Mặc định',
                 'sku' => $variantData['sku'] ?? $this->generateSKU($product),
                 'price' => isset($variantData['price']) ? $this->parsePrice($variantData['price']) : $product->base_price,
                 'stock_quantity' => $variantData['stock_quantity'] ?? 0,
-                'attribute_values' => $this->extractAttributeValues($variantData),
             ]);
 
             Log::info("Variant created with ID: {$variant->id}");
@@ -256,10 +251,10 @@ class ProductService
                 $variant = ProductVariant::find($variantData['id']);
                 if ($variant && $variant->product_id === $product->id) {
                     $variant->update([
-                        'variant_name' => $this->buildVariantName($variantData),
+                        'variant_name' => $variantData['variant_name'] ?? 'Mặc định',
                         'price' => isset($variantData['price']) ? $this->parsePrice($variantData['price']) : $product->base_price,
                         'stock_quantity' => $variantData['stock_quantity'] ?? 0,
-                        'attribute_values' => $this->extractAttributeValues($variantData),
+                        'sku' => $variantData['sku'] ?? $variant->sku,
                     ]);
                     $existingVariantIds[] = $variant->id;
 
@@ -272,11 +267,10 @@ class ProductService
                 // Create new variant
                 $newVariant = ProductVariant::create([
                     'product_id' => $product->id,
-                    'variant_name' => $this->buildVariantName($variantData),
+                    'variant_name' => $variantData['variant_name'] ?? 'Mặc định',
                     'sku' => $variantData['sku'] ?? $this->generateSKU($product),
                     'price' => isset($variantData['price']) ? $this->parsePrice($variantData['price']) : $product->base_price,
                     'stock_quantity' => $variantData['stock_quantity'] ?? 0,
-                    'attribute_values' => $this->extractAttributeValues($variantData),
                 ]);
                 $existingVariantIds[] = $newVariant->id;
 

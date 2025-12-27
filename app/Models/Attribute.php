@@ -2,10 +2,11 @@
 
 namespace App\Models;
 
-use App\Enums\AttributeInputType;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Attribute extends Model
 {
@@ -24,10 +25,13 @@ class Attribute extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'attribute_name',
-        'display_name',
+        'name',
+        'slug',
         'input_type',
-        'is_required',
+        'description',
+        'validation_rules',
+        'sort_order',
+        'is_active',
     ];
 
     /**
@@ -36,15 +40,72 @@ class Attribute extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'input_type' => AttributeInputType::class,
-        'is_required' => 'boolean',
+        'validation_rules' => 'array',
+        'is_active' => 'boolean',
+        'sort_order' => 'integer',
     ];
 
     /**
-     * Get the values relationship.
+     * Boot the model.
      */
-    public function values()
+    protected static function boot()
     {
-        return $this->hasMany(\App\Models\AttributeValue::class);
+        parent::boot();
+
+        static::creating(function ($attribute) {
+            if (empty($attribute->slug)) {
+                $attribute->slug = Str::slug($attribute->name);
+            }
+        });
+    }
+
+    /**
+     * Get the attribute options.
+     */
+    public function options(): HasMany
+    {
+        return $this->hasMany(AttributeOption::class)->orderBy('sort_order');
+    }
+
+    /**
+     * Get the categories that use this attribute.
+     */
+    public function categories(): BelongsToMany
+    {
+        return $this->belongsToMany(Category::class, 'category_attribute')
+            ->withPivot(['is_variant', 'is_required', 'is_filterable', 'sort_order'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get product attribute values.
+     */
+    public function productAttributeValues(): HasMany
+    {
+        return $this->hasMany(ProductAttributeValue::class);
+    }
+
+    /**
+     * Get variant attribute values.
+     */
+    public function variantAttributeValues(): HasMany
+    {
+        return $this->hasMany(ProductVariantAttributeValue::class);
+    }
+
+    /**
+     * Scope for active attributes.
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    /**
+     * Check if this is a select type attribute.
+     */
+    public function isSelectType(): bool
+    {
+        return $this->input_type === 'select';
     }
 }

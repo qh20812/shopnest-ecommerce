@@ -8,6 +8,7 @@ use App\Http\Requests\Sellers\UpdateProductRequest;
 use App\Models\Category;
 use App\Models\Product;
 use App\Services\ProductService;
+use App\Services\AttributeService;
 use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,7 +20,8 @@ use Inertia\Response;
 class ProductController extends Controller
 {
     public function __construct(
-        protected ProductService $productService
+        protected ProductService $productService,
+        protected AttributeService $attributeService
     ) {}
 
     /**
@@ -85,7 +87,8 @@ class ProductController extends Controller
      */
     public function create(): Response
     {
-        $categories = Category::select('id', 'category_name', 'slug')->get();
+        $categories = Category::select('id', 'category_name', 'slug')
+            ->get();
 
         return Inertia::render('roles/sellers/product-manage/create', [
             'categories' => $categories,
@@ -147,7 +150,16 @@ class ProductController extends Controller
             abort(403, 'Bạn không có quyền xem sản phẩm này.');
         }
 
-        $product->load(['images', 'variants.images', 'category']);
+        // Load product with relationships including new attribute system
+        $product->load([
+            'images', 
+            'variants.images',
+            'variants.variantAttributeValues.attribute',
+            'variants.variantAttributeValues.attributeOption',
+            'category',
+            'attributeValues.attribute',
+            'attributeValues.attributeOption'
+        ]);
 
         // Format product data for frontend
         $formattedProduct = [
@@ -162,6 +174,12 @@ class ProductController extends Controller
             'category' => $product->category ? [
                 'category_name' => $product->category->category_name,
             ] : null,
+            'attributes' => $product->attributeValues->map(function ($attrValue) {
+                return [
+                    'attribute_name' => $attrValue->attribute->name,
+                    'value' => $attrValue->display_value,
+                ];
+            })->toArray(),
             'images' => $product->images->whereNull('variant_id')->map(function ($image) {
                 $imageUrl = $image->image_url;
                 if (!str_starts_with($imageUrl, 'http')) {
@@ -181,7 +199,12 @@ class ProductController extends Controller
                     'sku' => $variant->sku,
                     'price' => $variant->price,
                     'stock_quantity' => $variant->stock_quantity,
-                    'attribute_values' => $variant->attribute_values,
+                    'attributes' => $variant->variantAttributeValues->map(function ($attrValue) {
+                        return [
+                            'attribute_name' => $attrValue->attribute->name,
+                            'value' => $attrValue->display_value,
+                        ];
+                    })->toArray(),
                     'images' => $variant->images->map(function ($img) {
                         $imageUrl = $img->image_url;
                         if (!str_starts_with($imageUrl, 'http')) {
@@ -214,27 +237,108 @@ class ProductController extends Controller
             abort(403, 'Bạn không có quyền chỉnh sửa sản phẩm này.');
         }
 
-        $product->load(['images', 'variants.images', 'category']);
-        $categories = Category::select('id', 'category_name', 'slug')->get();
+        // Load product with relationships
+        $product->load([
+            'images', 
+            'variants.images', 
+            'variants.variantAttributeValues.attribute',
+            'variants.variantAttributeValues.attributeOption',
+            'category',
+            'attributeValues.attribute',
+            'attributeValues.attributeOption'
+        ]);
+
+        // Load categories with attributes (same as create)
+        $categories = Category::select('id', 'category_name', 'slug')
+            ->with(['attributes' => function ($query) {
+                $query->where('is_active', true)
+                    ->orderBy('sort_order')
+                    ->with('options');
+            }])
+            ->get()
+            ->map(function ($category) {
+                return [
+                    'id' => $category->id,
+                    'category_name' => $category->category_name,
+                    'slug' => $category->slug,
+                    'attributes' => $category->attributes->map(function ($attribute) {
+                        return [
+                            'id' => $attribute->id,
+                            'name' => $attribute->name,
+                            'slug' => $attribute->slug,
+                            'input_type' => $attribute->input_type,
+                            'description' => $attribute->description,
+                            'is_variant' => $attribute->pivot->is_variant,
+                            'is_required' => $attribute->pivot->is_required,
+                            'is_filterable' => $attribute->pivot->is_filterable,
+                            'sort_order' => $attribute->pivot->sort_order,
+                            'options' => $attribute->options->map(function ($option) {
+                                return [
+                                    'id' => $option->id,
+                                    'value' => $option->value,
+                                    'label' => $option->label ?? $option->value,
+                                    'color_code' => $option->color_code,
+                                ];
+                            }),
+                        ];
+                    }),
+                ];
+            });
+
+        // Format existing product attributes (specifications)
+        $existingAttributes = [];
+        foreach ($product->attributeValues as $attrValue) {
+            $attributeId = $attrValue->attribute_id;
+            
+            if ($attrValue->attribute->isSelectType()) {
+                // Select-type attribute
+                $existingAttributes[$attributeId] = [
+                    'attribute_option_id' => $attrValue->attribute_option_id
+                ];
+            } else {
+                // Text-type attribute
+                $existingAttributes[$attributeId] = [
+                    'text_value' => $attrValue->text_value
+                ];
+            }
+        }
 
         // Format product data for frontend
         $formattedProduct = [
-            'id' => '#' . str_pad($product->id, 5, '0', STR_PAD_LEFT),
-            'name' => $product->product_name,
+            'id' => $product->id,
+            'display_id' => '#' . str_pad($product->id, 5, '0', STR_PAD_LEFT),
+            'product_name' => $product->product_name,
             'description' => $product->description,
-            'price' => number_format($product->base_price, 0, ',', '.') . 'đ',
-            'compare_price' => '',
-            'stock' => $product->total_quantity,
-            'category' => $product->category_id,
-            'status' => $product->status,
+            'base_price' => $product->base_price,
+            'total_quantity' => $product->total_quantity,
+            'category_id' => $product->category_id,
+            'status' => $product->status->value,
+            'attributes' => $existingAttributes,
             'variants' => $product->variants->map(function ($variant) {
-                $attributes = json_decode($variant->attribute_values, true) ?? [];
+                // Extract variant attributes from new system
+                $variantAttributes = [];
+                foreach ($variant->variantAttributeValues as $attrValue) {
+                    $attributeId = $attrValue->attribute_id;
+                    
+                    if ($attrValue->attribute->isSelectType()) {
+                        $variantAttributes[$attributeId] = [
+                            'attribute_option_id' => $attrValue->attribute_option_id
+                        ];
+                    } else {
+                        $variantAttributes[$attributeId] = [
+                            'text_value' => $attrValue->text_value
+                        ];
+                    }
+                }
+
                 return [
                     'id' => $variant->id,
-                    'size' => $attributes['size'] ?? '',
-                    'color' => $attributes['color'] ?? '',
+                    'variant_name' => $variant->variant_name,
+                    'sku' => $variant->sku,
+                    'price' => $variant->price,
                     'stock_quantity' => $variant->stock_quantity,
-                    'existing_images' => $variant->images->map(function ($img) {
+                    'attributes' => $variantAttributes,
+                    'images' => $variant->images->map(function ($img) {
                         $imageUrl = $img->image_url;
                         if (!str_starts_with($imageUrl, 'http')) {
                             $imageUrl = asset($imageUrl);
@@ -245,7 +349,7 @@ class ProductController extends Controller
                         ];
                     })->values()->toArray(),
                 ];
-            }),
+            })->toArray(),
             'images' => $product->images->whereNull('variant_id')->map(function ($image) {
                 $imageUrl = $image->image_url;
                 if (!str_starts_with($imageUrl, 'http')) {

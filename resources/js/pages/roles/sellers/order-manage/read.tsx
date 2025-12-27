@@ -59,7 +59,12 @@ export default function Read({ user, order }: ReadProps) {
   const handleUpdateStatus = () => {
     if (isUpdating || orderStatus === order.status) return;
 
-    const orderId = order.id.replace('#', '').replace(/^[A-Z]+-/, '');
+    const rawOrderId = order.id.replace('#', '').replace(/^[A-Z]+-/, '');
+    const orderId = Number(rawOrderId);
+    if (Number.isNaN(orderId)) {
+      console.error('Invalid order id:', order.id);
+      return;
+    }
     
     setIsUpdating(true);
     router.put(updateStatusRoute.url({ order: orderId }), {

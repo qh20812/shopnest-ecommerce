@@ -116,6 +116,33 @@ class Product extends Model
     }
 
     /**
+     * Get product attribute values (non-variant attributes/specs).
+     */
+    public function attributeValues()
+    {
+        return $this->hasMany(ProductAttributeValue::class);
+    }
+
+    /**
+     * Get all attributes with their values.
+     */
+    public function getAttributesWithValuesAttribute()
+    {
+        return $this->attributeValues()
+            ->with(['attribute', 'attributeOption'])
+            ->get()
+            ->mapWithKeys(function ($attrValue) {
+                return [
+                    $attrValue->attribute->slug => [
+                        'name' => $attrValue->attribute->name,
+                        'value' => $attrValue->display_value,
+                        'input_type' => $attrValue->attribute->input_type,
+                    ]
+                ];
+            });
+    }
+
+    /**
      * Get the reviews relationship.
      */
     public function reviews()

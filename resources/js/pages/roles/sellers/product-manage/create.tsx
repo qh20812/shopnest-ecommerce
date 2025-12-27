@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import SellerLayout from '../../../../layouts/seller-layout';
-import { Save, PlusCircle, Trash2, Upload, X, Image as ImageIcon } from 'lucide-react';
+import { Save, PlusCircle, Trash2, Upload, X } from 'lucide-react';
 import { router, useForm } from '@inertiajs/react';
 import { index, store } from '../../../../routes/seller/products';
 
@@ -20,9 +20,10 @@ interface CreateProps {
 }
 
 interface ProductVariant {
-  size: string;
-  color: string;
-  stock_quantity: number;
+  variant_name: string;
+  price: string;
+  stock_quantity: string;
+  sku: string;
   images: File[];
 }
 
@@ -38,8 +39,8 @@ export default function Create({ user, categories }: CreateProps) {
     images: [] as File[],
   });
 
-  const [variants, setVariants] = useState<ProductVariant[]>([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
+  const [variantImagePreviews, setVariantImagePreviews] = useState<Record<number, string[]>>({});
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -66,53 +67,71 @@ export default function Create({ user, categories }: CreateProps) {
     setData('images', data.images.filter((_, i) => i !== index));
   };
 
-  const handleVariantImageChange = (variantIndex: number, e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAddVariant = () => {
+    setData('variants', [
+      ...data.variants,
+      {
+        variant_name: '',
+        price: data.base_price,
+        stock_quantity: '',
+        sku: '',
+        images: [],
+      },
+    ]);
+  };
+
+  const handleRemoveVariant = (index: number) => {
+    // Clean up image previews
+    if (variantImagePreviews[index]) {
+      variantImagePreviews[index].forEach(url => URL.revokeObjectURL(url));
+    }
+    
+    const newPreviews = { ...variantImagePreviews };
+    delete newPreviews[index];
+    setVariantImagePreviews(newPreviews);
+    
+    setData('variants', data.variants.filter((_, i) => i !== index));
+  };
+
+  const handleVariantChange = (index: number, field: keyof ProductVariant, value: string | File[]) => {
+    const newVariants = [...data.variants];
+    newVariants[index] = { ...newVariants[index], [field]: value } as ProductVariant;
+    setData('variants', newVariants);
+  };
+
+  const handleVariantImageChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const files = Array.from(e.target.files);
-      const updatedVariants = variants.map((v, i) => 
-        i === variantIndex ? { ...v, images: [...(v.images || []), ...files] } : v
-      );
-      setVariants(updatedVariants);
-      setData('variants', updatedVariants);
+      
+      // Create preview URLs
+      const newPreviewUrls = files.map(file => URL.createObjectURL(file));
+      setVariantImagePreviews(prev => ({
+        ...prev,
+        [index]: [...(prev[index] || []), ...newPreviewUrls],
+      }));
+      
+      // Add to variant images
+      const currentImages = data.variants[index].images || [];
+      handleVariantChange(index, 'images', [...currentImages, ...files]);
     }
   };
 
   const handleRemoveVariantImage = (variantIndex: number, imageIndex: number) => {
-    const updatedVariants = variants.map((v, i) => {
-      if (i === variantIndex) {
-        const newImages = v.images.filter((_, idx) => idx !== imageIndex);
-        return { ...v, images: newImages };
-      }
-      return v;
-    });
-    setVariants(updatedVariants);
-    setData('variants', updatedVariants);
-  };
-
-  const handleAddVariant = () => {
-    const newVariant: ProductVariant = {
-      size: '',
-      color: '',
-      stock_quantity: 0,
-      images: [],
-    };
-    const updatedVariants = [...variants, newVariant];
-    setVariants(updatedVariants);
-    setData('variants', updatedVariants);
-  };
-
-  const handleRemoveVariant = (index: number) => {
-    const updatedVariants = variants.filter((_, i) => i !== index);
-    setVariants(updatedVariants);
-    setData('variants', updatedVariants);
-  };
-
-  const handleVariantChange = (index: number, field: keyof ProductVariant, value: string | number) => {
-    const updatedVariants = variants.map((v, i) =>
-      i === index ? { ...v, [field]: value } : v
-    );
-    setVariants(updatedVariants);
-    setData('variants', updatedVariants);
+    // Revoke preview URL
+    const previews = variantImagePreviews[variantIndex];
+    if (previews && previews[imageIndex]) {
+      URL.revokeObjectURL(previews[imageIndex]);
+    }
+    
+    // Remove from previews
+    setVariantImagePreviews(prev => ({
+      ...prev,
+      [variantIndex]: (prev[variantIndex] || []).filter((_, i) => i !== imageIndex),
+    }));
+    
+    // Remove from variant images
+    const currentImages = data.variants[variantIndex].images;
+    handleVariantChange(variantIndex, 'images', currentImages.filter((_, i) => i !== imageIndex));
   };
 
   const handleSubmit = (e?: React.FormEvent) => {
@@ -134,9 +153,10 @@ export default function Create({ user, categories }: CreateProps) {
     // Log detailed variant information
     console.debug('Detailed variants info:', data.variants.map((v, i) => ({
       index: i,
-      size: v.size,
-      color: v.color,
+      variant_name: v.variant_name,
+      price: v.price,
       stock_quantity: v.stock_quantity,
+      sku: v.sku,
       has_images: !!v.images,
       images_count: v.images?.length || 0,
       images_names: v.images?.map(img => img.name) || [],
@@ -274,111 +294,153 @@ export default function Create({ user, categories }: CreateProps) {
 
             {/* Product Variants */}
             <div className="bg-surface-light dark:bg-surface-dark p-6 rounded-xl border border-border-light dark:border-border-dark">
-              <h3 className="text-lg font-semibold mb-4 text-text-primary-light dark:text-text-primary-dark">
-                Biến thể sản phẩm
-              </h3>
-              <div className="space-y-6">
-                {variants.map((variant, index) => (
-                  <div key={index} className="p-4 bg-background-light dark:bg-background-dark rounded-lg border border-border-light dark:border-border-dark">
-                    <div className="grid grid-cols-12 gap-4 items-end mb-4">
-                      <div className="col-span-4">
-                        {index === 0 && (
-                          <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
-                            Kích cỡ
-                          </label>
-                        )}
-                        <input
-                          type="text"
-                          value={variant.size}
-                          onChange={(e) => handleVariantChange(index, 'size', e.target.value)}
-                          className="form-input w-full h-10 px-4 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary/50 focus:border-primary/50"
-                          placeholder="M, L, XL..."
-                        />
-                      </div>
-                      <div className="col-span-4">
-                        {index === 0 && (
-                          <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
-                            Màu sắc
-                          </label>
-                        )}
-                        <input
-                          type="text"
-                          value={variant.color}
-                          onChange={(e) => handleVariantChange(index, 'color', e.target.value)}
-                          className="form-input w-full h-10 px-4 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary/50 focus:border-primary/50"
-                          placeholder="Đen, Trắng..."
-                        />
-                      </div>
-                      <div className="col-span-3">
-                        {index === 0 && (
-                          <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
-                            Tồn kho
-                          </label>
-                        )}
-                        <input
-                          type="number"
-                          value={variant.stock_quantity}
-                          onChange={(e) => handleVariantChange(index, 'stock_quantity', parseInt(e.target.value) || 0)}
-                          className="form-input w-full h-10 px-4 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary/50 focus:border-primary/50"
-                          placeholder="0"
-                        />
-                      </div>
-                      <div className="col-span-1">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-text-primary-light dark:text-text-primary-dark">
+                  Biến thể sản phẩm
+                </h3>
+                <button
+                  type="button"
+                  onClick={handleAddVariant}
+                  className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium"
+                >
+                  <PlusCircle className="w-4 h-4" />
+                  Thêm biến thể
+                </button>
+              </div>
+
+              {data.variants.length === 0 ? (
+                <div className="text-center py-8 text-text-secondary-light dark:text-text-secondary-dark">
+                  <p>Chưa có biến thể nào. Nhấn "Thêm biến thể" để tạo biến thể mới.</p>
+                  <p className="text-sm mt-2">Ví dụ: Màu trắng, RAM 16GB, Model AC120, v.v.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {data.variants.map((variant, index) => (
+                    <div
+                      key={index}
+                      className="p-4 bg-background-light dark:bg-background-dark rounded-lg border border-border-light dark:border-border-dark space-y-4"
+                    >
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-medium text-text-primary-light dark:text-text-primary-dark">
+                          Biến thể #{index + 1}
+                        </h4>
                         <button
                           type="button"
                           onClick={() => handleRemoveVariant(index)}
-                          className="flex items-center justify-center h-10 w-10 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                          className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                         >
-                          <Trash2 className="w-5 h-5" />
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
-                    </div>
-                    
-                    {/* Variant Images */}
-                    <div className="mt-3">
-                      <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
-                        Hình ảnh biến thể (giúp khách hàng dễ dàng nhận diện)
-                      </label>
-                      <div className="flex flex-wrap gap-2">
-                        {variant.images && variant.images.map((img, imgIdx) => (
-                          <div key={imgIdx} className="relative w-20 h-20">
-                            <img
-                              src={URL.createObjectURL(img)}
-                              alt={`Variant ${index} - Image ${imgIdx}`}
-                              className="w-full h-full object-cover rounded-lg border-2 border-border-light dark:border-border-dark"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveVariantImage(index, imgIdx)}
-                              className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          </div>
-                        ))}
-                        <label className="w-20 h-20 flex items-center justify-center border-2 border-dashed border-border-light dark:border-border-dark rounded-lg cursor-pointer hover:border-primary transition-colors">
-                          <ImageIcon className="w-6 h-6 text-text-secondary-light dark:text-text-secondary-dark" />
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Variant Name */}
+                        <div className="md:col-span-2">
+                          <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
+                            Tên biến thể <span className="text-red-500">*</span>
+                          </label>
                           <input
-                            type="file"
-                            multiple
-                            accept="image/*"
-                            className="sr-only"
-                            onChange={(e) => handleVariantImageChange(index, e)}
+                            type="text"
+                            value={variant.variant_name}
+                            onChange={(e) => handleVariantChange(index, 'variant_name', e.target.value)}
+                            placeholder="Ví dụ: Màu trắng, RAM 16GB, Model AC120..."
+                            className="form-input w-full h-10 px-4 rounded-lg bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary/50 focus:border-primary/50"
                           />
-                        </label>
+                        </div>
+
+                        {/* Price */}
+                        <div>
+                          <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
+                            Giá bán <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={variant.price}
+                            onChange={(e) => handleVariantChange(index, 'price', e.target.value)}
+                            placeholder="0đ"
+                            className="form-input w-full h-10 px-4 rounded-lg bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary/50 focus:border-primary/50"
+                          />
+                        </div>
+
+                        {/* Stock */}
+                        <div>
+                          <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
+                            Tồn kho <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="number"
+                            value={variant.stock_quantity}
+                            onChange={(e) => handleVariantChange(index, 'stock_quantity', e.target.value)}
+                            placeholder="0"
+                            className="form-input w-full h-10 px-4 rounded-lg bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary/50 focus:border-primary/50"
+                          />
+                        </div>
+
+                        {/* SKU */}
+                        <div className="md:col-span-2">
+                          <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
+                            SKU (Mã sản phẩm)
+                          </label>
+                          <input
+                            type="text"
+                            value={variant.sku}
+                            onChange={(e) => handleVariantChange(index, 'sku', e.target.value)}
+                            placeholder="Ví dụ: SHIRT-WHITE-001"
+                            className="form-input w-full h-10 px-4 rounded-lg bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary/50 focus:border-primary/50"
+                          />
+                        </div>
+
+                        {/* Variant Images */}
+                        <div className="md:col-span-2">
+                          <label className="block text-sm font-medium text-text-primary-light dark:text-text-primary-dark mb-2">
+                            Hình ảnh biến thể
+                          </label>
+                          <div className="flex items-center gap-4">
+                            <label className="flex items-center gap-2 px-4 py-2 bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark rounded-lg hover:border-primary transition-colors cursor-pointer text-sm">
+                              <Upload className="w-4 h-4" />
+                              <span>Tải ảnh lên</span>
+                              <input
+                                type="file"
+                                multiple
+                                accept="image/*"
+                                className="sr-only"
+                                onChange={(e) => handleVariantImageChange(index, e)}
+                              />
+                            </label>
+                            {variant.images.length > 0 && (
+                              <span className="text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                                {variant.images.length} ảnh
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Image Previews */}
+                          {variantImagePreviews[index] && variantImagePreviews[index].length > 0 && (
+                            <div className="mt-3 grid grid-cols-4 gap-2">
+                              {variantImagePreviews[index].map((url, imgIdx) => (
+                                <div key={imgIdx} className="relative aspect-square group">
+                                  <img
+                                    src={url}
+                                    alt={`Variant ${index + 1} - Image ${imgIdx + 1}`}
+                                    className="w-full h-full object-cover rounded-lg border-2 border-border-light dark:border-border-dark"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveVariantImage(index, imgIdx)}
+                                    className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-              <button
-                type="button"
-                onClick={handleAddVariant}
-                className="mt-4 flex items-center justify-center gap-2 h-10 px-4 bg-secondary/10 text-secondary rounded-lg font-semibold text-sm hover:bg-secondary/20 transition-colors"
-              >
-                <PlusCircle className="w-5 h-5" />
-                <span>Thêm biến thể</span>
-              </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 

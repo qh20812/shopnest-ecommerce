@@ -65,4 +65,31 @@ class Category extends Model
     {
         return $this->hasMany(\App\Models\Product::class);
     }
+
+    /**
+     * Get the attributes associated with this category.
+     */
+    public function attributes()
+    {
+        return $this->belongsToMany(Attribute::class, 'category_attribute')
+            ->withPivot(['is_variant', 'is_required', 'is_filterable', 'sort_order'])
+            ->withTimestamps()
+            ->orderByPivot('sort_order');
+    }
+
+    /**
+     * Get variant attributes (attributes that create SKUs).
+     */
+    public function variantAttributes()
+    {
+        return $this->attributes()->wherePivot('is_variant', true);
+    }
+
+    /**
+     * Get specification attributes (non-variant attributes).
+     */
+    public function specificationAttributes()
+    {
+        return $this->attributes()->wherePivot('is_variant', false);
+    }
 }

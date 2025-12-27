@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import SellerLayout from '../../../../layouts/seller-layout';
-import { Search, Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2 } from 'lucide-react';
+import DataTable, { Column, Action } from '../../../../components/datatable/DataTable';
+import Filters, { FilterOption } from '../../../../components/datatable/Filters';
 
 interface IndexProps {
   user?: {
@@ -10,7 +12,7 @@ interface IndexProps {
   };
 }
 
-interface Voucher {
+interface Voucher extends Record<string, unknown> {
   id: string;
   code: string;
   name: string;
@@ -97,144 +99,127 @@ export default function Index({ user }: IndexProps) {
     );
   };
 
+  // Define columns for DataTable
+  const columns: Column<Voucher>[] = [
+    {
+      header: 'Mã voucher',
+      accessor: 'code',
+      className: 'px-4 py-4 font-medium text-text-primary-light dark:text-text-primary-dark',
+      headerClassName: 'px-4 py-3 font-semibold text-sm text-text-secondary-light dark:text-text-secondary-dark',
+    },
+    {
+      header: 'Tên khuyến mãi',
+      accessor: 'name',
+      className: 'px-4 py-4 text-text-secondary-light dark:text-text-secondary-dark',
+      headerClassName: 'px-4 py-3 font-semibold text-sm text-text-secondary-light dark:text-text-secondary-dark',
+    },
+    {
+      header: 'Giá trị',
+      accessor: 'value',
+      className: 'px-4 py-4 text-text-secondary-light dark:text-text-secondary-dark',
+      headerClassName: 'px-4 py-3 font-semibold text-sm text-text-secondary-light dark:text-text-secondary-dark',
+    },
+    {
+      header: 'Điều kiện áp dụng',
+      accessor: 'condition',
+      className: 'px-4 py-4 text-text-secondary-light dark:text-text-secondary-dark',
+      headerClassName: 'px-4 py-3 font-semibold text-sm text-text-secondary-light dark:text-text-secondary-dark',
+    },
+    {
+      header: 'Ngày bắt đầu',
+      accessor: 'start_date',
+      className: 'px-4 py-4 text-text-secondary-light dark:text-text-secondary-dark',
+      headerClassName: 'px-4 py-3 font-semibold text-sm text-text-secondary-light dark:text-text-secondary-dark',
+    },
+    {
+      header: 'Ngày kết thúc',
+      accessor: 'end_date',
+      className: 'px-4 py-4 text-text-secondary-light dark:text-text-secondary-dark',
+      headerClassName: 'px-4 py-3 font-semibold text-sm text-text-secondary-light dark:text-text-secondary-dark',
+    },
+    {
+      header: 'Trạng thái',
+      accessor: (row) => getStatusBadge(row.status),
+      className: 'px-4 py-4 text-center',
+      headerClassName: 'px-4 py-3 font-semibold text-sm text-text-secondary-light dark:text-text-secondary-dark text-center',
+    },
+  ];
+
+  // Define actions for DataTable
+  const actions: Action<Voucher>[] = [
+    {
+      icon: Edit,
+      onClick: (row) => handleEditVoucher(row.id),
+      title: 'Chỉnh sửa',
+      variant: 'success',
+    },
+    {
+      icon: Trash2,
+      onClick: (row) => handleDeleteVoucher(row.id),
+      title: 'Xóa',
+      variant: 'danger',
+    },
+  ];
+
+  // Define filter options
+  const statusOptions: FilterOption[] = [
+    { value: 'all', label: 'Tất cả trạng thái' },
+    { value: 'active', label: 'Đang hoạt động' },
+    { value: 'expired', label: 'Đã hết hạn' },
+  ];
+
   return (
     <SellerLayout activePage="promotions" user={user}>
       <div className="container mx-auto px-6 py-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6">
+          <h2 className="text-3xl font-bold text-text-primary-light dark:text-text-primary-dark">
+            Quản lý khuyến mãi
+          </h2>
+          <button
+            onClick={handleAddVoucher}
+            className="mt-4 sm:mt-0 flex items-center justify-center gap-2 h-10 px-5 bg-primary text-white rounded-lg font-semibold text-sm hover:bg-primary/90 transition-colors"
+          >
+            <Plus className="w-5 h-5" />
+            <span>Thêm Voucher Mới</span>
+          </button>
+        </div>
+
         <div className="bg-surface-light dark:bg-surface-dark p-6 rounded-xl border border-border-light dark:border-border-dark">
-          {/* Filters and Actions */}
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
-            <div className="flex-1 flex flex-col md:flex-row items-center gap-4 w-full">
-              {/* Search */}
-              <div className="relative w-full md:max-w-xs">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary-light dark:text-text-secondary-dark" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="form-input w-full h-10 pl-10 pr-3 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary/50 focus:border-primary/50"
-                  placeholder="Tìm kiếm voucher..."
-                />
-              </div>
+          {/* Filters */}
+          <Filters
+            searchValue={searchQuery}
+            onSearchChange={setSearchQuery}
+            searchPlaceholder="Tìm kiếm voucher..."
+            filters={[
+              {
+                value: selectedStatus,
+                onChange: setSelectedStatus,
+                options: statusOptions,
+              },
+            ]}
+          />
 
-              {/* Status Filter */}
-              <div className="relative w-full md:w-48">
-                <select
-                  value={selectedStatus}
-                  onChange={(e) => setSelectedStatus(e.target.value)}
-                  className="form-select w-full h-10 px-3 pr-8 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary/50 focus:border-primary/50 appearance-none"
-                >
-                  <option value="all">Tất cả trạng thái</option>
-                  <option value="active">Đang hoạt động</option>
-                  <option value="expired">Đã hết hạn</option>
-                </select>
-                <svg
-                  className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none w-5 h-5 text-text-secondary-light dark:text-text-secondary-dark"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-
-              {/* Date Filter */}
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="form-input h-10 px-3 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary/50 focus:border-primary/50 w-full md:w-48"
-              />
-            </div>
-
-            {/* Add Button */}
-            <div className="w-full md:w-auto">
-              <button
-                onClick={handleAddVoucher}
-                className="flex items-center justify-center w-full md:w-auto h-10 px-5 bg-primary text-white rounded-lg font-semibold text-sm hover:bg-primary/90 transition-colors gap-2"
-              >
-                <Plus className="w-5 h-5" />
-                <span>Thêm Voucher Mới</span>
-              </button>
-            </div>
+          {/* Date Filter - Custom addition */}
+          <div className="mb-6">
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="form-input h-10 px-3 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-2 focus:ring-primary/50 focus:border-primary/50 w-full md:w-48"
+            />
           </div>
 
-          {/* Vouchers Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="bg-background-light dark:bg-background-dark border-b border-border-light dark:border-border-dark">
-                  <th className="px-4 py-3 font-semibold text-sm text-text-secondary-light dark:text-text-secondary-dark">
-                    Mã voucher
-                  </th>
-                  <th className="px-4 py-3 font-semibold text-sm text-text-secondary-light dark:text-text-secondary-dark">
-                    Tên khuyến mãi
-                  </th>
-                  <th className="px-4 py-3 font-semibold text-sm text-text-secondary-light dark:text-text-secondary-dark">
-                    Giá trị
-                  </th>
-                  <th className="px-4 py-3 font-semibold text-sm text-text-secondary-light dark:text-text-secondary-dark">
-                    Điều kiện áp dụng
-                  </th>
-                  <th className="px-4 py-3 font-semibold text-sm text-text-secondary-light dark:text-text-secondary-dark">
-                    Ngày bắt đầu
-                  </th>
-                  <th className="px-4 py-3 font-semibold text-sm text-text-secondary-light dark:text-text-secondary-dark">
-                    Ngày kết thúc
-                  </th>
-                  <th className="px-4 py-3 font-semibold text-sm text-text-secondary-light dark:text-text-secondary-dark text-center">
-                    Trạng thái
-                  </th>
-                  <th className="px-4 py-3 font-semibold text-sm text-text-secondary-light dark:text-text-secondary-dark text-right">
-                    Hành động
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border-light dark:divide-border-dark">
-                {vouchers.map((voucher) => (
-                  <tr key={voucher.id}>
-                    <td className="px-4 py-4 font-medium text-text-primary-light dark:text-text-primary-dark">
-                      {voucher.code}
-                    </td>
-                    <td className="px-4 py-4 text-text-secondary-light dark:text-text-secondary-dark">
-                      {voucher.name}
-                    </td>
-                    <td className="px-4 py-4 text-text-secondary-light dark:text-text-secondary-dark">
-                      {voucher.value}
-                    </td>
-                    <td className="px-4 py-4 text-text-secondary-light dark:text-text-secondary-dark">
-                      {voucher.condition}
-                    </td>
-                    <td className="px-4 py-4 text-text-secondary-light dark:text-text-secondary-dark">
-                      {voucher.start_date}
-                    </td>
-                    <td className="px-4 py-4 text-text-secondary-light dark:text-text-secondary-dark">
-                      {voucher.end_date}
-                    </td>
-                    <td className="px-4 py-4 text-center">{getStatusBadge(voucher.status)}</td>
-                    <td className="px-4 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => handleEditVoucher(voucher.id)}
-                          className="flex items-center justify-center h-8 w-8 rounded-lg text-text-secondary-light dark:text-text-secondary-dark hover:bg-black/5 dark:hover:bg-white/5 hover:text-primary transition-colors"
-                        >
-                          <Edit className="w-5 h-5" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteVoucher(voucher.id)}
-                          className="flex items-center justify-center h-8 w-8 rounded-lg text-text-secondary-light dark:text-text-secondary-dark hover:bg-black/5 dark:hover:bg-white/5 hover:text-red-500 transition-colors"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          {/* Vouchers DataTable */}
+          <DataTable<Voucher>
+            columns={columns}
+            data={vouchers}
+            actions={actions}
+            emptyMessage="Không có voucher nào"
+          />
 
-          {/* Pagination */}
-          <div className="flex items-center justify-between mt-6">
+          {/* Simple Pagination (static for sample data) */}
+          <div className="flex items-center justify-between pt-4">
             <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark">
               Hiển thị 1-4 trên 4 voucher
             </p>
@@ -244,7 +229,12 @@ export default function Index({ user }: IndexProps) {
                 className="flex items-center justify-center h-8 w-8 rounded-lg text-text-secondary-light dark:text-text-secondary-dark bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark hover:bg-black/5 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
                 </svg>
               </button>
               <button className="flex items-center justify-center h-8 w-8 rounded-lg font-semibold text-sm bg-primary text-white">
@@ -252,7 +242,12 @@ export default function Index({ user }: IndexProps) {
               </button>
               <button className="flex items-center justify-center h-8 w-8 rounded-lg text-text-secondary-light dark:text-text-secondary-dark bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
                 </svg>
               </button>
             </div>

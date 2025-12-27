@@ -113,6 +113,15 @@ export default function TopNav() {
         };
     }, [isDropdownOpen]);
 
+    // Current path for active link detection (supports SSR fallback)
+    const currentPath = (page as { url?: string }).url ?? (typeof window !== 'undefined' ? window.location.pathname : '/');
+    const isActive = (path: string) => {
+        if (path === '/') {
+            return currentPath === '/' || currentPath === '';
+        }
+        return currentPath.startsWith(path);
+    };
+
     return (
         <>
             <header className="fixed inset-x-0 top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-sm">
@@ -128,19 +137,22 @@ export default function TopNav() {
                             <nav className="hidden items-center gap-9 md:flex">
                                 <Link
                                     href="/"
-                                    className="text-sm font-medium leading-normal text-foreground transition-colors hover:text-primary"
+                                    aria-current={isActive('/') ? 'page' : undefined}
+                                    className={`text-sm font-medium leading-normal transition-colors ${isActive('/') ? 'text-primary font-semibold' : 'text-foreground hover:text-primary'}`}
                                 >
                                     Trang chủ
                                 </Link>
                                 <Link
                                     href="/shopping"
-                                    className="text-sm font-medium leading-normal text-muted-foreground transition-colors hover:text-primary"
+                                    aria-current={isActive('/shopping') ? 'page' : undefined}
+                                    className={`text-sm font-medium leading-normal transition-colors ${isActive('/shopping') ? 'text-primary font-semibold' : 'text-muted-foreground hover:text-primary'}`}
                                 >
                                     Sản phẩm
                                 </Link>
                                 <Link
                                     href="/deals"
-                                    className="text-sm font-medium leading-normal text-muted-foreground transition-colors hover:text-primary"
+                                    aria-current={isActive('/deals') ? 'page' : undefined}
+                                    className={`text-sm font-medium leading-normal transition-colors ${isActive('/deals') ? 'text-primary font-semibold' : 'text-muted-foreground hover:text-primary'}`}
                                 >
                                     Ưu đãi
                                 </Link>
@@ -195,92 +207,92 @@ export default function TopNav() {
                                     Đăng nhập
                                 </Link>
                             ) : (
-                            <div
-                                className="relative group"
-                                onMouseEnter={() => setIsAvatarHover(true)}
-                                onMouseLeave={() => setIsAvatarHover(false)}
-                                ref={dropdownRef}
-                            >
-                                <button
-                                    className="h-10 w-10 cursor-pointer rounded-full bg-cover bg-center"
-                                    style={{
-                                        backgroundImage:
-                                            `url("${avatarUrl}")`,
-                                    }}
-                                    onClick={() => setIsDropdownClick((v) => !v)}
-                                />
                                 <div
-                                    className={`absolute right-0 top-full z-10 mt-2 w-64 rounded-xl border border-border bg-background p-2 shadow-lg transition-opacity duration-200 ease-in-out ${isDropdownOpen
+                                    className="relative group"
+                                    onMouseEnter={() => setIsAvatarHover(true)}
+                                    onMouseLeave={() => setIsAvatarHover(false)}
+                                    ref={dropdownRef}
+                                >
+                                    <button
+                                        className="h-10 w-10 cursor-pointer rounded-full bg-cover bg-center"
+                                        style={{
+                                            backgroundImage:
+                                                `url("${avatarUrl}")`,
+                                        }}
+                                        onClick={() => setIsDropdownClick((v) => !v)}
+                                    />
+                                    <div
+                                        className={`absolute right-0 top-full z-10 mt-2 w-64 rounded-xl border border-border bg-background p-2 shadow-lg transition-opacity duration-200 ease-in-out ${isDropdownOpen
                                             ? 'pointer-events-auto opacity-100'
                                             : 'pointer-events-none opacity-0'
-                                        }`}
-                                    onMouseEnter={() => setIsDropdownHover(true)}
-                                    onMouseLeave={() => setIsDropdownHover(false)}
-                                >
-                                    {/* User Info */}
-                                    <div className="mb-2 flex items-center gap-3 p-2">
-                                        <div
-                                            className="h-12 w-12 rounded-full bg-cover bg-center"
-                                            style={{
-                                                backgroundImage:
-                                                    `url("${avatarUrl}")`,
-                                            }}
-                                        />
-                                        <div>
-                                            <p className="font-bold text-foreground">{authUser.full_name ?? authUser.email ?? 'Người dùng'}</p>
-                                            <p className="text-sm text-muted-foreground">{authUser.email ?? ''}</p>
+                                            }`}
+                                        onMouseEnter={() => setIsDropdownHover(true)}
+                                        onMouseLeave={() => setIsDropdownHover(false)}
+                                    >
+                                        {/* User Info */}
+                                        <div className="mb-2 flex items-center gap-3 p-2">
+                                            <div
+                                                className="h-12 w-12 rounded-full bg-cover bg-center"
+                                                style={{
+                                                    backgroundImage:
+                                                        `url("${avatarUrl}")`,
+                                                }}
+                                            />
+                                            <div>
+                                                <p className="font-bold text-foreground">{authUser.full_name ?? authUser.email ?? 'Người dùng'}</p>
+                                                <p className="text-sm text-muted-foreground">{authUser.email ?? ''}</p>
+                                            </div>
                                         </div>
+
+                                        {/* Menu Items */}
+                                        <Link
+                                            href="/account"
+                                            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-card"
+                                        >
+                                            <User className="h-5 w-5 text-muted-foreground" />
+                                            <span>Thông tin cá nhân</span>
+                                        </Link>
+                                        <Link
+                                            href="#"
+                                            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-card"
+                                        >
+                                            <Package className="h-5 w-5 text-muted-foreground" />
+                                            <span>Đơn hàng của tôi</span>
+                                        </Link>
+                                        <Link
+                                            href="/wish-list"
+                                            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-card"
+                                        >
+                                            <Heart className="h-5 w-5 text-muted-foreground" />
+                                            <span>Danh sách yêu thích</span>
+                                        </Link>
+                                        <Link
+                                            href="#"
+                                            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-card"
+                                        >
+                                            <Home className="h-5 w-5 text-muted-foreground" />
+                                            <span>Địa chỉ giao hàng</span>
+                                        </Link>
+                                        <Link
+                                            href="#"
+                                            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-card"
+                                        >
+                                            <CreditCard className="h-5 w-5 text-muted-foreground" />
+                                            <span>Phương thức thanh toán</span>
+                                        </Link>
+
+                                        <hr className="my-2 border-border" />
+
+                                        <Link
+                                            href="/logout"
+                                            method="post"
+                                            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-primary transition-colors hover:bg-primary/10"
+                                        >
+                                            <LogOut className="h-5 w-5" />
+                                            <span>Đăng xuất</span>
+                                        </Link>
                                     </div>
-
-                                    {/* Menu Items */}
-                                    <Link
-                                        href="/account"
-                                        className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-card"
-                                    >
-                                        <User className="h-5 w-5 text-muted-foreground" />
-                                        <span>Thông tin cá nhân</span>
-                                    </Link>
-                                    <Link
-                                        href="#"
-                                        className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-card"
-                                    >
-                                        <Package className="h-5 w-5 text-muted-foreground" />
-                                        <span>Đơn hàng của tôi</span>
-                                    </Link>
-                                    <Link
-                                        href="/wish-list"
-                                        className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-card"
-                                    >
-                                        <Heart className="h-5 w-5 text-muted-foreground" />
-                                        <span>Danh sách yêu thích</span>
-                                    </Link>
-                                    <Link
-                                        href="#"
-                                        className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-card"
-                                    >
-                                        <Home className="h-5 w-5 text-muted-foreground" />
-                                        <span>Địa chỉ giao hàng</span>
-                                    </Link>
-                                    <Link
-                                        href="#"
-                                        className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-card"
-                                    >
-                                        <CreditCard className="h-5 w-5 text-muted-foreground" />
-                                        <span>Phương thức thanh toán</span>
-                                    </Link>
-
-                                    <hr className="my-2 border-border" />
-
-                                    <Link
-                                        href="/logout"
-                                        method="post"
-                                        className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-primary transition-colors hover:bg-primary/10"
-                                    >
-                                        <LogOut className="h-5 w-5" />
-                                        <span>Đăng xuất</span>
-                                    </Link>
                                 </div>
-                            </div>
                             )}
                         </div>
                     </div>
